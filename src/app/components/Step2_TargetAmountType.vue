@@ -2,6 +2,8 @@
 import { computed, ref } from 'vue'
 import { useWizard } from '../composables/useWizard'
 import { parseEuroInput } from '../domain/wizardValidation'
+import { getStaggerItemVariants } from '../motion/presets'
+import { useMotionSafety } from '../motion/useMotionSafety'
 import { getGoal } from './goalsData'
 
 const {
@@ -25,6 +27,12 @@ const goalLabel = computed(() => {
 })
 
 const parsedAmount = computed(() => parseEuroInput(inputAmount.value))
+const { prefersReducedMotion } = useMotionSafety()
+
+const cardInitial = (index: number) =>
+  getStaggerItemVariants(index, prefersReducedMotion.value).initial
+const cardEnter = (index: number) =>
+  getStaggerItemVariants(index, prefersReducedMotion.value).enter
 
 const handleManualSubmit = () => {
   if (parsedAmount.value === null) {
@@ -61,7 +69,12 @@ const handleBack = () => {
     </div>
 
     <div class="grid w-full items-stretch gap-8 md:grid-cols-2">
-      <article class="flex flex-col rounded-[4px] border border-[#003745]/20 bg-white p-8 transition-all hover:border-[#003745] hover:shadow-lg">
+      <article
+        v-motion
+        :initial="cardInitial(0)"
+        :enter="cardEnter(0)"
+        class="flex flex-col rounded-[4px] border border-[#003745]/20 bg-white p-8 transition-[border-color,box-shadow,transform] duration-[180ms] ease-[var(--motion-ease-standard)] hover:border-[#003745] hover:shadow-lg"
+      >
         <div class="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-[4px] bg-[#F4F9FA] text-[#003745]">
           EUR
         </div>
@@ -94,7 +107,7 @@ const handleBack = () => {
             <button
               type="button"
               :disabled="parsedAmount === null"
-              class="w-full rounded-[4px] border border-[#003745] bg-[#003745] px-4 py-3 font-medium text-white transition-colors hover:bg-[#002C36] disabled:cursor-not-allowed disabled:border-[#D5DEE1] disabled:bg-[#D5DEE1] disabled:text-[#003745]/60"
+              class="motion-cta w-full rounded-[4px] border border-[#003745] bg-[#003745] px-4 py-3 font-medium text-white transition-colors hover:bg-[#002C36] disabled:cursor-not-allowed disabled:border-[#D5DEE1] disabled:bg-[#D5DEE1] disabled:text-[#003745]/60"
               @click="handleManualSubmit"
             >
               Mit diesem Betrag fortfahren
@@ -103,7 +116,12 @@ const handleBack = () => {
         </div>
       </article>
 
-      <article class="relative flex flex-col overflow-hidden rounded-[4px] border border-[#003745]/20 bg-white p-8 transition-all hover:border-[#003745] hover:shadow-lg">
+      <article
+        v-motion
+        :initial="cardInitial(1)"
+        :enter="cardEnter(1)"
+        class="relative flex flex-col overflow-hidden rounded-[4px] border border-[#003745]/20 bg-white p-8 transition-[border-color,box-shadow,transform] duration-[180ms] ease-[var(--motion-ease-standard)] hover:border-[#003745] hover:shadow-lg"
+      >
         <div class="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-[4px] bg-[#F4F9FA] text-[#003745]">
           Fx
         </div>
@@ -124,7 +142,7 @@ const handleBack = () => {
           <span class="mb-4 block text-center text-sm text-[#568996]">Als Naechstes legen wir Prioritaeten fest.</span>
           <button
             type="button"
-            class="w-full rounded-[4px] border border-[#003745] bg-white px-4 py-3 font-medium text-[#003745] transition-colors hover:bg-[#F4F9FA]"
+            class="motion-cta w-full rounded-[4px] border border-[#003745] bg-white px-4 py-3 font-medium text-[#003745] transition-colors hover:bg-[#F4F9FA]"
             @click="handleCalculateClick"
           >
             Betrag ermitteln

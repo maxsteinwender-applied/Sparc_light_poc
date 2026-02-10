@@ -4,6 +4,13 @@ import html2canvas from 'html2canvas'
 import { jsPDF } from 'jspdf'
 import { useWizard } from '../composables/useWizard'
 import { calculateSavingsPlan } from '../domain/savingsPlan'
+import { runMotionLeave } from '../motion/leaveHook'
+import {
+  getModalBackdropVariants,
+  getModalPanelVariants,
+  getStaggerItemVariants,
+} from '../motion/presets'
+import { useMotionSafety } from '../motion/useMotionSafety'
 import { parseEuroInput } from '../domain/wizardValidation'
 import { getGoal } from './goalsData'
 import { formatCurrency } from './ui/utils'
@@ -35,6 +42,7 @@ const isSendingEmail = ref(false)
 const emailError = ref('')
 const emailSuccess = ref('')
 const emailConfigured = computed(() => isEmailConfigured())
+const { prefersReducedMotion } = useMotionSafety()
 
 watch(targetAmount, (nextValue) => {
   targetAmountInput.value = String(nextValue)
@@ -75,6 +83,17 @@ const totalReturn = computed(() => projection.value.totalReturn)
 const zeroReturnMonthly = computed(() => projection.value.zeroReturnMonthly)
 const monthlyDifference = computed(() => projection.value.monthlyDifference)
 const targetYear = computed(() => projection.value.targetYear)
+const modalBackdropVariants = computed(() =>
+  getModalBackdropVariants(prefersReducedMotion.value),
+)
+const modalPanelVariants = computed(() =>
+  getModalPanelVariants(prefersReducedMotion.value),
+)
+
+const staggerInitial = (index: number) =>
+  getStaggerItemVariants(index, prefersReducedMotion.value).initial
+const staggerEnter = (index: number) =>
+  getStaggerItemVariants(index, prefersReducedMotion.value).enter
 
 const applyTargetAmountInput = () => {
   const parsed = parseEuroInput(targetAmountInput.value)
@@ -274,13 +293,23 @@ const handleSendEmail = async () => {
         </div>
 
         <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
-          <div class="relative flex h-full flex-col items-center justify-center rounded-[4px] border border-[#003745] bg-[#003745] p-6 text-center shadow-md">
+          <div
+            v-motion
+            :initial="staggerInitial(0)"
+            :enter="staggerEnter(0)"
+            class="relative flex h-full flex-col items-center justify-center rounded-[4px] border border-[#003745] bg-[#003745] p-6 text-center shadow-md"
+          >
             <span class="mb-2 text-xs font-bold uppercase tracking-wider text-[#9FB6BC]">MONATLICHE SPARRATE</span>
             <span class="mb-2 text-4xl font-bold tracking-tight text-white">{{ formatCurrency(monthlySavings) }}</span>
             <span class="rounded-[4px] bg-white/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-[#9FB6BC]">Errechnet</span>
           </div>
 
-          <div class="flex h-full flex-col items-center justify-center rounded-[4px] border border-[#003745]/20 bg-white p-6 text-center">
+          <div
+            v-motion
+            :initial="staggerInitial(1)"
+            :enter="staggerEnter(1)"
+            class="flex h-full flex-col items-center justify-center rounded-[4px] border border-[#003745]/20 bg-white p-6 text-center"
+          >
             <span class="mb-2 text-xs font-bold uppercase tracking-wider text-[#568996]">LAUFZEIT</span>
             <div class="mb-3 text-3xl font-bold text-[#003745]">{{ durationYears }} Jahre</div>
             <div class="flex gap-2">
@@ -301,7 +330,12 @@ const handleSendEmail = async () => {
             </div>
           </div>
 
-          <div class="flex h-full flex-col items-center justify-center rounded-[4px] border border-[#003745]/20 bg-white p-6 text-center">
+          <div
+            v-motion
+            :initial="staggerInitial(2)"
+            :enter="staggerEnter(2)"
+            class="flex h-full flex-col items-center justify-center rounded-[4px] border border-[#003745]/20 bg-white p-6 text-center"
+          >
             <span class="mb-2 text-xs font-bold uppercase tracking-wider text-[#568996]">ZIELBETRAG</span>
             <div class="mb-3 text-3xl font-bold text-[#003745]">{{ formatCurrency(projectedValue) }}</div>
             <div class="flex w-full max-w-[220px] items-center gap-2">
@@ -339,10 +373,13 @@ const handleSendEmail = async () => {
 
         <div class="grid gap-6 md:grid-cols-3">
           <button
-            v-for="strategyKey in strategyKeys"
+            v-for="(strategyKey, strategyIndex) in strategyKeys"
             :key="strategyKey"
+            v-motion
+            :initial="staggerInitial(strategyIndex + 3)"
+            :enter="staggerEnter(strategyIndex + 3)"
             type="button"
-            class="relative rounded-[4px] p-4 text-left transition-all md:p-6"
+            class="relative rounded-[4px] p-4 text-left transition-[transform,box-shadow,border-color,background-color] duration-[180ms] ease-[var(--motion-ease-standard)] md:p-6"
             :class="
               selectedStrategy === strategyKey
                 ? 'border-2 border-[#003745] bg-[#003745]/10'
@@ -376,7 +413,12 @@ const handleSendEmail = async () => {
         </div>
 
         <div class="grid gap-8 md:grid-cols-2">
-          <div class="rounded-[4px] border border-[#003745]/10 bg-white p-6">
+          <div
+            v-motion
+            :initial="staggerInitial(6)"
+            :enter="staggerEnter(6)"
+            class="rounded-[4px] border border-[#003745]/10 bg-white p-6"
+          >
             <h3 class="mb-4 text-lg font-bold text-[#003745]">Mit FondsSparplan</h3>
             <div class="space-y-2">
               <div class="flex items-center justify-between text-sm"><span class="text-[#568996]">Monatliche Sparrate</span><span class="font-semibold text-[#003745]">{{ formatCurrency(monthlySavings) }}</span></div>
@@ -386,7 +428,12 @@ const handleSendEmail = async () => {
             </div>
           </div>
 
-          <div class="rounded-[4px] border border-[#003745]/10 bg-[#F5EFE4] p-6">
+          <div
+            v-motion
+            :initial="staggerInitial(7)"
+            :enter="staggerEnter(7)"
+            class="rounded-[4px] border border-[#003745]/10 bg-[#F5EFE4] p-6"
+          >
             <h3 class="mb-4 text-lg font-bold text-[#003745]">Ohne Rendite (0 %)</h3>
             <div class="space-y-2">
               <div class="flex items-center justify-between text-sm"><span class="text-[#568996]">Benoetigte Sparrate</span><span class="font-semibold text-[#003745]">{{ formatCurrency(zeroReturnMonthly) }}</span></div>
@@ -427,7 +474,7 @@ const handleSendEmail = async () => {
         <div class="mx-auto flex max-w-6xl flex-col items-center gap-4 md:flex-row md:justify-center">
           <button
             type="button"
-            class="w-full rounded-[4px] border border-[#003745] bg-[#003745] px-8 py-3 text-base font-medium text-white transition-colors hover:bg-[#002C36] md:w-auto"
+            class="motion-cta w-full rounded-[4px] border border-[#003745] bg-[#003745] px-8 py-3 text-base font-medium text-white transition-colors hover:bg-[#002C36] md:w-auto"
             @click="setStep(4)"
           >
             Plan anpassen
@@ -435,7 +482,7 @@ const handleSendEmail = async () => {
           <button
             type="button"
             :disabled="isExporting"
-            class="w-full rounded-[4px] border border-[#003745]/20 bg-white px-8 py-3 text-base font-medium text-[#003745] transition-colors hover:bg-[#F4F9FA] disabled:cursor-not-allowed disabled:border-[#9FB6BC] disabled:text-[#9FB6BC] md:w-auto"
+            class="motion-cta w-full rounded-[4px] border border-[#003745]/20 bg-white px-8 py-3 text-base font-medium text-[#003745] transition-colors hover:bg-[#F4F9FA] disabled:cursor-not-allowed disabled:border-[#9FB6BC] disabled:text-[#9FB6BC] md:w-auto"
             @click="handleExportPdf"
           >
             {{ isExporting ? 'Erzeuge PDF...' : 'PDF exportieren' }}
@@ -443,14 +490,14 @@ const handleSendEmail = async () => {
           <button
             type="button"
             :disabled="!emailConfigured"
-            class="w-full rounded-[4px] border border-[#003745]/20 bg-white px-8 py-3 text-base font-medium text-[#003745] transition-colors hover:bg-[#F4F9FA] disabled:cursor-not-allowed disabled:border-[#9FB6BC] disabled:text-[#9FB6BC] md:w-auto"
+            class="motion-cta w-full rounded-[4px] border border-[#003745]/20 bg-white px-8 py-3 text-base font-medium text-[#003745] transition-colors hover:bg-[#F4F9FA] disabled:cursor-not-allowed disabled:border-[#9FB6BC] disabled:text-[#9FB6BC] md:w-auto"
             @click="handleOpenEmailDialog"
           >
             Ergebnis per E-Mail
           </button>
           <button
             type="button"
-            class="w-full rounded-[4px] border border-[#003745]/20 bg-white px-8 py-3 text-base font-medium text-[#003745] transition-colors hover:bg-[#F4F9FA] md:w-auto"
+            class="motion-cta w-full rounded-[4px] border border-[#003745]/20 bg-white px-8 py-3 text-base font-medium text-[#003745] transition-colors hover:bg-[#F4F9FA] md:w-auto"
             @click="resetFlow"
           >
             Neuen Plan starten
@@ -465,70 +512,91 @@ const handleSendEmail = async () => {
         </p>
       </div>
 
-      <div v-if="isEmailDialogOpen" class="fixed inset-0 z-[120] flex items-center justify-center p-4">
-        <button aria-label="Modal schliessen" class="absolute inset-0 bg-[#003745]/45 backdrop-blur-[1px]" @click="handleCloseEmailDialog" />
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label="Ergebnis per E-Mail senden"
-          class="relative w-full max-w-xl space-y-4 rounded-[4px] border border-[#D8E5E8] bg-[#F4F9FA] p-5 shadow-xl sm:p-6"
-        >
-          <div class="flex items-start justify-between gap-3">
-            <h3 class="text-lg font-bold text-[#003745]">Ergebnis per E-Mail senden</h3>
-            <button
-              type="button"
-              class="rounded-[4px] border border-[#003745]/20 px-2 py-1 text-sm text-[#003745] hover:bg-white"
-              @click="handleCloseEmailDialog"
-            >
-              Schliessen
-            </button>
-          </div>
-          <p class="text-sm text-[#568996]">Versand als POC direkt aus dem Browser via EmailJS.</p>
-          <div class="space-y-3">
-            <div>
-              <label class="mb-1 block text-sm font-medium text-[#003745]">E-Mail-Adresse *</label>
-              <input
-                v-model="recipientEmail"
-                type="email"
-                placeholder="name@beispiel.de"
-                class="w-full rounded-[4px] border border-[#003745]/20 bg-white px-3 py-2.5 text-sm text-[#003745] outline-none focus:border-[#003745] focus:ring-2 focus:ring-[#003745]"
-              />
-            </div>
-            <div>
-              <label class="mb-1 block text-sm font-medium text-[#003745]">Name (optional)</label>
-              <input
-                v-model="recipientName"
-                type="text"
-                placeholder="Max Mustermann"
-                class="w-full rounded-[4px] border border-[#003745]/20 bg-white px-3 py-2.5 text-sm text-[#003745] outline-none focus:border-[#003745] focus:ring-2 focus:ring-[#003745]"
-              />
-            </div>
-          </div>
+      <div class="pointer-events-none fixed inset-0 z-[120]">
+        <Transition :css="false" @leave="runMotionLeave">
+          <button
+            v-if="isEmailDialogOpen"
+            v-motion
+            :initial="modalBackdropVariants.initial"
+            :enter="modalBackdropVariants.enter"
+            :leave="modalBackdropVariants.leave"
+            aria-label="Modal schliessen"
+            class="pointer-events-auto absolute inset-0 bg-[#003745]/45 backdrop-blur-[1px]"
+            @click="handleCloseEmailDialog"
+          />
+        </Transition>
 
-          <p v-if="emailError" class="text-sm text-[#AD1111]">{{ emailError }}</p>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+          <Transition :css="false" @leave="runMotionLeave">
+            <div
+              v-if="isEmailDialogOpen"
+              v-motion
+              :initial="modalPanelVariants.initial"
+              :enter="modalPanelVariants.enter"
+              :leave="modalPanelVariants.leave"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Ergebnis per E-Mail senden"
+              class="pointer-events-auto relative w-full max-w-xl space-y-4 rounded-[4px] border border-[#D8E5E8] bg-[#F4F9FA] p-5 shadow-xl sm:p-6"
+            >
+              <div class="flex items-start justify-between gap-3">
+                <h3 class="text-lg font-bold text-[#003745]">Ergebnis per E-Mail senden</h3>
+                <button
+                  type="button"
+                  class="rounded-[4px] border border-[#003745]/20 px-2 py-1 text-sm text-[#003745] hover:bg-white"
+                  @click="handleCloseEmailDialog"
+                >
+                  Schliessen
+                </button>
+              </div>
+              <p class="text-sm text-[#568996]">Versand als POC direkt aus dem Browser via EmailJS.</p>
+              <div class="space-y-3">
+                <div>
+                  <label class="mb-1 block text-sm font-medium text-[#003745]">E-Mail-Adresse *</label>
+                  <input
+                    v-model="recipientEmail"
+                    type="email"
+                    placeholder="name@beispiel.de"
+                    class="w-full rounded-[4px] border border-[#003745]/20 bg-white px-3 py-2.5 text-sm text-[#003745] outline-none focus:border-[#003745] focus:ring-2 focus:ring-[#003745]"
+                  />
+                </div>
+                <div>
+                  <label class="mb-1 block text-sm font-medium text-[#003745]">Name (optional)</label>
+                  <input
+                    v-model="recipientName"
+                    type="text"
+                    placeholder="Max Mustermann"
+                    class="w-full rounded-[4px] border border-[#003745]/20 bg-white px-3 py-2.5 text-sm text-[#003745] outline-none focus:border-[#003745] focus:ring-2 focus:ring-[#003745]"
+                  />
+                </div>
+              </div>
 
-          <div class="flex items-center gap-3">
-            <button
-              type="button"
-              :disabled="isSendingEmail"
-              class="rounded-[4px] border px-4 py-2 text-sm font-medium transition-colors"
-              :class="
-                isSendingEmail
-                  ? 'cursor-not-allowed border-[#9FB6BC] bg-white text-[#9FB6BC]'
-                  : 'border-[#003745] bg-[#003745] text-white hover:bg-[#002C36]'
-              "
-              @click="handleSendEmail"
-            >
-              {{ isSendingEmail ? 'Sende...' : 'Senden' }}
-            </button>
-            <button
-              type="button"
-              class="rounded-[4px] border border-[#003745]/20 bg-white px-4 py-2 text-sm font-medium text-[#003745] hover:bg-[#F4F9FA]"
-              @click="handleCloseEmailDialog"
-            >
-              Abbrechen
-            </button>
-          </div>
+              <p v-if="emailError" class="text-sm text-[#AD1111]">{{ emailError }}</p>
+
+              <div class="flex items-center gap-3">
+                <button
+                  type="button"
+                  :disabled="isSendingEmail"
+                  class="motion-cta rounded-[4px] border px-4 py-2 text-sm font-medium transition-colors"
+                  :class="
+                    isSendingEmail
+                      ? 'cursor-not-allowed border-[#9FB6BC] bg-white text-[#9FB6BC]'
+                      : 'border-[#003745] bg-[#003745] text-white hover:bg-[#002C36]'
+                  "
+                  @click="handleSendEmail"
+                >
+                  {{ isSendingEmail ? 'Sende...' : 'Senden' }}
+                </button>
+                <button
+                  type="button"
+                  class="motion-cta rounded-[4px] border border-[#003745]/20 bg-white px-4 py-2 text-sm font-medium text-[#003745] hover:bg-[#F4F9FA]"
+                  @click="handleCloseEmailDialog"
+                >
+                  Abbrechen
+                </button>
+              </div>
+            </div>
+          </Transition>
         </div>
       </div>
 

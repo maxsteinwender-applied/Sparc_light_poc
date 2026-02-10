@@ -2,6 +2,8 @@
 import { computed, watch } from 'vue'
 import { useWizard } from '../composables/useWizard'
 import { calculateTargetAmountFromFactors } from '../domain/targetAmount'
+import { getStaggerItemVariants } from '../motion/presets'
+import { useMotionSafety } from '../motion/useMotionSafety'
 import { getGoal } from './goalsData'
 import { formatCurrency } from './ui/utils'
 
@@ -33,6 +35,12 @@ const currentTotal = computed(() => {
 })
 
 const delta = computed(() => currentTotal.value - currentGoal.value.baseTargetAmount)
+const { prefersReducedMotion } = useMotionSafety()
+
+const chipInitial = (index: number) =>
+  getStaggerItemVariants(index, prefersReducedMotion.value).initial
+const chipEnter = (index: number) =>
+  getStaggerItemVariants(index, prefersReducedMotion.value).enter
 
 watch(
   currentTotal,
@@ -88,7 +96,7 @@ const isSelected = (label: string) => calculationFactors.value.includes(label)
         <span class="mb-4 block text-center text-sm text-[#568996]">Im naechsten Schritt legen Sie die Laufzeit fest.</span>
         <button
           type="button"
-          class="w-full rounded-[4px] border border-[#003745] bg-[#003745] px-4 py-3 font-medium text-white transition-colors hover:bg-[#002C36]"
+          class="motion-cta w-full rounded-[4px] border border-[#003745] bg-[#003745] px-4 py-3 font-medium text-white transition-colors hover:bg-[#002C36]"
           @click="handleContinue"
         >
           Weiter zur Laufzeit
@@ -102,11 +110,14 @@ const isSelected = (label: string) => calculationFactors.value.includes(label)
 
       <div class="flex flex-wrap gap-3 md:gap-4">
         <button
-          v-for="chip in currentGoal.amountFinderChips"
+          v-for="(chip, chipIndex) in currentGoal.amountFinderChips"
           :key="chip.label"
+          v-motion
+          :initial="chipInitial(chipIndex)"
+          :enter="chipEnter(chipIndex)"
           type="button"
           :class="[
-            'relative flex min-h-[44px] cursor-pointer items-center gap-2 rounded-full border px-[14px] py-[12px] text-left transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#003745]',
+            'relative flex min-h-[44px] cursor-pointer items-center gap-2 rounded-full border px-[14px] py-[12px] text-left transition-[transform,box-shadow,border-color,background-color] duration-[180ms] ease-[var(--motion-ease-standard)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#003745]',
             isSelected(chip.label) ? 'border-[#003745] bg-[#003745]/5 shadow-sm' : 'border-[#003745]/20 bg-white hover:border-[#003745]',
           ]"
           @click="toggleCalculationFactor(chip.label)"

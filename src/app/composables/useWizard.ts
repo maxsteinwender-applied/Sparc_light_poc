@@ -7,6 +7,7 @@ export const useWizard = () => {
   const wizardStore = useWizardStore()
   const {
     step,
+    transitionDirection,
     goal,
     customGoalName,
     targetAmount,
@@ -17,6 +18,7 @@ export const useWizard = () => {
 
   return {
     step,
+    transitionDirection,
     goal,
     customGoalName,
     targetAmount,

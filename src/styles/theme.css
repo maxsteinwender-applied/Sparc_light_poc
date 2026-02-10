@@ -74,6 +74,13 @@
   --deka-positive: #3A8F7B;
   --deka-warning-bg: #FFF3CD;
   --deka-warning-text: #7A5A00;
+
+  /* Motion Tokens */
+  --motion-duration-fast: 120ms;
+  --motion-duration-normal: 180ms;
+  --motion-duration-slow: 260ms;
+  --motion-duration-emphasis: 380ms;
+  --motion-ease-standard: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .dark {
@@ -188,5 +195,50 @@
   [role="button"][aria-disabled="true"],
   [disabled] {
     cursor: not-allowed;
+  }
+}
+
+@layer utilities {
+  .motion-cta {
+    will-change: transform;
+    transition-property: transform, box-shadow, background-color, border-color, color;
+    transition-duration: var(--motion-duration-normal);
+    transition-timing-function: var(--motion-ease-standard);
+  }
+
+  .motion-cta:hover {
+    transform: translateY(-2px) scale(1.01);
+  }
+
+  .motion-cta:active {
+    transform: scale(0.98);
+  }
+
+  .motion-step-shell {
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+  }
+
+  .motion-carousel-card {
+    transform-style: preserve-3d;
+    will-change: transform, opacity;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-duration-fast: 80ms;
+    --motion-duration-normal: 100ms;
+    --motion-duration-slow: 120ms;
+    --motion-duration-emphasis: 160ms;
+  }
+
+  .motion-cta {
+    transition-duration: var(--motion-duration-fast);
+  }
+
+  .motion-cta:hover,
+  .motion-cta:active {
+    transform: none;
   }
 }

@@ -1,26 +1,30 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, markRaw, type Component } from 'vue'
 import dekaLogoImage from '@/assets/e088cf5e6488ed30341523cb4f504779a4587bd6.png'
 import { useWizard } from '../composables/useWizard'
+import { runMotionLeave } from '../motion/leaveHook'
 import Step1GoalSelection from './Step1_GoalSelection.vue'
 import Step2TargetAmountType from './Step2_TargetAmountType.vue'
 import Step3CalculateAmount from './Step3_CalculateAmount.vue'
 import Step4Duration from './Step4_Duration.vue'
 import Step5Results from './Step5_Results.vue'
+import MotionStepShell from './motion/MotionStepShell.vue'
 
-const { step, setStep, resetFlow } = useWizard()
+const { step, transitionDirection, resetFlow } = useWizard()
 
 const clampedStep = computed(() => {
   return Math.min(5, Math.max(1, step.value))
 })
 
-const goBack = () => {
-  setStep(Math.max(1, clampedStep.value - 1))
+const stepComponents: Record<number, Component> = {
+  1: markRaw(Step1GoalSelection),
+  2: markRaw(Step2TargetAmountType),
+  3: markRaw(Step3CalculateAmount),
+  4: markRaw(Step4Duration),
+  5: markRaw(Step5Results),
 }
 
-const goNext = () => {
-  setStep(Math.min(5, clampedStep.value + 1))
-}
+const activeStepComponent = computed(() => stepComponents[clampedStep.value])
 </script>
 
 <template>
@@ -37,7 +41,7 @@ const goNext = () => {
             v-for="progressStep in 5"
             :key="progressStep"
             :class="[
-              'h-1.5 rounded-full transition-all duration-300',
+              'h-1.5 rounded-full transition-[width,background-color] duration-[180ms] ease-[var(--motion-ease-standard)]',
               clampedStep >= progressStep ? 'w-8 bg-[#003745]' : 'w-2 bg-[#003745]/25',
             ]"
           />
@@ -45,37 +49,12 @@ const goNext = () => {
       </div>
     </header>
 
-    <main class="w-full">
-      <Step1GoalSelection v-if="clampedStep === 1" />
-      <Step2TargetAmountType v-else-if="clampedStep === 2" />
-      <Step3CalculateAmount v-else-if="clampedStep === 3" />
-      <Step4Duration v-else-if="clampedStep === 4" />
-      <Step5Results v-else-if="clampedStep === 5" />
-
-      <section v-else class="mx-auto mt-12 w-full max-w-5xl rounded-[4px] border border-[#003745]/15 bg-white p-8 shadow-sm">
-        <p class="mb-2 text-sm font-medium uppercase tracking-widest text-[#EE0000]">Schritt {{ clampedStep }} von 5</p>
-        <h1 class="mb-3 text-3xl font-bold text-[#003745]">Dieser Schritt wird als Naechstes portiert.</h1>
-        <p class="mb-8 text-base text-[#568996]">
-          Schritt 1 ist bereits als Vue-Komponente aktiv. Die weiteren Schritte folgen in den naechsten Migrationsschritten.
-        </p>
-
-        <div class="grid gap-4 md:grid-cols-2">
-          <button
-            class="rounded-[4px] border border-[#003745]/20 px-4 py-3 text-left text-sm font-medium text-[#003745] transition-colors hover:border-[#003745]"
-            type="button"
-            @click="goBack"
-          >
-            Vorheriger Schritt
-          </button>
-          <button
-            class="rounded-[4px] border border-[#003745]/20 px-4 py-3 text-left text-sm font-medium text-[#003745] transition-colors hover:border-[#003745]"
-            type="button"
-            @click="goNext"
-          >
-            Naechster Schritt
-          </button>
-        </div>
-      </section>
+    <main class="w-full overflow-x-clip">
+      <Transition mode="out-in" :css="false" @leave="runMotionLeave">
+        <MotionStepShell :key="clampedStep" :direction="transitionDirection">
+          <component :is="activeStepComponent" />
+        </MotionStepShell>
+      </Transition>
     </main>
 
     <footer v-if="clampedStep < 5" class="py-8 text-center text-sm text-[#9FB6BC]">

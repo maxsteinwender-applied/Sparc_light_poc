@@ -76,7 +76,7 @@ const canContinue = computed(() => {
         <span class="mb-1 block text-sm text-[#568996]">Als Naechstes bestimmen wir den Betrag.</span>
         <button
           type="button"
-          class="h-auto w-full rounded-[4px] bg-[#EE0000] px-8 py-4 text-lg text-white transition-colors hover:bg-[#D00000]"
+          class="motion-cta h-auto w-full rounded-[4px] bg-[#EE0000] px-8 py-4 text-lg text-white transition-colors hover:bg-[#D00000]"
           @click="handleContinue"
         >
           Mit {{ selectedGoalLabel }} fortfahren
@@ -108,7 +108,7 @@ const canContinue = computed(() => {
         <button
           type="button"
           :disabled="!canContinue"
-          class="h-auto w-full rounded-[4px] bg-[#EE0000] px-8 py-4 text-lg text-white transition-colors hover:bg-[#D00000] disabled:cursor-not-allowed disabled:bg-[#D5DEE1]"
+          class="motion-cta h-auto w-full rounded-[4px] bg-[#EE0000] px-8 py-4 text-lg text-white transition-colors hover:bg-[#D00000] disabled:cursor-not-allowed disabled:bg-[#D5DEE1]"
           @click="handleContinue"
         >
           Mit individuellem Ziel fortfahren

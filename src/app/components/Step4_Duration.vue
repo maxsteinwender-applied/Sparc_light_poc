@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useWizard } from '../composables/useWizard'
+import { getStaggerItemVariants } from '../motion/presets'
+import { useMotionSafety } from '../motion/useMotionSafety'
 import { getGoal } from './goalsData'
 import NumericInputStepper from './ui/NumericInputStepper.vue'
 
@@ -16,6 +18,12 @@ const {
 const currentGoal = computed(() => getGoal(goal.value))
 const currentYear = computed(() => new Date().getFullYear())
 const targetYear = computed(() => currentYear.value + durationYears.value)
+const { prefersReducedMotion } = useMotionSafety()
+
+const optionInitial = (index: number) =>
+  getStaggerItemVariants(index, prefersReducedMotion.value).initial
+const optionEnter = (index: number) =>
+  getStaggerItemVariants(index, prefersReducedMotion.value).enter
 
 const goalLabel = computed(() => {
   if (goal.value === 'custom') {
@@ -59,10 +67,13 @@ const handleShowResult = () => {
 
       <div class="mb-12 grid grid-cols-3 gap-4">
         <button
-          v-for="years in quickOptions"
+          v-for="(years, optionIndex) in quickOptions"
           :key="years"
+          v-motion
+          :initial="optionInitial(optionIndex)"
+          :enter="optionEnter(optionIndex)"
           type="button"
-          class="py-4 text-lg font-medium transition-all"
+          class="py-4 text-lg font-medium transition-[transform,box-shadow,border-color,background-color,color] duration-[180ms] ease-[var(--motion-ease-standard)]"
           :class="
             durationYears === years
               ? 'border-2 border-[#003745] bg-[#003745]/10 text-[#003745]'
@@ -106,7 +117,7 @@ const handleShowResult = () => {
         <span class="mb-4 block text-sm text-[#568996]">Fast geschafft. Gleich sehen Sie Ihren Plan.</span>
         <button
           type="button"
-          class="w-full rounded-[4px] border border-[#003745] bg-[#003745] px-12 py-3 font-medium text-white transition-colors hover:bg-[#002C36] md:w-auto"
+          class="motion-cta w-full rounded-[4px] border border-[#003745] bg-[#003745] px-12 py-3 font-medium text-white transition-colors hover:bg-[#002C36] md:w-auto"
           @click="handleShowResult"
         >
           Ergebnis anzeigen

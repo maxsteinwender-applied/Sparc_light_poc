@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import type { GoalData, GoalId } from './goalsData'
-import ImageWithFallback from './figma/ImageWithFallback.vue'
+import MotionGoalCard from './motion/MotionGoalCard.vue'
 
 const props = defineProps<{
   selectedGoalId: GoalId
@@ -117,10 +117,12 @@ const cardStates = computed(() => {
       index,
       isSelected,
       isVisible,
-      style: {
-        transform: `translateX(${x}px) scale(${scale}) rotateY(${rotateY}deg)`,
+      motionState: {
+        x,
+        scale,
         opacity,
         zIndex,
+        rotateY,
       },
     }
   })
@@ -148,35 +150,16 @@ const cardStates = computed(() => {
     </button>
 
     <div class="relative flex h-full w-full items-center justify-center">
-      <div
+      <MotionGoalCard
         v-for="card in cardStates"
         :key="card.goal.id"
-        role="button"
-        :tabindex="card.isVisible ? 0 : -1"
-        :aria-label="`Ziel auswaehlen: ${card.goal.label}`"
-        :aria-selected="card.isSelected"
-        :style="card.style"
-        class="absolute h-72 w-56 cursor-pointer overflow-hidden rounded-[4px] border border-[#003745]/20 bg-white shadow-xl transition-all duration-300 ease-out focus:outline-none focus-visible:ring-4 focus-visible:ring-[#0043B4] focus-visible:ring-offset-2"
-        :class="card.isVisible ? 'visible pointer-events-auto' : 'invisible pointer-events-none'"
-        @click="handleCardClick(card.index)"
-        @keydown.enter.prevent="handleCardClick(card.index)"
-        @keydown.space.prevent="handleCardClick(card.index)"
-      >
-        <div class="absolute inset-0 bg-[#F4F9FA]">
-          <ImageWithFallback :src="card.goal.image" :alt="card.goal.label" class="h-full w-full object-cover" />
-          <div class="absolute inset-0 transition-colors duration-300" :class="card.isSelected ? 'bg-[#003745]/10' : 'bg-black/10'" />
-        </div>
-
-        <div class="absolute bottom-0 left-0 right-0 flex flex-col items-center bg-gradient-to-t from-[#003745]/95 via-[#003745]/80 to-transparent p-6 pt-20">
-          <span class="text-center text-lg font-medium leading-tight text-white">{{ card.goal.label }}</span>
-          <span
-            v-if="card.isSelected"
-            class="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-[#003745] text-sm font-bold text-white shadow-lg"
-          >
-            ✓
-          </span>
-        </div>
-      </div>
+        :goal="card.goal"
+        :index="card.index"
+        :is-selected="card.isSelected"
+        :is-visible="card.isVisible"
+        :motion-state="card.motionState"
+        @select="handleCardClick"
+      />
     </div>
   </div>
 </template>
