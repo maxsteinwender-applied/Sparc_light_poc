@@ -1,7 +1,3 @@
-import { 
-  PiggyBank, Hourglass, Heart, Home, Gauge, Globe, CreditCard, PenTool 
-} from 'lucide-react';
-
 export type GoalId = 'wealth' | 'retirement' | 'kids' | 'property' | 'car' | 'travel' | 'purchase' | 'custom';
 
 export interface GoalStrategy {
@@ -20,7 +16,7 @@ export interface AmountFinderChip {
 export interface GoalData {
   id: GoalId;
   label: string;
-  icon: any;
+  icon?: string;
   image: string;
   shortTeaser: string;
   whatItMeans: string[];
@@ -65,7 +61,7 @@ export const GOALS: GoalData[] = [
   {
     id: 'travel',
     label: 'Urlaub / Reise',
-    icon: Globe,
+    icon: 'globe',
     image: "https://images.unsplash.com/photo-1649522864970-668297e255f4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3b3JsZCUyMHRyYXZlbCUyMGdsb2JlJTIwbWFwfGVufDF8fHx8MTc3MDAzNjAyNXww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
     shortTeaser: "Machen Sie Ihre Reise planbar – passend zu Ihrem Stil und Ihrem Zeitplan.",
     whatItMeans: [
@@ -97,7 +93,7 @@ export const GOALS: GoalData[] = [
   {
     id: 'kids',
     label: 'Sparen für die Kinder',
-    icon: Heart,
+    icon: 'heart',
     image: "https://images.unsplash.com/photo-1599585183326-87b1fff61c33?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoYXBweSUyMGZhbWlseSUyMHNhdmluZyUyMG1vbmV5fGVufDF8fHx8MTc3MDA0MTk4MHww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
     shortTeaser: "Geben Sie Ihrem Kind einen finanziellen Startvorteil – passend zu Ihrem Budget.",
     whatItMeans: [
@@ -126,7 +122,7 @@ export const GOALS: GoalData[] = [
   {
     id: 'retirement',
     label: 'Altersvorsorge',
-    icon: Hourglass,
+    icon: 'hourglass',
     image: "https://images.unsplash.com/photo-1764816633859-136c97741472?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoYXBweSUyMGVsZGVybHklMjBjb3VwbGUlMjByZWxheGluZyUyMGJlYWNofGVufDF8fHx8MTc3MDAzNjAyNHww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
     shortTeaser: "Sichern Sie Ihren Lebensstandard im Ruhestand – planbar und langfristig.",
     whatItMeans: [
@@ -155,7 +151,7 @@ export const GOALS: GoalData[] = [
   {
     id: 'property',
     label: 'Immobilie',
-    icon: Home,
+    icon: 'home',
     image: "https://images.unsplash.com/photo-1627141234469-24711efb373c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBob3VzZSUyMGV4dGVyaW9yJTIwYXJjaGl0ZWN0dXJlfGVufDF8fHx8MTc3MDAwMTQyMnww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
     shortTeaser: "Bauen Sie Eigenkapital auf – für Kauf, Bau oder Sanierung.",
     whatItMeans: [
@@ -185,7 +181,7 @@ export const GOALS: GoalData[] = [
   {
     id: 'car',
     label: 'Auto',
-    icon: Gauge,
+    icon: 'gauge',
     image: "https://images.unsplash.com/photo-1609465397944-be1ce3ebda61?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxsdXh1cnklMjBjYXIlMjBkYXNoYm9hcmQlMjBpbnRlcmlvcnxlbnwxfHx8fDE3Njk5NDc2MjZ8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
     shortTeaser: "Planen Sie Ihr Auto ohne Stress – mit klarer Zielsumme und Termin.",
     whatItMeans: [
@@ -214,7 +210,7 @@ export const GOALS: GoalData[] = [
   {
     id: 'purchase',
     label: 'Allgemeine Anschaffungen',
-    icon: CreditCard,
+    icon: 'credit-card',
     image: "https://images.unsplash.com/photo-1668365011614-9c4a49a0e89d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBsaXZpbmclMjByb29tJTIwZnVybml0dXJlJTIwaW50ZXJpb3J8ZW58MXx8fHwxNzcwMDQxOTYxfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
     shortTeaser: "Finanzieren Sie größere Anschaffungen clever – ohne Ihr Budget zu überfordern.",
     whatItMeans: [
@@ -242,7 +238,7 @@ export const GOALS: GoalData[] = [
   {
     id: 'wealth',
     label: 'Vermögen aufbauen',
-    icon: PiggyBank,
+    icon: 'piggy-bank',
     image: "https://images.unsplash.com/photo-1769676391614-ee47569b1c69?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwaWdneSUyMGJhbmslMjBjb2lucyUyMHNhdmluZ3N8ZW58MXx8fHwxNzcwMDM2MDI0fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
     shortTeaser: "Bauen Sie Schritt für Schritt Vermögen auf – flexibel und langfristig.",
     whatItMeans: [
@@ -270,7 +266,7 @@ export const GOALS: GoalData[] = [
   {
     id: 'custom',
     label: 'Individuelles Sparziel erstellen',
-    icon: PenTool,
+    icon: 'pen-tool',
     image: "https://images.unsplash.com/photo-1568818693338-19e2a77d504c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3cml0aW5nJTIwam91cm5hbCUyMHBlbiUyMHBsYW5uZXJ8ZW58MXx8fHwxNzcwMDQxOTYxfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
     shortTeaser: "Definieren Sie Ihr eigenes Ziel – wir helfen bei Betrag, Zeitraum und Plan.",
     whatItMeans: [],
