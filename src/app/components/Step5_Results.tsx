@@ -1,12 +1,14 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { useWizard, StrategyType } from './WizardContext';
 import { motion, AnimatePresence } from 'motion/react';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area 
 } from 'recharts';
 import { 
-  Shield, TrendingUp, Zap, ChevronRight, Download, Share2, Mail, MessageCircle, 
-  Search, CheckCircle2, Edit2, Lock, Save, Globe, Info, ChevronLeft, ArrowUp
+  Shield, TrendingUp, Zap, ChevronRight, Download, Share2, Mail,
+  Search, CheckCircle2, Edit2, Lock, Save, Globe, ChevronLeft, ArrowUp
 } from 'lucide-react';
 import clsx from 'clsx';
 import { Radio, RadioGroup } from '@headlessui/react';
@@ -27,7 +29,9 @@ export const Step5_Results = () => {
   const [activeTab, setActiveTab] = useState<'chart' | 'optimize' | 'action'>('chart');
   const [showZeroReturn, setShowZeroReturn] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
+  const pdfContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -47,6 +51,8 @@ export const Step5_Results = () => {
   const currentGoal = getGoal(goal);
   const goalLabel = goal === 'custom' ? (customGoalName || 'Ziel') : currentGoal.label;
   const GoalIcon = currentGoal.icon || Shield;
+  const currentYear = new Date().getFullYear();
+  const targetYear = currentYear + durationYears;
 
   // Calculation Logic
   const { monthlySavings, totalInvested, totalReturn, chartData } = useMemo(() => {
@@ -119,6 +125,97 @@ export const Step5_Results = () => {
       chartData: data
     };
   }, [targetAmount, durationYears, selectedStrategy, currentGoal, showZeroReturn]);
+
+  const zeroReturnMonthly = useMemo(() => {
+    const months = durationYears * 12;
+    return Math.ceil(targetAmount / months);
+  }, [durationYears, targetAmount]);
+
+  const monthlyDifference = zeroReturnMonthly - monthlySavings;
+
+  const pdfData = useMemo(() => {
+    const strategy = currentGoal.strategies[selectedStrategy];
+    return {
+      goalLabel,
+      dateLabel: new Date().toLocaleDateString('de-DE'),
+      targetAmount,
+      durationYears,
+      targetYear,
+      monthlySavings,
+      strategyLabel: strategy.label,
+      strategyRateLabel: `${(strategy.rate * 100).toFixed(1).replace('.', ',')} % p. a.`,
+      totalInvested,
+      totalReturn,
+      projectedValue: targetAmount,
+      zeroReturnMonthly,
+      monthlyDifference,
+    };
+  }, [
+    currentGoal,
+    durationYears,
+    goalLabel,
+    monthlyDifference,
+    monthlySavings,
+    selectedStrategy,
+    targetAmount,
+    targetYear,
+    totalInvested,
+    totalReturn,
+    zeroReturnMonthly,
+  ]);
+
+  const handleExportPdf = async () => {
+    if (!pdfContainerRef.current || isExporting) return;
+
+    setIsExporting(true);
+    try {
+      if (document.fonts?.ready) {
+        await document.fonts.ready;
+      }
+
+      const canvas = await html2canvas(pdfContainerRef.current, {
+        backgroundColor: '#FFFFFF',
+        scale: 2,
+        useCORS: true,
+        logging: false,
+      });
+
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+      });
+
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 10;
+      const maxWidth = pageWidth - margin * 2;
+      const maxHeight = pageHeight - margin * 2;
+      const widthScale = maxWidth / canvas.width;
+      const heightScale = maxHeight / canvas.height;
+      const scale = Math.min(widthScale, heightScale);
+      const renderWidth = canvas.width * scale;
+      const renderHeight = canvas.height * scale;
+      const offsetX = (pageWidth - renderWidth) / 2;
+      const offsetY = (pageHeight - renderHeight) / 2;
+
+      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', offsetX, offsetY, renderWidth, renderHeight, undefined, 'FAST');
+
+      const slug = goalLabel
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '') || 'ziel';
+      const datePart = new Date().toISOString().slice(0, 10);
+      pdf.save(`sparplan-${slug}-${datePart}.pdf`);
+    } catch (error) {
+      console.error('PDF export failed:', error);
+      window.alert('PDF konnte nicht erstellt werden. Bitte versuchen Sie es erneut.');
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const handleScrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -444,10 +541,11 @@ export const Step5_Results = () => {
                    targetAmount={targetAmount}
                    durationYears={durationYears}
                    monthlySavings={monthlySavings}
-                   currentYear={new Date().getFullYear()}
-                   currentRate={(currentGoal.strategies[selectedStrategy].rate * 100).toFixed(1).replace('.', ',')}
+                   currentYear={currentYear}
                    totalInvested={totalInvested}
                    totalReturn={totalReturn}
+                   zeroReturnMonthly={zeroReturnMonthly}
+                   monthlyDifference={monthlyDifference}
                  />
                </div>
              </motion.div>
@@ -578,18 +676,105 @@ export const Step5_Results = () => {
           </div>
 
           <div className="flex gap-4">
-             {[
-               { icon: Save, label: 'Speichern' },
-               { icon: Download, label: 'PDF' },
-               { icon: Mail, label: 'E-Mail' },
-               { icon: Share2, label: 'Teilen' }
-             ].map((action, i) => (
-               <button key={i} className="flex items-center gap-2 px-4 py-2 bg-white border border-[#003745]/20 rounded-[4px] text-[#003745] hover:bg-[#F4F9FA] hover:border-[#003745] transition-colors text-sm font-medium">
-                 <action.icon size={16} strokeWidth={1.5} />
-                 <span>{action.label}</span>
-               </button>
-             ))}
+            <button className="flex items-center gap-2 px-4 py-2 bg-white border border-[#003745]/20 rounded-[4px] text-[#003745] hover:bg-[#F4F9FA] hover:border-[#003745] transition-colors text-sm font-medium">
+              <Save size={16} strokeWidth={1.5} />
+              <span>Speichern</span>
+            </button>
+            <button
+              onClick={handleExportPdf}
+              disabled={isExporting}
+              className={clsx(
+                "flex items-center gap-2 px-4 py-2 bg-white border rounded-[4px] transition-colors text-sm font-medium",
+                isExporting
+                  ? "border-[#9FB6BC] text-[#9FB6BC] cursor-not-allowed"
+                  : "border-[#003745]/20 text-[#003745] hover:bg-[#F4F9FA] hover:border-[#003745]"
+              )}
+            >
+              <Download size={16} strokeWidth={1.5} />
+              <span>{isExporting ? 'Erzeuge PDF...' : 'PDF'}</span>
+            </button>
+            <button className="flex items-center gap-2 px-4 py-2 bg-white border border-[#003745]/20 rounded-[4px] text-[#003745] hover:bg-[#F4F9FA] hover:border-[#003745] transition-colors text-sm font-medium">
+              <Mail size={16} strokeWidth={1.5} />
+              <span>E-Mail</span>
+            </button>
+            <button className="flex items-center gap-2 px-4 py-2 bg-white border border-[#003745]/20 rounded-[4px] text-[#003745] hover:bg-[#F4F9FA] hover:border-[#003745] transition-colors text-sm font-medium">
+              <Share2 size={16} strokeWidth={1.5} />
+              <span>Teilen</span>
+            </button>
           </div>
+        </div>
+      </div>
+
+      <div className="pointer-events-none fixed left-[-10000px] top-0 z-[-1]">
+        <div
+          ref={pdfContainerRef}
+          className="bg-white text-black"
+          style={{ width: '794px', minHeight: '1123px', padding: '56px' }}
+        >
+          <div style={{ borderBottom: '1px solid #D1D5DB', paddingBottom: '20px', marginBottom: '20px' }}>
+            <h1 style={{ fontSize: '34px', lineHeight: 1.2, fontWeight: 700, margin: 0 }}>Ihr Sparplan auf einen Blick</h1>
+            <p style={{ marginTop: '10px', marginBottom: 0, fontSize: '14px', color: '#4B5563' }}>
+              Ziel: {pdfData.goalLabel} · Datum: {pdfData.dateLabel}
+            </p>
+          </div>
+
+          <section style={{ marginBottom: '20px' }}>
+            <h2 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '10px', marginTop: 0 }}>Zusammenfassung</h2>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: '10px',
+                border: '1px solid #E5E7EB',
+                padding: '12px',
+              }}
+            >
+              <PdfKeyValue label="Zielbetrag" value={formatCurrency(pdfData.targetAmount)} />
+              <PdfKeyValue label="Laufzeit" value={`${pdfData.durationYears} Jahre`} />
+              <PdfKeyValue label="Monatliche Sparrate" value={formatCurrency(pdfData.monthlySavings)} />
+              <PdfKeyValue label="Strategie" value={`${pdfData.strategyLabel} (${pdfData.strategyRateLabel})`} />
+            </div>
+          </section>
+
+          <section style={{ marginBottom: '20px' }}>
+            <h2 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '10px', marginTop: 0 }}>Ergebnis im Überblick</h2>
+            <p style={{ marginTop: 0, marginBottom: '12px', color: '#374151', fontSize: '13px' }}>
+              Mit Ihrer aktuellen Planung erreichen Sie voraussichtlich bis {pdfData.targetYear} einen Endwert von {formatCurrency(pdfData.projectedValue)}.
+            </p>
+            <div style={{ border: '1px solid #E5E7EB', padding: '12px', display: 'grid', gap: '8px' }}>
+              <PdfKeyValue label="Investiertes Kapital" value={formatCurrency(pdfData.totalInvested)} />
+              <PdfKeyValue label="Davon Erträge" value={`+${formatCurrency(pdfData.totalReturn)}`} />
+              <PdfKeyValue label="Voraussichtlicher Endwert" value={formatCurrency(pdfData.projectedValue)} />
+            </div>
+          </section>
+
+          <section style={{ marginBottom: '20px' }}>
+            <h2 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '10px', marginTop: 0 }}>Vergleich mit 0 % Rendite</h2>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: '10px',
+                border: '1px solid #E5E7EB',
+                padding: '12px',
+              }}
+            >
+              <div style={{ border: '1px solid #E5E7EB', padding: '10px' }}>
+                <div style={{ fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>Mit FondsSparplan</div>
+                <PdfKeyValue label="Monatlich" value={formatCurrency(pdfData.monthlySavings)} />
+                <PdfKeyValue label="Endwert" value={formatCurrency(pdfData.projectedValue)} />
+              </div>
+              <div style={{ border: '1px solid #E5E7EB', padding: '10px' }}>
+                <div style={{ fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>Ohne Rendite (0 %)</div>
+                <PdfKeyValue label="Monatlich" value={formatCurrency(pdfData.zeroReturnMonthly)} />
+                <PdfKeyValue label="Mehrbedarf" value={`${pdfData.monthlyDifference > 0 ? '+' : ''}${formatCurrency(pdfData.monthlyDifference)}`} />
+              </div>
+            </div>
+          </section>
+
+          <footer style={{ borderTop: '1px solid #D1D5DB', paddingTop: '10px', fontSize: '11px', color: '#6B7280' }}>
+            Orientierungsrechnung, keine Garantie der Wertentwicklung. Seite 1/1
+          </footer>
         </div>
       </div>
     </div>
@@ -677,21 +862,20 @@ const EditableCard = ({
 
 // Comparison Section Component
 const ComparisonSection = ({ 
-  targetAmount, durationYears, monthlySavings, currentYear, currentRate, totalInvested, totalReturn
+  targetAmount, durationYears, monthlySavings, currentYear, totalInvested, totalReturn, zeroReturnMonthly, monthlyDifference
 }: { 
   targetAmount: number, 
   durationYears: number, 
   monthlySavings: number, 
   currentYear: number,
-  currentRate: string,
   totalInvested: number,
-  totalReturn: number
+  totalReturn: number,
+  zeroReturnMonthly: number,
+  monthlyDifference: number
 }) => {
   // Calculations for 0% return comparison (Fixed Goal Scenario)
   // How much would I need to save monthly to reach the SAME target in the SAME time with 0% return?
   const months = durationYears * 12;
-  const zeroReturnMonthly = Math.ceil(targetAmount / months);
-  const monthlyDifference = zeroReturnMonthly - monthlySavings;
   const zeroReturnInvested = zeroReturnMonthly * months; // This is basically the target amount
 
   const MetricRow = ({ label, value, highlight = false, isZero = false }: { label: string, value: string | number, highlight?: boolean, isZero?: boolean }) => (
@@ -771,7 +955,7 @@ const ComparisonSection = ({
           {/* Bottom Info Bar */}
           <div className="bg-white rounded-[4px] p-3 text-center">
             <span className="text-[#003745] font-medium text-sm">
-              Ohne Rendite müssen Sie <span className="text-[#277A6B] font-bold">+{formatCurrency(monthlyDifference)}</span> pro Monat sparen.
+              Ohne Rendite müssen Sie <span className="text-[#277A6B] font-bold">{monthlyDifference > 0 ? '+' : ''}{formatCurrency(monthlyDifference)}</span> pro Monat sparen.
             </span>
           </div>
         </div>
@@ -779,3 +963,10 @@ const ComparisonSection = ({
     </section>
   );
 };
+
+const PdfKeyValue = ({ label, value }: { label: string; value: string }) => (
+  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
+    <span style={{ fontSize: '12px', color: '#6B7280' }}>{label}</span>
+    <span style={{ fontSize: '12px', fontWeight: 700, textAlign: 'right' }}>{value}</span>
+  </div>
+);
