@@ -708,72 +708,119 @@ export const Step5_Results = () => {
       <div className="pointer-events-none fixed left-[-10000px] top-0 z-[-1]">
         <div
           ref={pdfContainerRef}
-          className="bg-white text-black"
-          style={{ width: '794px', minHeight: '1123px', padding: '56px' }}
+          className="bg-white"
+          style={{
+            width: '794px',
+            minHeight: '1123px',
+            padding: '64px',
+            color: '#003745',
+            fontFamily: 'ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial',
+          }}
         >
-          <div style={{ borderBottom: '1px solid #D1D5DB', paddingBottom: '20px', marginBottom: '20px' }}>
-            <h1 style={{ fontSize: '34px', lineHeight: 1.2, fontWeight: 700, margin: 0 }}>Ihr Sparplan auf einen Blick</h1>
-            <p style={{ marginTop: '10px', marginBottom: 0, fontSize: '14px', color: '#4B5563' }}>
-              Ziel: {pdfData.goalLabel} · Datum: {pdfData.dateLabel}
+          <div style={{ borderBottom: '2px solid #003745', paddingBottom: '24px', marginBottom: '28px' }}>
+            <div style={{ fontSize: '12px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#568996', fontWeight: 700 }}>
+              Sparc Light · Ergebnisbericht
+            </div>
+            <h1 style={{ fontSize: '38px', lineHeight: 1.15, fontWeight: 700, margin: '10px 0 0 0', letterSpacing: '-0.02em' }}>
+              Ihr Sparplan auf einen Blick
+            </h1>
+            <p style={{ marginTop: '12px', marginBottom: 0, fontSize: '14px', color: '#568996', lineHeight: 1.45 }}>
+              Ziel: <span style={{ color: '#003745', fontWeight: 600 }}>{pdfData.goalLabel}</span> · Datum: {pdfData.dateLabel}
             </p>
           </div>
 
-          <section style={{ marginBottom: '20px' }}>
-            <h2 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '10px', marginTop: 0 }}>Zusammenfassung</h2>
+          <section style={{ marginBottom: '24px' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '12px', marginTop: 0, letterSpacing: '-0.01em' }}>Nutzerangaben</h2>
             <div
               style={{
                 display: 'grid',
                 gridTemplateColumns: '1fr 1fr',
-                gap: '10px',
-                border: '1px solid #E5E7EB',
-                padding: '12px',
+                gap: '12px',
+                border: '1px solid #D8E5E8',
+                borderRadius: '4px',
+                padding: '16px',
+                background: '#F4F9FA',
               }}
             >
-              <PdfKeyValue label="Zielbetrag" value={formatCurrency(pdfData.targetAmount)} />
-              <PdfKeyValue label="Laufzeit" value={`${pdfData.durationYears} Jahre`} />
-              <PdfKeyValue label="Monatliche Sparrate" value={formatCurrency(pdfData.monthlySavings)} />
-              <PdfKeyValue label="Strategie" value={`${pdfData.strategyLabel} (${pdfData.strategyRateLabel})`} />
+              <PdfKeyValue label="Sparziel" value={pdfData.goalLabel} />
+              <PdfKeyValue label="Laufzeit" value={`${pdfData.durationYears} Jahre (bis ${pdfData.targetYear})`} />
+              <PdfKeyValue label="Strategie" value={pdfData.strategyLabel} />
+              <PdfKeyValue label="Renditeannahme" value={pdfData.strategyRateLabel} />
             </div>
           </section>
 
-          <section style={{ marginBottom: '20px' }}>
-            <h2 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '10px', marginTop: 0 }}>Ergebnis im Überblick</h2>
-            <p style={{ marginTop: 0, marginBottom: '12px', color: '#374151', fontSize: '13px' }}>
-              Mit Ihrer aktuellen Planung erreichen Sie voraussichtlich bis {pdfData.targetYear} einen Endwert von {formatCurrency(pdfData.projectedValue)}.
+          <section style={{ marginBottom: '24px' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '12px', marginTop: 0, letterSpacing: '-0.01em' }}>Zusammenfassung der Ergebnisse</h2>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: '12px',
+                border: '1px solid #D8E5E8',
+                borderRadius: '4px',
+                padding: '16px',
+                background: '#FFFFFF',
+              }}
+            >
+              <PdfKeyValue label="Laufzeit" value={`${pdfData.durationYears} Jahre`} />
+              <PdfKeyValue label="Zielbetrag" value={formatCurrency(pdfData.targetAmount)} />
+              <PdfKeyValue label="Monatliche Sparrate" value={formatCurrency(pdfData.monthlySavings)} />
+              <PdfKeyValue label="Voraussichtlicher Endwert" value={formatCurrency(pdfData.projectedValue)} />
+            </div>
+          </section>
+
+          <section style={{ marginBottom: '24px' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '12px', marginTop: 0, letterSpacing: '-0.01em' }}>Ergebnis-Interpretation</h2>
+            <p style={{ marginTop: 0, marginBottom: '12px', color: '#2C4E57', fontSize: '14px', lineHeight: 1.55 }}>
+              Mit der gewählten Sparrate von <strong>{formatCurrency(pdfData.monthlySavings)}</strong> erreichen Sie Ihr Ziel voraussichtlich bis zum Jahr <strong>{pdfData.targetYear}</strong>.
             </p>
-            <div style={{ border: '1px solid #E5E7EB', padding: '12px', display: 'grid', gap: '8px' }}>
+            <p style={{ marginTop: 0, marginBottom: '14px', color: '#2C4E57', fontSize: '14px', lineHeight: 1.55 }}>
+              Die erwarteten Erträge betragen <strong>+{formatCurrency(pdfData.totalReturn)}</strong>. Das entspricht einem geschätzten Gesamtwert von <strong>{formatCurrency(pdfData.projectedValue)}</strong>.
+            </p>
+            <div style={{ border: '1px solid #D8E5E8', borderRadius: '4px', padding: '16px', display: 'grid', gap: '10px', background: '#FFFFFF' }}>
               <PdfKeyValue label="Investiertes Kapital" value={formatCurrency(pdfData.totalInvested)} />
               <PdfKeyValue label="Davon Erträge" value={`+${formatCurrency(pdfData.totalReturn)}`} />
               <PdfKeyValue label="Voraussichtlicher Endwert" value={formatCurrency(pdfData.projectedValue)} />
             </div>
           </section>
 
-          <section style={{ marginBottom: '20px' }}>
-            <h2 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '10px', marginTop: 0 }}>Vergleich mit 0 % Rendite</h2>
+          <section style={{ marginBottom: '24px' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '12px', marginTop: 0, letterSpacing: '-0.01em' }}>Vergleich mit 0 % Rendite</h2>
             <div
               style={{
                 display: 'grid',
                 gridTemplateColumns: '1fr 1fr',
-                gap: '10px',
-                border: '1px solid #E5E7EB',
-                padding: '12px',
+                gap: '12px',
+                border: '1px solid #D8E5E8',
+                borderRadius: '4px',
+                padding: '16px',
+                background: '#FFFFFF',
               }}
             >
-              <div style={{ border: '1px solid #E5E7EB', padding: '10px' }}>
-                <div style={{ fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>Mit FondsSparplan</div>
+              <div style={{ border: '1px solid #D8E5E8', borderRadius: '4px', padding: '12px', background: '#F4F9FA' }}>
+                <div style={{ fontSize: '12px', fontWeight: 700, marginBottom: '8px', color: '#003745', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                  Mit FondsSparplan
+                </div>
                 <PdfKeyValue label="Monatlich" value={formatCurrency(pdfData.monthlySavings)} />
                 <PdfKeyValue label="Endwert" value={formatCurrency(pdfData.projectedValue)} />
               </div>
-              <div style={{ border: '1px solid #E5E7EB', padding: '10px' }}>
-                <div style={{ fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>Ohne Rendite (0 %)</div>
+              <div style={{ border: '1px solid #D8E5E8', borderRadius: '4px', padding: '12px', background: '#F5EFE4' }}>
+                <div style={{ fontSize: '12px', fontWeight: 700, marginBottom: '8px', color: '#003745', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                  Ohne Rendite (0 %)
+                </div>
                 <PdfKeyValue label="Monatlich" value={formatCurrency(pdfData.zeroReturnMonthly)} />
                 <PdfKeyValue label="Mehrbedarf" value={`${pdfData.monthlyDifference > 0 ? '+' : ''}${formatCurrency(pdfData.monthlyDifference)}`} />
               </div>
             </div>
+            <p style={{ marginTop: '12px', marginBottom: 0, fontSize: '13px', color: '#2C4E57', lineHeight: 1.5 }}>
+              Interpretation: {pdfData.monthlyDifference > 0
+                ? `Ohne Rendite wäre monatlich ${formatCurrency(pdfData.monthlyDifference)} mehr Sparleistung nötig, um das gleiche Ziel im gleichen Zeitraum zu erreichen.`
+                : 'Die monatliche Sparleistung ist bereits auf dem Niveau eines 0 %-Szenarios oder darunter.'}
+            </p>
           </section>
 
-          <footer style={{ borderTop: '1px solid #D1D5DB', paddingTop: '10px', fontSize: '11px', color: '#6B7280' }}>
-            Orientierungsrechnung, keine Garantie der Wertentwicklung. Seite 1/1
+          <footer style={{ borderTop: '1px solid #D8E5E8', paddingTop: '12px', fontSize: '11px', color: '#568996', lineHeight: 1.5 }}>
+            Orientierungsrechnung, keine Garantie der Wertentwicklung. Alle Angaben dienen der Veranschaulichung auf Basis Ihrer Eingaben. Seite 1/1
           </footer>
         </div>
       </div>
@@ -965,8 +1012,8 @@ const ComparisonSection = ({
 };
 
 const PdfKeyValue = ({ label, value }: { label: string; value: string }) => (
-  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
-    <span style={{ fontSize: '12px', color: '#6B7280' }}>{label}</span>
-    <span style={{ fontSize: '12px', fontWeight: 700, textAlign: 'right' }}>{value}</span>
+  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', alignItems: 'baseline' }}>
+    <span style={{ fontSize: '12px', color: '#568996', letterSpacing: '0.01em' }}>{label}</span>
+    <span style={{ fontSize: '13px', fontWeight: 700, textAlign: 'right', color: '#003745' }}>{value}</span>
   </div>
 );
