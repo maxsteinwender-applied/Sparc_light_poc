@@ -15,6 +15,7 @@ import { Radio, RadioGroup } from '@headlessui/react';
 import { Button } from './ui/button';
 import { getGoal } from './goalsData';
 import { formatCurrency } from './ui/utils';
+import { isEmailConfigured, sendResultEmail, validateRecipientEmail } from '../services/email';
 
 export const Step5_Results = () => {
   const { 
@@ -30,6 +31,12 @@ export const Step5_Results = () => {
   const [showZeroReturn, setShowZeroReturn] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false);
+  const [recipientEmail, setRecipientEmail] = useState('');
+  const [recipientName, setRecipientName] = useState('');
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [emailError, setEmailError] = useState('');
+  const [emailSuccess, setEmailSuccess] = useState('');
   const sentinelRef = useRef<HTMLDivElement>(null);
   const pdfContainerRef = useRef<HTMLDivElement>(null);
 
@@ -49,10 +56,12 @@ export const Step5_Results = () => {
   }, []);
 
   const currentGoal = getGoal(goal);
+  const currentStrategy = currentGoal.strategies[selectedStrategy];
   const goalLabel = goal === 'custom' ? (customGoalName || 'Ziel') : currentGoal.label;
   const GoalIcon = currentGoal.icon || Shield;
   const currentYear = new Date().getFullYear();
   const targetYear = currentYear + durationYears;
+  const emailConfigured = isEmailConfigured();
 
   // Calculation Logic
   const { monthlySavings, totalInvested, totalReturn, chartData } = useMemo(() => {
@@ -134,7 +143,6 @@ export const Step5_Results = () => {
   const monthlyDifference = zeroReturnMonthly - monthlySavings;
 
   const pdfData = useMemo(() => {
-    const strategy = currentGoal.strategies[selectedStrategy];
     return {
       goalLabel,
       dateLabel: new Date().toLocaleDateString('de-DE'),
@@ -142,8 +150,8 @@ export const Step5_Results = () => {
       durationYears,
       targetYear,
       monthlySavings,
-      strategyLabel: strategy.label,
-      strategyRateLabel: `${(strategy.rate * 100).toFixed(1).replace('.', ',')} % p. a.`,
+      strategyLabel: currentStrategy.label,
+      strategyRateLabel: `${(currentStrategy.rate * 100).toFixed(1).replace('.', ',')} % p. a.`,
       totalInvested,
       totalReturn,
       projectedValue: targetAmount,
@@ -156,7 +164,7 @@ export const Step5_Results = () => {
     goalLabel,
     monthlyDifference,
     monthlySavings,
-    selectedStrategy,
+    currentStrategy,
     targetAmount,
     targetYear,
     totalInvested,
@@ -219,6 +227,103 @@ export const Step5_Results = () => {
 
   const handleScrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const emailPayload = useMemo(() => {
+    const summary = [
+      `Ziel: ${goalLabel}`,
+      `Laufzeit: ${durationYears} Jahre (bis ${targetYear})`,
+      `Monatliche Sparrate: ${formatCurrency(monthlySavings)}`,
+      `Strategie: ${currentStrategy.label} (${(currentStrategy.rate * 100).toFixed(1).replace('.', ',')} % p. a.)`,
+      `Investiertes Kapital: ${formatCurrency(totalInvested)}`,
+      `Erträge: +${formatCurrency(totalReturn)}`,
+      `Voraussichtlicher Endwert: ${formatCurrency(targetAmount)}`,
+      `Ohne Rendite benötigte Rate: ${formatCurrency(zeroReturnMonthly)}`,
+      `Monatliche Differenz ggü. 0 %: ${monthlyDifference > 0 ? '+' : ''}${formatCurrency(monthlyDifference)}`,
+    ].join('\n');
+
+    const interpretation =
+      monthlyDifference > 0
+        ? `Ohne Rendite wären monatlich ${formatCurrency(monthlyDifference)} mehr nötig, um das gleiche Ziel im gleichen Zeitraum zu erreichen.`
+        : 'Die monatliche Sparleistung liegt auf dem Niveau eines 0 %-Szenarios oder darunter.';
+
+    return {
+      goal_label: goalLabel,
+      target_amount: formatCurrency(targetAmount),
+      duration_years: `${durationYears}`,
+      target_year: `${targetYear}`,
+      monthly_savings: formatCurrency(monthlySavings),
+      strategy_label: currentStrategy.label,
+      strategy_rate_label: `${(currentStrategy.rate * 100).toFixed(1).replace('.', ',')} % p. a.`,
+      total_invested: formatCurrency(totalInvested),
+      total_return: `+${formatCurrency(totalReturn)}`,
+      zero_return_monthly: formatCurrency(zeroReturnMonthly),
+      monthly_difference: `${monthlyDifference > 0 ? '+' : ''}${formatCurrency(monthlyDifference)}`,
+      date_label: new Date().toLocaleDateString('de-DE'),
+      result_summary: summary,
+      result_interpretation: interpretation,
+    };
+  }, [
+    currentStrategy,
+    durationYears,
+    goalLabel,
+    monthlyDifference,
+    monthlySavings,
+    targetAmount,
+    targetYear,
+    totalInvested,
+    totalReturn,
+    zeroReturnMonthly,
+  ]);
+
+  const handleOpenEmailDialog = () => {
+    setEmailSuccess('');
+    setEmailError('');
+    setIsEmailDialogOpen(true);
+  };
+
+  const handleSendEmail = async () => {
+    setEmailError('');
+    setEmailSuccess('');
+
+    if (!emailConfigured) {
+      setEmailError('E-Mail-Versand ist nicht konfiguriert. Bitte VITE_EMAILJS_* Variablen setzen.');
+      return;
+    }
+
+    if (!validateRecipientEmail(recipientEmail)) {
+      setEmailError('Bitte eine gültige E-Mail-Adresse eingeben.');
+      return;
+    }
+
+    const cooldownKey = 'result_email_last_sent_at';
+    const cooldownMs = 30_000;
+    const lastSentAt = Number(sessionStorage.getItem(cooldownKey) || '0');
+    const elapsed = Date.now() - lastSentAt;
+    if (elapsed < cooldownMs) {
+      const remaining = Math.ceil((cooldownMs - elapsed) / 1000);
+      setEmailError(`Bitte warten Sie noch ${remaining} Sekunden bis zum nächsten Versand.`);
+      return;
+    }
+
+    setIsSendingEmail(true);
+    const result = await sendResultEmail({
+      to_email: recipientEmail.trim(),
+      to_name: recipientName.trim(),
+      ...emailPayload,
+    });
+    setIsSendingEmail(false);
+
+    if (!result.ok) {
+      setEmailError(result.message);
+      return;
+    }
+
+    sessionStorage.setItem(cooldownKey, `${Date.now()}`);
+    setEmailSuccess('Ergebnis wurde per E-Mail gesendet.');
+    setIsEmailDialogOpen(false);
+    setRecipientName('');
+    setRecipientEmail('');
   };
 
   return (
@@ -616,7 +721,7 @@ export const Step5_Results = () => {
                     </div>
                     <div className="flex-grow">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-bold text-[#003745]">{currentGoal.strategies[selectedStrategy].product}</h3>
+                        <h3 className="font-bold text-[#003745]">{currentStrategy.product}</h3>
                         <span className="bg-[#003745] text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">Empfohlen</span>
                       </div>
                       <p className="text-sm text-[#568996]">ISIN: DE000DK0ECU8 • Ausschüttend</p>
@@ -693,7 +798,16 @@ export const Step5_Results = () => {
               <Download size={16} strokeWidth={1.5} />
               <span>{isExporting ? 'Erzeuge PDF...' : 'PDF'}</span>
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 bg-white border border-[#003745]/20 rounded-[4px] text-[#003745] hover:bg-[#F4F9FA] hover:border-[#003745] transition-colors text-sm font-medium">
+            <button
+              onClick={handleOpenEmailDialog}
+              disabled={!emailConfigured}
+              className={clsx(
+                "flex items-center gap-2 px-4 py-2 bg-white border rounded-[4px] transition-colors text-sm font-medium",
+                emailConfigured
+                  ? "border-[#003745]/20 text-[#003745] hover:bg-[#F4F9FA] hover:border-[#003745]"
+                  : "border-[#9FB6BC] text-[#9FB6BC] cursor-not-allowed"
+              )}
+            >
               <Mail size={16} strokeWidth={1.5} />
               <span>E-Mail</span>
             </button>
@@ -702,6 +816,75 @@ export const Step5_Results = () => {
               <span>Teilen</span>
             </button>
           </div>
+
+          {!emailConfigured && (
+            <p className="text-sm text-[#AD1111] text-center">
+              E-Mail-Versand ist nicht konfiguriert. Setzen Sie `VITE_EMAILJS_SERVICE_ID`, `VITE_EMAILJS_TEMPLATE_ID` und `VITE_EMAILJS_PUBLIC_KEY`.
+            </p>
+          )}
+
+          {emailSuccess && (
+            <p className="text-sm text-[#277A6B] text-center">{emailSuccess}</p>
+          )}
+
+          {isEmailDialogOpen && (
+            <div className="w-full max-w-xl bg-[#F4F9FA] border border-[#D8E5E8] rounded-[4px] p-5 space-y-4">
+              <h3 className="text-[#003745] font-bold text-lg">Ergebnis per E-Mail senden</h3>
+              <p className="text-sm text-[#568996]">
+                Versand als POC direkt aus dem Browser via EmailJS.
+              </p>
+              <div className="space-y-3">
+                <div>
+                  <label className="text-sm font-medium text-[#003745] block mb-1">E-Mail-Adresse *</label>
+                  <input
+                    type="email"
+                    value={recipientEmail}
+                    onChange={(e) => setRecipientEmail(e.target.value)}
+                    placeholder="name@beispiel.de"
+                    className="w-full bg-white border border-[#003745]/20 rounded-[4px] py-2.5 px-3 text-sm focus:ring-2 focus:ring-[#003745] focus:border-[#003745] outline-none text-[#003745]"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-[#003745] block mb-1">Name (optional)</label>
+                  <input
+                    type="text"
+                    value={recipientName}
+                    onChange={(e) => setRecipientName(e.target.value)}
+                    placeholder="Max Mustermann"
+                    className="w-full bg-white border border-[#003745]/20 rounded-[4px] py-2.5 px-3 text-sm focus:ring-2 focus:ring-[#003745] focus:border-[#003745] outline-none text-[#003745]"
+                  />
+                </div>
+              </div>
+
+              {emailError && (
+                <p className="text-sm text-[#AD1111]">{emailError}</p>
+              )}
+
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handleSendEmail}
+                  disabled={isSendingEmail}
+                  className={clsx(
+                    "px-4 py-2 rounded-[4px] text-sm font-medium border transition-colors",
+                    isSendingEmail
+                      ? "border-[#9FB6BC] text-[#9FB6BC] bg-white cursor-not-allowed"
+                      : "border-[#003745] bg-[#003745] text-white hover:bg-[#002C36]"
+                  )}
+                >
+                  {isSendingEmail ? 'Sende...' : 'Senden'}
+                </button>
+                <button
+                  onClick={() => {
+                    setIsEmailDialogOpen(false);
+                    setEmailError('');
+                  }}
+                  className="px-4 py-2 rounded-[4px] text-sm font-medium border border-[#003745]/20 text-[#003745] bg-white hover:bg-[#F4F9FA]"
+                >
+                  Abbrechen
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
