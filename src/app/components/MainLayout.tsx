@@ -6,7 +6,7 @@ import { Step3_CalculateAmount } from './Step3_CalculateAmount';
 import { Step4_Duration } from './Step4_Duration';
 import { Step5_Results } from './Step5_Results';
 import { AnimatePresence, motion } from 'motion/react';
-import dekaLogoImage from 'figma:asset/e088cf5e6488ed30341523cb4f504779a4587bd6.png';
+import dekaLogoImage from '@/assets/e088cf5e6488ed30341523cb4f504779a4587bd6.png';
 
 const MainLayoutContent = () => {
   const { step, resetFlow } = useWizard();
