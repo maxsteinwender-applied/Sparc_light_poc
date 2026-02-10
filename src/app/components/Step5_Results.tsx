@@ -282,6 +282,12 @@ export const Step5_Results = () => {
     setIsEmailDialogOpen(true);
   };
 
+  const handleCloseEmailDialog = () => {
+    if (isSendingEmail) return;
+    setIsEmailDialogOpen(false);
+    setEmailError('');
+  };
+
   const handleSendEmail = async () => {
     setEmailError('');
     setEmailSuccess('');
@@ -325,6 +331,25 @@ export const Step5_Results = () => {
     setRecipientName('');
     setRecipientEmail('');
   };
+
+  useEffect(() => {
+    if (!isEmailDialogOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        handleCloseEmailDialog();
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [isEmailDialogOpen, isSendingEmail]);
 
   return (
     <div className="bg-white min-h-screen font-sans relative">
@@ -827,66 +852,84 @@ export const Step5_Results = () => {
             <p className="text-sm text-[#277A6B] text-center">{emailSuccess}</p>
           )}
 
-          {isEmailDialogOpen && (
-            <div className="w-full max-w-xl bg-[#F4F9FA] border border-[#D8E5E8] rounded-[4px] p-5 space-y-4">
-              <h3 className="text-[#003745] font-bold text-lg">Ergebnis per E-Mail senden</h3>
-              <p className="text-sm text-[#568996]">
-                Versand als POC direkt aus dem Browser via EmailJS.
-              </p>
-              <div className="space-y-3">
-                <div>
-                  <label className="text-sm font-medium text-[#003745] block mb-1">E-Mail-Adresse *</label>
-                  <input
-                    type="email"
-                    value={recipientEmail}
-                    onChange={(e) => setRecipientEmail(e.target.value)}
-                    placeholder="name@beispiel.de"
-                    className="w-full bg-white border border-[#003745]/20 rounded-[4px] py-2.5 px-3 text-sm focus:ring-2 focus:ring-[#003745] focus:border-[#003745] outline-none text-[#003745]"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-[#003745] block mb-1">Name (optional)</label>
-                  <input
-                    type="text"
-                    value={recipientName}
-                    onChange={(e) => setRecipientName(e.target.value)}
-                    placeholder="Max Mustermann"
-                    className="w-full bg-white border border-[#003745]/20 rounded-[4px] py-2.5 px-3 text-sm focus:ring-2 focus:ring-[#003745] focus:border-[#003745] outline-none text-[#003745]"
-                  />
-                </div>
-              </div>
-
-              {emailError && (
-                <p className="text-sm text-[#AD1111]">{emailError}</p>
-              )}
-
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={handleSendEmail}
-                  disabled={isSendingEmail}
-                  className={clsx(
-                    "px-4 py-2 rounded-[4px] text-sm font-medium border transition-colors",
-                    isSendingEmail
-                      ? "border-[#9FB6BC] text-[#9FB6BC] bg-white cursor-not-allowed"
-                      : "border-[#003745] bg-[#003745] text-white hover:bg-[#002C36]"
-                  )}
-                >
-                  {isSendingEmail ? 'Sende...' : 'Senden'}
-                </button>
-                <button
-                  onClick={() => {
-                    setIsEmailDialogOpen(false);
-                    setEmailError('');
-                  }}
-                  className="px-4 py-2 rounded-[4px] text-sm font-medium border border-[#003745]/20 text-[#003745] bg-white hover:bg-[#F4F9FA]"
-                >
-                  Abbrechen
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       </div>
+
+      {isEmailDialogOpen && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
+          <button
+            aria-label="Modal schließen"
+            className="absolute inset-0 bg-[#003745]/45 backdrop-blur-[1px]"
+            onClick={handleCloseEmailDialog}
+          />
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Ergebnis per E-Mail senden"
+            className="relative w-full max-w-xl bg-[#F4F9FA] border border-[#D8E5E8] rounded-[4px] p-5 sm:p-6 space-y-4 shadow-xl"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <h3 className="text-[#003745] font-bold text-lg">Ergebnis per E-Mail senden</h3>
+              <button
+                onClick={handleCloseEmailDialog}
+                className="px-2 py-1 text-sm border border-[#003745]/20 rounded-[4px] text-[#003745] hover:bg-white"
+              >
+                Schließen
+              </button>
+            </div>
+            <p className="text-sm text-[#568996]">
+              Versand als POC direkt aus dem Browser via EmailJS.
+            </p>
+            <div className="space-y-3">
+              <div>
+                <label className="text-sm font-medium text-[#003745] block mb-1">E-Mail-Adresse *</label>
+                <input
+                  type="email"
+                  value={recipientEmail}
+                  onChange={(e) => setRecipientEmail(e.target.value)}
+                  placeholder="name@beispiel.de"
+                  className="w-full bg-white border border-[#003745]/20 rounded-[4px] py-2.5 px-3 text-sm focus:ring-2 focus:ring-[#003745] focus:border-[#003745] outline-none text-[#003745]"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-[#003745] block mb-1">Name (optional)</label>
+                <input
+                  type="text"
+                  value={recipientName}
+                  onChange={(e) => setRecipientName(e.target.value)}
+                  placeholder="Max Mustermann"
+                  className="w-full bg-white border border-[#003745]/20 rounded-[4px] py-2.5 px-3 text-sm focus:ring-2 focus:ring-[#003745] focus:border-[#003745] outline-none text-[#003745]"
+                />
+              </div>
+            </div>
+
+            {emailError && (
+              <p className="text-sm text-[#AD1111]">{emailError}</p>
+            )}
+
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleSendEmail}
+                disabled={isSendingEmail}
+                className={clsx(
+                  "px-4 py-2 rounded-[4px] text-sm font-medium border transition-colors",
+                  isSendingEmail
+                    ? "border-[#9FB6BC] text-[#9FB6BC] bg-white cursor-not-allowed"
+                    : "border-[#003745] bg-[#003745] text-white hover:bg-[#002C36]"
+                )}
+              >
+                {isSendingEmail ? 'Sende...' : 'Senden'}
+              </button>
+              <button
+                onClick={handleCloseEmailDialog}
+                className="px-4 py-2 rounded-[4px] text-sm font-medium border border-[#003745]/20 text-[#003745] bg-white hover:bg-[#F4F9FA]"
+              >
+                Abbrechen
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="pointer-events-none fixed left-[-10000px] top-0 z-[-1]">
         <div
