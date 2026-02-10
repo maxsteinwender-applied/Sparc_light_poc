@@ -59,12 +59,12 @@ const handleBack = () => {
       class="absolute left-4 top-8 flex items-center gap-2 text-sm font-medium text-[#568996] transition-colors hover:text-[#003745] md:left-0 md:top-8"
       @click="handleBack"
     >
-      Zurueck
+      Zurück
     </button>
 
     <div class="mb-12 max-w-2xl text-center">
       <span class="mb-3 block text-sm font-medium uppercase tracking-widest text-[#EE0000]">Schritt 2 von 5</span>
-      <h2 class="mb-4 text-3xl font-bold text-[#003745] md:text-4xl">Wie viel moechten Sie fuer {{ goalLabel }} ansparen?</h2>
+      <h2 class="mb-4 text-3xl font-bold text-[#003745] md:text-4xl">Wie viel möchten Sie für {{ goalLabel }} ansparen?</h2>
       <p class="text-xl font-light text-[#568996]">{{ currentGoal.shortTeaser }}</p>
     </div>
 
@@ -103,7 +103,7 @@ const handleBack = () => {
           </div>
 
           <div>
-            <span class="mb-4 block text-center text-sm text-[#568996]">Als Naechstes legen Sie die Laufzeit fest.</span>
+            <span class="mb-4 block text-center text-sm text-[#568996]">Als Nächstes legen Sie die Laufzeit fest.</span>
             <button
               type="button"
               :disabled="parsedAmount === null"
@@ -139,7 +139,7 @@ const handleBack = () => {
         </div>
 
         <div class="mt-auto">
-          <span class="mb-4 block text-center text-sm text-[#568996]">Als Naechstes legen wir Prioritaeten fest.</span>
+          <span class="mb-4 block text-center text-sm text-[#568996]">Als Nächstes legen wir Prioritäten fest.</span>
           <button
             type="button"
             class="motion-cta w-full rounded-[4px] border border-[#003745] bg-white px-4 py-3 font-medium text-[#003745] transition-colors hover:bg-[#F4F9FA]"

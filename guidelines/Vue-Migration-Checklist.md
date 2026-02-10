@@ -41,7 +41,7 @@ Projektbasis: Vite + React + Tailwind (aktueller Zustand)
 
 Abnahme:
 - [x] Minimale Vue-Seite rendert lokal mit `npm run dev`
-  - Lokal bestaetigt (User-Run am 2026-02-10).
+  - Lokal bestätigt (User-Run am 2026-02-10).
 
 ## Phase 2: State und App-Architektur migrieren
 
@@ -126,7 +126,7 @@ Abnahme:
 - [ ] Optional: Smoke-Tests (Vitest/Cypress/Playwright) ergänzen
 
 Hinweis:
-- Einfacher Ablauf fuer Terminal und Build-Pruefung: `guidelines/Terminal-Runbook.md`
+- Einfacher Ablauf für Terminal und Build-Prüfung: `guidelines/Terminal-Runbook.md`
 - Detailliertes Testprotokoll: `guidelines/Regression-Test-Protocol.md`
 
 Abnahme:

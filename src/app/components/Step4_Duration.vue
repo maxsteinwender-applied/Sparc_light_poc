@@ -56,13 +56,13 @@ const handleShowResult = () => {
       class="absolute left-4 top-8 flex items-center gap-2 text-sm font-medium text-[#568996] transition-colors hover:text-[#003745] md:left-0 md:top-8"
       @click="handleBack"
     >
-      Zurueck
+      Zurück
     </button>
 
     <div class="w-full">
       <div class="mb-12 text-center">
         <span class="mb-3 block text-sm font-medium uppercase tracking-widest text-[#EE0000]">Schritt 4 von 5</span>
-        <h2 class="mb-4 text-3xl font-bold text-[#003745] md:text-4xl">Wann moechten Sie {{ goalLabel }} erreichen?</h2>
+        <h2 class="mb-4 text-3xl font-bold text-[#003745] md:text-4xl">Wann möchten Sie {{ goalLabel }} erreichen?</h2>
       </div>
 
       <div class="mb-12 grid grid-cols-3 gap-4">

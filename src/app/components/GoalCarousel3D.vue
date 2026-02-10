@@ -142,7 +142,7 @@ const cardStates = computed(() => {
 
     <button
       type="button"
-      aria-label="Naechstes Ziel"
+      aria-label="Nächstes Ziel"
       class="absolute right-4 z-[60] flex h-10 w-10 items-center justify-center border border-[#003745] bg-white text-[#003745] transition-colors hover:bg-[#F4F9FA] focus:outline-none focus:ring-2 focus:ring-[#0043B4] md:right-10"
       @click="handleNext"
     >

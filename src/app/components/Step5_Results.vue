@@ -125,15 +125,15 @@ const emailPayload = computed(() => {
     `Monatliche Sparrate: ${formatCurrency(monthlySavings.value)}`,
     `Strategie: ${currentStrategy.value.label} (${(currentStrategy.value.rate * 100).toFixed(1).replace('.', ',')} % p. a.)`,
     `Investiertes Kapital: ${formatCurrency(totalInvested.value)}`,
-    `Ertraege: +${formatCurrency(totalReturn.value)}`,
+    `Erträge: +${formatCurrency(totalReturn.value)}`,
     `Voraussichtlicher Endwert: ${formatCurrency(projectedValue.value)}`,
-    `Ohne Rendite benoetigte Rate: ${formatCurrency(zeroReturnMonthly.value)}`,
+    `Ohne Rendite benötigte Rate: ${formatCurrency(zeroReturnMonthly.value)}`,
     `Monatliche Differenz ggü. 0 %: ${monthlyDifference.value > 0 ? '+' : ''}${formatCurrency(monthlyDifference.value)}`,
   ]
 
   const interpretation =
     monthlyDifference.value > 0
-      ? `Ohne Rendite waeren monatlich ${formatCurrency(monthlyDifference.value)} mehr noetig, um das gleiche Ziel im gleichen Zeitraum zu erreichen.`
+      ? `Ohne Rendite wären monatlich ${formatCurrency(monthlyDifference.value)} mehr nötig, um das gleiche Ziel im gleichen Zeitraum zu erreichen.`
       : 'Die monatliche Sparleistung liegt auf dem Niveau eines 0-%-Szenarios oder darunter.'
 
   return {
@@ -236,7 +236,7 @@ const handleSendEmail = async () => {
   }
 
   if (!validateRecipientEmail(recipientEmail.value)) {
-    emailError.value = 'Bitte eine gueltige E-Mail-Adresse eingeben.'
+    emailError.value = 'Bitte eine gültige E-Mail-Adresse eingeben.'
     return
   }
 
@@ -246,7 +246,7 @@ const handleSendEmail = async () => {
   const elapsed = Date.now() - lastSentAt
   if (elapsed < cooldownMs) {
     const remaining = Math.ceil((cooldownMs - elapsed) / 1000)
-    emailError.value = `Bitte warten Sie noch ${remaining} Sekunden bis zum naechsten Versand.`
+    emailError.value = `Bitte warten Sie noch ${remaining} Sekunden bis zum nächsten Versand.`
     return
   }
 
@@ -280,7 +280,7 @@ const handleSendEmail = async () => {
           class="absolute left-0 top-0 flex items-center gap-2 text-sm font-medium text-[#568996] transition-colors hover:text-[#003745]"
           @click="goBack"
         >
-          Zurueck
+          Zurück
         </button>
 
         <div class="mb-12 flex flex-col items-center pb-2 pt-8 text-center">
@@ -405,7 +405,7 @@ const handleSendEmail = async () => {
 
       <section class="rounded-[4px] border border-[#003745]/10 bg-white p-6 md:p-8">
         <div class="mb-6 flex items-center justify-between">
-          <h2 class="text-2xl font-bold text-[#003745]">Uebersicht fuer {{ goalLabel }}</h2>
+          <h2 class="text-2xl font-bold text-[#003745]">Übersicht für {{ goalLabel }}</h2>
           <div class="text-right text-sm text-[#568996]">
             <div>Zieljahr {{ targetYear }}</div>
             <div>Laufzeit {{ durationYears }} Jahre</div>
@@ -424,7 +424,7 @@ const handleSendEmail = async () => {
               <div class="flex items-center justify-between text-sm"><span class="text-[#568996]">Monatliche Sparrate</span><span class="font-semibold text-[#003745]">{{ formatCurrency(monthlySavings) }}</span></div>
               <div class="flex items-center justify-between text-sm"><span class="text-[#568996]">Investiertes Kapital</span><span class="font-semibold text-[#003745]">{{ formatCurrency(totalInvested) }}</span></div>
               <div class="flex items-center justify-between text-sm"><span class="text-[#568996]">Voraussichtlicher Endwert</span><span class="font-semibold text-[#003745]">{{ formatCurrency(projectedValue) }}</span></div>
-              <div class="flex items-center justify-between text-sm"><span class="text-[#568996]">Davon Ertraege</span><span class="font-semibold text-[#277A6B]">+{{ formatCurrency(totalReturn) }}</span></div>
+              <div class="flex items-center justify-between text-sm"><span class="text-[#568996]">Davon Erträge</span><span class="font-semibold text-[#277A6B]">+{{ formatCurrency(totalReturn) }}</span></div>
             </div>
           </div>
 
@@ -436,7 +436,7 @@ const handleSendEmail = async () => {
           >
             <h3 class="mb-4 text-lg font-bold text-[#003745]">Ohne Rendite (0 %)</h3>
             <div class="space-y-2">
-              <div class="flex items-center justify-between text-sm"><span class="text-[#568996]">Benoetigte Sparrate</span><span class="font-semibold text-[#003745]">{{ formatCurrency(zeroReturnMonthly) }}</span></div>
+              <div class="flex items-center justify-between text-sm"><span class="text-[#568996]">Benötigte Sparrate</span><span class="font-semibold text-[#003745]">{{ formatCurrency(zeroReturnMonthly) }}</span></div>
               <div class="flex items-center justify-between text-sm"><span class="text-[#568996]">Voraussichtlicher Endwert</span><span class="font-semibold text-[#003745]">{{ formatCurrency(projectedValue) }}</span></div>
               <div class="flex items-center justify-between text-sm">
                 <span class="text-[#568996]">Monatliche Differenz</span>
@@ -520,7 +520,7 @@ const handleSendEmail = async () => {
             :initial="modalBackdropVariants.initial"
             :enter="modalBackdropVariants.enter"
             :leave="modalBackdropVariants.leave"
-            aria-label="Modal schliessen"
+            aria-label="Modal schließen"
             class="pointer-events-auto absolute inset-0 bg-[#003745]/45 backdrop-blur-[1px]"
             @click="handleCloseEmailDialog"
           />
@@ -546,7 +546,7 @@ const handleSendEmail = async () => {
                   class="rounded-[4px] border border-[#003745]/20 px-2 py-1 text-sm text-[#003745] hover:bg-white"
                   @click="handleCloseEmailDialog"
                 >
-                  Schliessen
+                  Schließen
                 </button>
               </div>
               <p class="text-sm text-[#568996]">Versand als POC direkt aus dem Browser via EmailJS.</p>
@@ -629,10 +629,10 @@ const handleSendEmail = async () => {
               Investiertes Kapital: <strong>{{ formatCurrency(totalInvested) }}</strong>
             </p>
             <p style="margin: 0; font-size: 14px; line-height: 1.5;">
-              Davon Ertraege: <strong>+{{ formatCurrency(totalReturn) }}</strong>
+              Davon Erträge: <strong>+{{ formatCurrency(totalReturn) }}</strong>
             </p>
             <p style="margin: 0; font-size: 14px; line-height: 1.5;">
-              Ohne Rendite benoetigte Rate: <strong>{{ formatCurrency(zeroReturnMonthly) }}</strong>
+              Ohne Rendite benötigte Rate: <strong>{{ formatCurrency(zeroReturnMonthly) }}</strong>
             </p>
             <p style="margin: 0; font-size: 14px; line-height: 1.5;">
               Monatliche Differenz: <strong>{{ monthlyDifference > 0 ? '+' : '' }}{{ formatCurrency(monthlyDifference) }}</strong>

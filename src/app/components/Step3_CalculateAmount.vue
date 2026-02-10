@@ -68,7 +68,7 @@ const isSelected = (label: string) => calculationFactors.value.includes(label)
       class="absolute left-4 top-8 flex items-center gap-2 text-sm font-medium text-[#568996] transition-colors hover:text-[#003745] md:left-4 md:top-8"
       @click="handleBack"
     >
-      Zurueck
+      Zurück
     </button>
 
     <aside class="mt-8 w-full md:sticky md:top-24 md:mt-0 md:w-1/3">
@@ -90,10 +90,10 @@ const isSelected = (label: string) => calculationFactors.value.includes(label)
 
         <div class="mb-8 flex gap-3 rounded-[4px] border border-[#E6EEF0] bg-[#F4F9FA] p-4 text-sm text-[#003745]">
           <span class="shrink-0 font-semibold">Info</span>
-          <p class="leading-relaxed">Dieser Wert dient als erste Orientierung fuer {{ goalLabel }}.</p>
+          <p class="leading-relaxed">Dieser Wert dient als erste Orientierung für {{ goalLabel }}.</p>
         </div>
 
-        <span class="mb-4 block text-center text-sm text-[#568996]">Im naechsten Schritt legen Sie die Laufzeit fest.</span>
+        <span class="mb-4 block text-center text-sm text-[#568996]">Im nächsten Schritt legen Sie die Laufzeit fest.</span>
         <button
           type="button"
           class="motion-cta w-full rounded-[4px] border border-[#003745] bg-[#003745] px-4 py-3 font-medium text-white transition-colors hover:bg-[#002C36]"

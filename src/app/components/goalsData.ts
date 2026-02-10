@@ -176,7 +176,7 @@ export const GOALS: GoalData[] = [
     baseTargetAmount: 350000,
     strategies: COMMON_STRATEGIES,
     defaultStrategy: 'security',
-    disclaimerShort: "Kurzere Laufzeiten bedeuten oft weniger Schwankungstoleranz."
+    disclaimerShort: "Kürzere Laufzeiten bedeuten oft weniger Schwankungstoleranz."
   },
   {
     id: 'car',

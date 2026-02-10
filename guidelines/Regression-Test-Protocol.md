@@ -8,7 +8,7 @@ Stand: 2026-02-10
 - [x] `npm run dev` startet
 - [x] Dev-Server antwortet mit `HTTP 200` auf `http://127.0.0.1:4173/`
 
-## Manueller Regressionstest (durchfuehren und abhaken)
+## Manueller Regressionstest (durchführen und abhaken)
 
 ## Setup
 
@@ -17,14 +17,14 @@ cd "/Users/maxsteinwender/Documents/Codex Projects/Sparc Light MVP"
 npm run dev
 ```
 
-App im Browser oeffnen:
+App im Browser öffnen:
 - `http://localhost:5173/` (oder die URL aus dem Terminal)
 
 ## Testfall 1: Schritt 1 Zielauswahl
 
-- [x] Ein Standardziel im Carousel waehlen
+- [x] Ein Standardziel im Carousel wählen
 - [x] CTA "Mit ... fortfahren" ist klickbar
-- [x] "Individuelles Sparziel erstellen" oeffnet Custom-Modus
+- [x] "Individuelles Sparziel erstellen" öffnet Custom-Modus
 
 Erwartung:
 - Schrittwechsel auf Schritt 2 funktioniert.
@@ -33,7 +33,7 @@ Erwartung:
 
 - [x] Zielbetrag direkt eingeben (Known Amount)
 - [x] Weiter klicken
-- [x] Zurueck-Button pruefen
+- [x] Zurück-Button prüfen
 
 Erwartung:
 - Betrag bleibt im State erhalten.
@@ -41,8 +41,8 @@ Erwartung:
 
 ## Testfall 3: Schritt 3 Berechnung/Schieber
 
-- [x] Eingaben/Optionen veraendern
-- [x] Pruefen, ob Zielbetrag dynamisch neu berechnet wird
+- [x] Eingaben/Optionen verändern
+- [x] Prüfen, ob Zielbetrag dynamisch neu berechnet wird
 - [x] Weiter klicken
 
 Erwartung:
@@ -60,7 +60,7 @@ Erwartung:
 
 - [x] Kennzahlen sichtbar (Sparrate, Laufzeit, Zielbetrag)
 - [x] Strategieauswahl umschalten
-- [x] Tabelle / Uebersicht aktualisiert sich
+- [x] Tabelle / Übersicht aktualisiert sich
 - [x] "0 % Vergleich" ein-/ausblenden
 
 Erwartung:
@@ -70,7 +70,7 @@ Erwartung:
 
 - [x] "PDF exportieren" klicken
 - [x] Datei wird heruntergeladen
-- [x] PDF-Inhalt ist lesbar und enthaelt Kerndaten
+- [x] PDF-Inhalt ist lesbar und enthält Kerndaten
 
 Erwartung:
 - Kein Fehlerdialog.
@@ -78,11 +78,11 @@ Erwartung:
 ## Testfall 7: E-Mail-Versand (nur wenn EmailJS konfiguriert)
 
 Voraussetzung:
-- `.env` enthaelt `VITE_EMAILJS_SERVICE_ID`, `VITE_EMAILJS_TEMPLATE_ID`, `VITE_EMAILJS_PUBLIC_KEY`
+- `.env` enthält `VITE_EMAILJS_SERVICE_ID`, `VITE_EMAILJS_TEMPLATE_ID`, `VITE_EMAILJS_PUBLIC_KEY`
 
-- [x] "Ergebnis per E-Mail" oeffnet Dialog
-- [x] Ungueltige E-Mail zeigt Validierungsfehler
-- [x] Gueltige E-Mail senden
+- [x] "Ergebnis per E-Mail" öffnet Dialog
+- [x] Ungültige E-Mail zeigt Validierungsfehler
+- [x] Gültige E-Mail senden
 
 Erwartung:
 - Erfolgsfeedback wird angezeigt.
@@ -90,5 +90,5 @@ Erwartung:
 
 ## Abschluss
 
-- [x] `npm run build` nach manuellem Test erneut gruen
+- [x] `npm run build` nach manuellem Test erneut grün
 - [x] Keine Blocker in Console sichtbar

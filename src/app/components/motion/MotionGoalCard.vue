@@ -92,7 +92,7 @@ const handleSelect = () => {
     ref="cardRef"
     role="button"
     :tabindex="isVisible ? 0 : -1"
-    :aria-label="`Ziel auswaehlen: ${goal.label}`"
+    :aria-label="`Ziel auswählen: ${goal.label}`"
     :aria-selected="isSelected"
     :style="cardStyle"
     class="motion-carousel-card absolute h-72 w-56 cursor-pointer overflow-hidden rounded-[4px] border border-[#003745]/20 bg-white shadow-xl focus:outline-none focus-visible:ring-4 focus-visible:ring-[#0043B4] focus-visible:ring-offset-2"
