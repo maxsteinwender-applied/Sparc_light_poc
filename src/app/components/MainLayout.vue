@@ -9,6 +9,7 @@ import Step3CalculateAmount from './Step3_CalculateAmount.vue'
 import Step4Duration from './Step4_Duration.vue'
 import Step5Results from './Step5_Results.vue'
 import MotionStepShell from './motion/MotionStepShell.vue'
+import PrototypeTickerBar from './PrototypeTickerBar.vue'
 
 const { step, transitionDirection, resetFlow } = useWizard()
 
@@ -29,25 +30,29 @@ const activeStepComponent = computed(() => stepComponents[clampedStep.value])
 
 <template>
   <div class="min-h-screen bg-white text-[#003745] font-sans selection:bg-[#EE0000] selection:text-white">
-    <header class="sticky top-0 z-50 border-b border-[#E6EEF0] bg-white">
-      <div class="mx-auto flex h-20 max-w-7xl items-center justify-between px-4">
-        <button class="flex items-center gap-2" type="button" @click="resetFlow">
-          <img :src="dekaLogoImage" alt="DekaBank Logo" class="h-8 w-auto" />
-          <span class="text-lg font-bold tracking-tight text-[#003745]">Sparc Light</span>
-        </button>
+    <div class="sticky top-0 z-[110]">
+      <PrototypeTickerBar />
 
-        <div class="flex gap-2">
-          <div
-            v-for="progressStep in 5"
-            :key="progressStep"
-            :class="[
-              'h-1.5 rounded-full transition-[width,background-color] duration-[180ms] ease-[var(--motion-ease-standard)]',
-              clampedStep >= progressStep ? 'w-8 bg-[#003745]' : 'w-2 bg-[#003745]/25',
-            ]"
-          />
+      <header class="border-b border-[#E6EEF0] bg-white">
+        <div class="mx-auto flex h-20 max-w-7xl items-center justify-between px-4">
+          <button class="flex items-center gap-2" type="button" @click="resetFlow">
+            <img :src="dekaLogoImage" alt="DekaBank Logo" class="h-8 w-auto" />
+            <span class="text-lg font-bold tracking-tight text-[#003745]">Sparc Light</span>
+          </button>
+
+          <div class="flex gap-2">
+            <div
+              v-for="progressStep in 5"
+              :key="progressStep"
+              :class="[
+                'h-1.5 rounded-full transition-[width,background-color] duration-[180ms] ease-[var(--motion-ease-standard)]',
+                clampedStep >= progressStep ? 'w-8 bg-[#003745]' : 'w-2 bg-[#003745]/25',
+              ]"
+            />
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+    </div>
 
     <main class="w-full overflow-x-clip">
       <Transition mode="out-in" :css="false" @leave="runMotionLeave">

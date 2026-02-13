@@ -71,7 +71,7 @@ const isSelected = (label: string) => calculationFactors.value.includes(label)
       Zurück
     </button>
 
-    <aside class="mt-8 w-full md:sticky md:top-24 md:mt-0 md:w-1/3">
+    <aside class="mt-8 w-full md:sticky md:top-[var(--app-sticky-content-offset)] md:mt-0 md:w-1/3">
       <div class="relative overflow-hidden rounded-[4px] border border-[#003745]/20 bg-white p-8 shadow-sm">
         <div class="absolute left-0 top-0 h-2 w-full bg-[#003745]" />
         <h3 class="mb-2 text-xs font-bold uppercase tracking-wider text-[#568996]">Zielbetrag</h3>

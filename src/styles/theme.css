@@ -75,6 +75,12 @@
   --deka-warning-bg: #FFF3CD;
   --deka-warning-text: #7A5A00;
 
+  /* Sticky App Shell */
+  --prototype-ticker-height: 2rem;
+  --app-header-height: 5rem;
+  --app-sticky-stack-height: calc(var(--prototype-ticker-height) + var(--app-header-height));
+  --app-sticky-content-offset: calc(var(--app-sticky-stack-height) + 1rem);
+
   /* Motion Tokens */
   --motion-duration-fast: 120ms;
   --motion-duration-normal: 180ms;
@@ -198,6 +204,16 @@
   }
 }
 
+@keyframes prototype-ticker-marquee {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
 @layer utilities {
   .motion-cta {
     will-change: transform;
@@ -223,6 +239,19 @@
     transform-style: preserve-3d;
     will-change: transform, opacity;
   }
+
+  .prototype-ticker-track {
+    display: flex;
+    width: max-content;
+    animation: prototype-ticker-marquee var(--prototype-ticker-duration, 24s) linear infinite;
+    will-change: transform;
+  }
+
+  .prototype-ticker-item {
+    flex: 0 0 auto;
+    padding-right: 2rem;
+    white-space: nowrap;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -240,5 +269,10 @@
   .motion-cta:hover,
   .motion-cta:active {
     transform: none;
+  }
+
+  .prototype-ticker-track {
+    animation: none;
+    transform: translateX(0);
   }
 }
