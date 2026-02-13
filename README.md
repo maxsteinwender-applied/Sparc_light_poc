@@ -30,4 +30,12 @@
   Notes:
   - This is intentionally client-side and not secure enough for production.
   - The POC includes simple email validation and a 30-second cooldown.
+
+  ## Chart provider
+
+  The result page supports a provider-based chart setup.
+
+  Set `VITE_CHART_PROVIDER` in `.env`:
+  - `echarts` (default, OSS-safe)
+  - `highcharts` (use when license/setup is available)
   

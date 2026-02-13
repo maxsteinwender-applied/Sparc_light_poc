@@ -13,6 +13,7 @@ import {
 import { useMotionSafety } from '../motion/useMotionSafety'
 import { parseEuroInput } from '../domain/wizardValidation'
 import { getGoal } from './goalsData'
+import ResultProjectionChart from './charts/ResultProjectionChart.vue'
 import { formatCurrency } from './ui/utils'
 import type { StrategyType } from '../stores/wizard'
 import { isEmailConfigured, sendResultEmail, validateRecipientEmail } from '../services/email'
@@ -446,6 +447,10 @@ const handleSendEmail = async () => {
               </div>
             </div>
           </div>
+        </div>
+
+        <div class="mt-8 overflow-x-auto">
+          <ResultProjectionChart :chart-data="chartRows" />
         </div>
 
         <div class="mt-8 overflow-x-auto">
