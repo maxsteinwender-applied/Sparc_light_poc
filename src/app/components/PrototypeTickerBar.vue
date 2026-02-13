@@ -9,7 +9,7 @@ const props = withDefaults(
   }>(),
   {
     message: 'TESTUMGEBUNG: Diese Lösung ist ein Prototyp und nicht für produktive Nutzung bestimmt',
-    speedSeconds: 24,
+    speedSeconds: 192,
     separator: '•',
   },
 )

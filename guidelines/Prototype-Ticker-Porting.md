@@ -60,7 +60,7 @@ Beispiel (Tailwind arbitrary value):
 Die Komponente stellt diese Props bereit:
 
 - `message?: string`
-- `speedSeconds?: number` (Default `24`)
+- `speedSeconds?: number` (Default `192`)
 - `separator?: string` (Default `•`)
 
 Standardtext in Sparc Light:
