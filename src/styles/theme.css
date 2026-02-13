@@ -247,10 +247,35 @@
     will-change: transform;
   }
 
+  .prototype-ticker-group {
+    display: flex;
+    width: max-content;
+  }
+
   .prototype-ticker-item {
+    display: inline-flex;
+    align-items: center;
     flex: 0 0 auto;
-    padding-right: 2rem;
     white-space: nowrap;
+  }
+
+  .prototype-ticker-item--measure {
+    position: absolute;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .prototype-ticker-separator {
+    display: inline-flex;
+    margin-inline: 0.75rem;
+  }
+
+  .prototype-ticker-fade-left {
+    background: linear-gradient(to right, #EE0000 0%, rgba(238, 0, 0, 0) 100%);
+  }
+
+  .prototype-ticker-fade-right {
+    background: linear-gradient(to left, #EE0000 0%, rgba(238, 0, 0, 0) 100%);
   }
 }
 

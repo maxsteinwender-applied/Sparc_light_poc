@@ -61,11 +61,11 @@ Die Komponente stellt diese Props bereit:
 
 - `message?: string`
 - `speedSeconds?: number` (Default `24`)
-- `separator?: string` (Default ` • `)
+- `separator?: string` (Default `•`)
 
 Standardtext in Sparc Light:
 
-- `TESTUMGEBUNG: Diese Lösung ist ein Prototyp und nicht für produktive Nutzung bestimmt.`
+- `TESTUMGEBUNG: Diese Lösung ist ein Prototyp und nicht für produktive Nutzung bestimmt`
 
 ## 6. Schnelltest-Checkliste
 
@@ -75,3 +75,4 @@ Standardtext in Sparc Light:
 4. Bestehende sticky-Elemente ueberlappen nicht mit Header/Ticker.
 5. Modal/Overlay kann den Ticker ueberdecken (wenn z-index hoeher als `110`).
 6. Bei aktivem `prefers-reduced-motion` stoppt die Laufanimation.
+7. Der Text blendet an linker und rechter Kante weich aus (Edge-Fade).
