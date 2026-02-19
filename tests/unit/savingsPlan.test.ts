@@ -59,7 +59,7 @@ it('showZeroReturn erweitert Chart-Horizont bei Bedarf', () => {
 
 it('zusätzliche monatliche Sparrate bringt Zeitgewinn bei 0% Rendite', () => {
   const result = calculateTimeGainWithExtraMonthly({
-    targetAmount: 12_000,
+    targetAmount: 12_100,
     baseMonthlySavings: 1_000,
     extraMonthlySavings: 20,
     annualRate: 0,
