@@ -607,8 +607,12 @@ watch(isGoalInfoModalOpen, (isOpen) => {
 })
 
 onMounted(() => {
+  if (!import.meta.client) {
+    return
+  }
+
   nextTick(() => {
-    scrollTabIntoView(activeTab.value)
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
   })
 })
 
