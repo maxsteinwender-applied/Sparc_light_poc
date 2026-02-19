@@ -26,8 +26,89 @@ export interface SavingsPlanResult {
   chartData: SavingsProjectionPoint[]
 }
 
+export interface TimeGainInput {
+  targetAmount: number
+  baseMonthlySavings: number
+  extraMonthlySavings: number
+  annualRate: number
+}
+
+export interface TimeGainResult {
+  baseMonths: number
+  optimizedMonths: number
+  monthsEarlier: number
+}
+
 const toFinitePositiveNumber = (value: number, fallback: number): number => {
   return Number.isFinite(value) && value > 0 ? value : fallback
+}
+
+export const calculateMonthsToTarget = ({
+  targetAmount,
+  monthlySavings,
+  annualRate,
+  maxMonths = 1_200,
+}: {
+  targetAmount: number
+  monthlySavings: number
+  annualRate: number
+  maxMonths?: number
+}): number | null => {
+  if (!Number.isFinite(targetAmount) || targetAmount <= 0) {
+    return null
+  }
+
+  if (!Number.isFinite(monthlySavings) || monthlySavings <= 0) {
+    return null
+  }
+
+  const boundedMonths = Number.isFinite(maxMonths) ? Math.max(1, Math.round(maxMonths)) : 1_200
+  const monthlyRate = Number.isFinite(annualRate) ? annualRate / 12 : 0
+
+  let months = 0
+  let balance = 0
+
+  while (balance < targetAmount && months < boundedMonths) {
+    balance = (balance + monthlySavings) * (1 + monthlyRate)
+    months += 1
+  }
+
+  if (balance < targetAmount) {
+    return null
+  }
+
+  return months
+}
+
+export const calculateTimeGainWithExtraMonthly = ({
+  targetAmount,
+  baseMonthlySavings,
+  extraMonthlySavings,
+  annualRate,
+}: TimeGainInput): TimeGainResult | null => {
+  const safeExtra = Number.isFinite(extraMonthlySavings) ? Math.max(0, extraMonthlySavings) : 0
+  const optimizedMonthlySavings = baseMonthlySavings + safeExtra
+
+  const baseMonths = calculateMonthsToTarget({
+    targetAmount,
+    monthlySavings: baseMonthlySavings,
+    annualRate,
+  })
+  const optimizedMonths = calculateMonthsToTarget({
+    targetAmount,
+    monthlySavings: optimizedMonthlySavings,
+    annualRate,
+  })
+
+  if (baseMonths === null || optimizedMonths === null) {
+    return null
+  }
+
+  return {
+    baseMonths,
+    optimizedMonths,
+    monthsEarlier: Math.max(0, baseMonths - optimizedMonths),
+  }
 }
 
 export const calculateSavingsPlan = ({

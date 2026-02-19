@@ -1,31 +1,133 @@
 <script setup lang="ts">
-import { computed, markRaw, type Component } from 'vue'
+import { computed, defineAsyncComponent, markRaw, onMounted, ref, type Component, watch } from 'vue'
 import dekaLogoImage from '~/assets/e088cf5e6488ed30341523cb4f504779a4587bd6.png'
 import { useWizard } from '../composables/useWizard'
 import { runMotionLeave } from '../motion/leaveHook'
-import Step1GoalSelection from './Step1_GoalSelection.vue'
-import Step2TargetAmountType from './Step2_TargetAmountType.vue'
-import Step3CalculateAmount from './Step3_CalculateAmount.vue'
-import Step4Duration from './Step4_Duration.vue'
-import Step5Results from './Step5_Results.vue'
 import MotionStepShell from './motion/MotionStepShell.vue'
 import PrototypeTickerBar from './PrototypeTickerBar.vue'
+import { GOALS } from './goalsData'
+import type { GoalId } from './goalsData'
+import type { StrategyType } from '../stores/wizard'
 
-const { step, transitionDirection, resetFlow } = useWizard()
+const route = useRoute()
+const {
+  step,
+  transitionDirection,
+  resetFlow,
+  setGoal,
+  setTargetAmount,
+  setDurationYears,
+  setSelectedStrategy,
+  setCustomAnnualRate,
+  setStep,
+} = useWizard()
 
 const clampedStep = computed(() => {
   return Math.min(5, Math.max(1, step.value))
 })
 
+const stepLoaders = {
+  1: () => import('./Step1_GoalSelection.vue'),
+  2: () => import('./Step2_TargetAmountType.vue'),
+  3: () => import('./Step3_CalculateAmount.vue'),
+  4: () => import('./Step4_Duration.vue'),
+  5: () => import('./Step5_Results.vue'),
+} as const
+
 const stepComponents: Record<number, Component> = {
-  1: markRaw(Step1GoalSelection),
-  2: markRaw(Step2TargetAmountType),
-  3: markRaw(Step3CalculateAmount),
-  4: markRaw(Step4Duration),
-  5: markRaw(Step5Results),
+  1: markRaw(defineAsyncComponent(stepLoaders[1])),
+  2: markRaw(defineAsyncComponent(stepLoaders[2])),
+  3: markRaw(defineAsyncComponent(stepLoaders[3])),
+  4: markRaw(defineAsyncComponent(stepLoaders[4])),
+  5: markRaw(defineAsyncComponent(stepLoaders[5])),
 }
 
 const activeStepComponent = computed(() => stepComponents[clampedStep.value])
+const hasResolvedDeepLink = ref(false)
+
+const preloadStep = (stepNumber: number) => {
+  const loader = stepLoaders[stepNumber as keyof typeof stepLoaders]
+  if (!loader) {
+    return
+  }
+
+  void loader()
+}
+
+watch(
+  clampedStep,
+  (currentStep) => {
+    const nextStep = currentStep + 1
+
+    if (nextStep <= 4) {
+      preloadStep(nextStep)
+    }
+  },
+  { immediate: true },
+)
+
+const GOAL_IDS = new Set<GoalId>(GOALS.map((entry) => entry.id))
+const DEEP_LINK_STRATEGIES = new Set<StrategyType>(['security', 'balanced', 'growth', 'custom'])
+
+const parseQueryNumber = (value: unknown) => {
+  if (typeof value !== 'string') {
+    return null
+  }
+
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : null
+}
+
+const applyResultDeepLink = () => {
+  if (hasResolvedDeepLink.value) {
+    return
+  }
+
+  const goalParam = route.query.goal
+  const targetParam = route.query.target
+  const yearsParam = route.query.years
+  const strategyParam = route.query.strategy
+  const rateParam = route.query.rate
+
+  if (
+    typeof goalParam !== 'string' ||
+    typeof strategyParam !== 'string' ||
+    !GOAL_IDS.has(goalParam as GoalId) ||
+    !DEEP_LINK_STRATEGIES.has(strategyParam as StrategyType)
+  ) {
+    hasResolvedDeepLink.value = true
+    return
+  }
+
+  const parsedTarget = parseQueryNumber(targetParam)
+  const parsedYears = parseQueryNumber(yearsParam)
+
+  if (parsedTarget === null || parsedYears === null || parsedTarget <= 0 || parsedYears <= 0) {
+    hasResolvedDeepLink.value = true
+    return
+  }
+
+  const strategy = strategyParam as StrategyType
+  const parsedRate = parseQueryNumber(rateParam)
+  if (strategy === 'custom') {
+    if (parsedRate === null || parsedRate < 0 || parsedRate > 0.15) {
+      hasResolvedDeepLink.value = true
+      return
+    }
+    setCustomAnnualRate(parsedRate)
+  }
+
+  setGoal(goalParam as GoalId)
+  setTargetAmount(parsedTarget)
+  setDurationYears(parsedYears)
+  setSelectedStrategy(strategy)
+  setStep(5)
+  hasResolvedDeepLink.value = true
+}
+
+onMounted(() => {
+  applyResultDeepLink()
+})
 </script>
 
 <template>

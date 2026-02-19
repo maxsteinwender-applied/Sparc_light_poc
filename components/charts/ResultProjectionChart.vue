@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onErrorCaptured, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, onErrorCaptured, ref, watch } from 'vue'
 import type { EChartsOption } from 'echarts'
 import type { Options as HighchartsOptions } from 'highcharts'
 import type { SavingsProjectionPoint } from '../../domain/savingsPlan'
@@ -8,9 +8,10 @@ import { resolveChartProvider } from '../../charts/providerRegistry'
 import { buildEchartsOptions } from '../../charts/providers/echarts'
 import { buildHighchartsOptions } from '../../charts/providers/highcharts'
 import { resolveChartThemeTokens } from '../../charts/theme'
-import type { ProjectionChartModel } from '../../charts/types'
-import EchartsRenderer from './EchartsRenderer.vue'
-import HighchartsRenderer from './HighchartsRenderer.vue'
+import type { ChartProviderName, ProjectionChartModel } from '../../charts/types'
+
+const EchartsRenderer = defineAsyncComponent(() => import('./EchartsRenderer.vue'))
+const HighchartsRenderer = defineAsyncComponent(() => import('./HighchartsRenderer.vue'))
 
 const props = withDefaults(
   defineProps<{
@@ -26,10 +27,15 @@ const props = withDefaults(
 
 const rendererError = ref(false)
 const runtimeConfig = useRuntimeConfig()
+const highchartsEnabled = computed(() => runtimeConfig.public.enableHighcharts === true)
 const configuredProvider = computed(() =>
-  resolveChartProvider(props.provider, runtimeConfig.public.chartProvider as string | undefined),
+  resolveChartProvider(
+    props.provider,
+    runtimeConfig.public.chartProvider as string | undefined,
+    highchartsEnabled.value,
+  ),
 )
-const runtimeProvider = ref<'echarts' | 'highcharts'>(configuredProvider.value)
+const runtimeProvider = ref<ChartProviderName>(configuredProvider.value)
 const themeTokens = computed(() => resolveChartThemeTokens())
 
 const model = computed<ProjectionChartModel>(() => ({
@@ -39,12 +45,20 @@ const model = computed<ProjectionChartModel>(() => ({
   series: mapSavingsProjectionToSeries(props.chartData),
 }))
 
-const highchartsOptions = computed<HighchartsOptions>(() =>
-  buildHighchartsOptions(model.value, themeTokens.value),
-)
-const echartsOptions = computed<EChartsOption>(() =>
-  buildEchartsOptions(model.value, themeTokens.value),
-)
+const highchartsOptions = computed<HighchartsOptions | null>(() => {
+  if (runtimeProvider.value !== 'highcharts') {
+    return null
+  }
+
+  return buildHighchartsOptions(model.value, themeTokens.value)
+})
+const echartsOptions = computed<EChartsOption | null>(() => {
+  if (runtimeProvider.value !== 'echarts') {
+    return null
+  }
+
+  return buildEchartsOptions(model.value, themeTokens.value)
+})
 
 onErrorCaptured(() => {
   if (runtimeProvider.value === 'highcharts') {
@@ -78,10 +92,13 @@ watch(configuredProvider, (nextProvider) => {
 
     <ClientOnly v-else>
       <HighchartsRenderer
-        v-if="runtimeProvider === 'highcharts'"
+        v-if="runtimeProvider === 'highcharts' && highchartsEnabled && highchartsOptions"
         :options="highchartsOptions"
       />
-      <EchartsRenderer v-else :options="echartsOptions" />
+      <EchartsRenderer v-else-if="echartsOptions" :options="echartsOptions" />
+      <div v-else class="rounded-[4px] border border-[#E6EEF0] bg-[#F4F9FA] p-4 text-sm text-[#568996]">
+        Diagramm wird geladen.
+      </div>
       <template #fallback>
         <div class="rounded-[4px] border border-[#E6EEF0] bg-[#F4F9FA] p-4 text-sm text-[#568996]">
           Diagramm wird geladen.

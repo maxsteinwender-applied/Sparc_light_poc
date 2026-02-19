@@ -102,6 +102,42 @@ vue | n/a (operations)
 - [question]
 ```
 
+### Project Start Summary
+
+- Status: Complete
+- Date: 2026-02-19
+- Owner: Sparc Light POC Team
+
+#### Vision
+Sparen, insbesondere Wertpapiersparen, wird nicht technisch oder produktfokussiert gedacht, sondern ausgehend von Lebenszielen. Nutzer sollen in einem einfachen, gefuehrten und effizienten Prozess ihren persoenlichen Sparplan konfigurieren und dabei klare Orientierung erhalten. Business-Ziel auf Kundenseite (DekaBank): mehr Kunden, mehr Leads, mehr Sparplaene und hoeheres Sparplanvolumen.
+
+#### Target Users
+- Endkunden der DekaBank und Sparkassenkunden
+- Sparkassenberater in Filialen, die das Tool in Beratungsgespraechen nutzen
+
+#### Project Track
+coding
+
+#### Success Criteria
+- Kundenanforderungen werden vollstaendig und korrekt abgebildet
+- Die Loesung ueberzeugt fachlich und in der Nutzung
+- Die Loesung ist passend fuer den DekaBank-Kontext konzipiert, designt und umgesetzt
+- Umsetzung erfolgt im vorgegebenen Tech-Stack (Vue, Nuxt, PrimeVue)
+
+#### Constraints
+- Originale Designsystem-Komponenten stehen nicht zur Verfuegung
+- Fokus liegt auf funktionalem technischen POC statt Pixel-Perfect-Ausarbeitung
+- Erste Ausbaustufe ist POC/MVP, daher schlanker Feature- und Funktionsumfang
+
+#### Stack
+vue (Nuxt + PrimeVue)
+
+#### Initial Agent Sequence
+`/prod` -> `/ux` -> `/copy` -> `/fe` -> `/qa`
+
+#### Open Questions
+- Keine offenen Pflichtfragen fuer den Start-Gate; Detailfragen werden in `/prod` konkretisiert.
+
 ## Decision Log
 
 Document hard decisions and why they were made.

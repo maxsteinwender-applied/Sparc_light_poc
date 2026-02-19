@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import type { GoalId } from '../components/goalsData'
 import { clampDurationYears, clampTargetAmount } from '../domain/wizardValidation'
 
-export type StrategyType = 'security' | 'balanced' | 'growth'
+export type StrategyType = 'security' | 'balanced' | 'growth' | 'custom'
 
 type GoalSelections = Partial<Record<GoalId, string[]>>
 
@@ -14,6 +14,7 @@ export interface WizardState {
   targetAmount: number
   durationYears: number
   selectedStrategy: StrategyType
+  customAnnualRate: number
   selections: GoalSelections
 }
 
@@ -33,6 +34,15 @@ const DEFAULTS = {
   targetAmount: 6000,
   durationYears: 2,
   selectedStrategy: 'balanced' as StrategyType,
+  customAnnualRate: 0.06,
+}
+
+const clampCustomAnnualRate = (value: number) => {
+  if (!Number.isFinite(value)) {
+    return DEFAULTS.customAnnualRate
+  }
+
+  return Math.min(0.15, Math.max(0, value))
 }
 
 const createInitialState = (): WizardState => ({
@@ -71,6 +81,9 @@ export const useWizardStore = defineStore('wizard', {
     setSelectedStrategy(strategy: StrategyType) {
       this.selectedStrategy = strategy
     },
+    setCustomAnnualRate(rate: number) {
+      this.customAnnualRate = clampCustomAnnualRate(rate)
+    },
     setCalculationFactors(factors: string[]) {
       this.selections = {
         ...this.selections,
@@ -93,6 +106,7 @@ export const useWizardStore = defineStore('wizard', {
       this.targetAmount = clampTargetAmount(defaults.targetAmount)
       this.durationYears = clampDurationYears(defaults.durationYears)
       this.selectedStrategy = defaults.selectedStrategy
+      this.customAnnualRate = DEFAULTS.customAnnualRate
       this.selections = {
         ...this.selections,
         [defaults.goal]: [],

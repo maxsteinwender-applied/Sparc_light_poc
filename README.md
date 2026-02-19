@@ -97,8 +97,12 @@ Base template:
 - `.env.local.example` is provided for local-only override workflows.
 
 Current keys:
-- `NUXT_PUBLIC_SUPABASE_URL` (required only if you use the Supabase composable/integration)
-- `NUXT_PUBLIC_SUPABASE_ANON_KEY` (required only if you use the Supabase composable/integration)
+- `NUXT_PUBLIC_EMAILJS_SERVICE_ID` (required for "Ergebnis per E-Mail senden")
+- `NUXT_PUBLIC_EMAILJS_TEMPLATE_ID` (required for "Ergebnis per E-Mail senden")
+- `NUXT_PUBLIC_EMAILJS_PUBLIC_KEY` (required for "Ergebnis per E-Mail senden")
+- `NUXT_PUBLIC_EMAIL_FROM_NAME` (optional sender name, default: `Sparc Light POC`)
+- `NUXT_PUBLIC_CHART_PROVIDER` (`echarts` by default)
+- `NUXT_PUBLIC_ENABLE_HIGHCHARTS` (`false` by default, enable only when needed)
 
 Recommended flow:
 1. Copy `.env.example` to `.env.local`.
@@ -228,10 +232,10 @@ Fix:
 2. Run `npm run doctor`
 3. Retry `npm run dev` or `npm run check`
 
-### Missing Supabase environment variables
+### Missing EmailJS environment variables
 
-If your feature needs Supabase:
+If your feature needs email sending:
 1. Copy `.env.example` to `.env.local`
-2. Fill `NUXT_PUBLIC_SUPABASE_URL` and `NUXT_PUBLIC_SUPABASE_ANON_KEY`
+2. Fill `NUXT_PUBLIC_EMAILJS_SERVICE_ID`, `NUXT_PUBLIC_EMAILJS_TEMPLATE_ID`, and `NUXT_PUBLIC_EMAILJS_PUBLIC_KEY`
 
 `npm run doctor` treats `.env.local` as optional until backend/auth features require it.
