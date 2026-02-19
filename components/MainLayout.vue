@@ -134,7 +134,7 @@ onMounted(() => {
       </Transition>
     </main>
 
-    <footer v-if="clampedStep < 5" class="py-8 text-center text-sm text-[#9FB6BC]">
+    <footer v-if="clampedStep < 5" class="py-8 text-center text-sm text-[var(--text-muted)]">
       © 2026 DekaBank Deutsche Girozentrale
     </footer>
   </div>

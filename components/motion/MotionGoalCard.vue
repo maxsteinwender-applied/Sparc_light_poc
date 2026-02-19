@@ -14,6 +14,7 @@ interface CardMotionState {
 }
 
 const props = defineProps<{
+  optionId: string
   goal: GoalData
   index: number
   isSelected: boolean
@@ -90,12 +91,13 @@ const handleSelect = () => {
 <template>
   <div
     ref="cardRef"
-    role="button"
+    :id="props.optionId"
+    role="option"
     :tabindex="isVisible ? 0 : -1"
     :aria-label="`Ziel auswählen: ${goal.label}`"
-    :aria-selected="isSelected"
+    :aria-selected="isSelected ? 'true' : 'false'"
     :style="cardStyle"
-    class="motion-carousel-card absolute h-72 w-56 cursor-pointer overflow-hidden rounded-[4px] border border-[#003745]/20 bg-white shadow-xl focus:outline-none focus-visible:ring-4 focus-visible:ring-[#0043B4] focus-visible:ring-offset-2"
+    class="motion-carousel-card absolute h-72 w-56 cursor-pointer overflow-hidden rounded-[var(--radius-control)] border border-[#003745]/20 bg-white shadow-xl"
     :class="isVisible ? 'visible pointer-events-auto' : 'invisible pointer-events-none'"
     @click="handleSelect"
     @keydown.enter.prevent="handleSelect"

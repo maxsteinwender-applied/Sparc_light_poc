@@ -65,44 +65,11 @@ const isSelected = (label: string) => calculationFactors.value.includes(label)
   <div class="relative mx-auto flex min-h-[60vh] max-w-6xl flex-col items-start gap-8 px-4 pb-12 pt-20 md:flex-row">
     <button
       type="button"
-      class="absolute left-4 top-8 flex items-center gap-2 text-sm font-medium text-[#568996] transition-colors hover:text-[#003745] md:left-4 md:top-8"
+      class="ui-text-secondary absolute left-4 top-8 flex items-center gap-2 text-sm font-medium transition-colors hover:text-[#003745] md:left-4 md:top-8"
       @click="handleBack"
     >
       Zurück
     </button>
-
-    <aside class="mt-8 w-full md:sticky md:top-[var(--app-sticky-content-offset)] md:mt-0 md:w-1/3">
-      <div class="relative overflow-hidden rounded-[4px] border border-[#003745]/20 bg-white p-8 shadow-sm">
-        <div class="absolute left-0 top-0 h-2 w-full bg-[#003745]" />
-        <h3 class="mb-2 text-xs font-bold uppercase tracking-wider text-[#568996]">Zielbetrag</h3>
-
-        <div class="text-5xl font-bold tracking-tight text-[#003745]" :class="delta !== 0 ? 'mb-2' : 'mb-6'">
-          {{ formatCurrency(currentTotal) }}
-        </div>
-
-        <div
-          v-if="delta !== 0"
-          class="mb-6 text-lg font-medium"
-          :class="delta > 0 ? 'text-[#277A6B]' : 'text-[#AD1111]'"
-        >
-          {{ delta > 0 ? '+' : '−' }}{{ Math.abs(delta).toLocaleString('de-DE') }} EUR durch Ihre Auswahl
-        </div>
-
-        <div class="mb-8 flex gap-3 rounded-[4px] border border-[#E6EEF0] bg-[#F4F9FA] p-4 text-sm text-[#003745]">
-          <span class="shrink-0 font-semibold">Info</span>
-          <p class="leading-relaxed">Dieser Wert dient als erste Orientierung für {{ goalLabel }}.</p>
-        </div>
-
-        <span class="mb-4 block text-center text-sm text-[#568996]">Im nächsten Schritt legen Sie die Laufzeit fest.</span>
-        <button
-          type="button"
-          class="motion-cta w-full rounded-[4px] border border-[#003745] bg-[#003745] px-4 py-3 font-medium text-white transition-colors hover:bg-[#002C36]"
-          @click="handleContinue"
-        >
-          Weiter zur Laufzeit
-        </button>
-      </div>
-    </aside>
 
     <section class="mt-8 w-full md:mt-0 md:w-2/3">
       <span class="mb-3 block px-2 text-sm font-medium uppercase tracking-widest text-[#EE0000]">Schritt 3 von 5</span>
@@ -116,9 +83,10 @@ const isSelected = (label: string) => calculationFactors.value.includes(label)
           :initial="chipInitial(chipIndex)"
           :enter="chipEnter(chipIndex)"
           type="button"
+          :aria-pressed="isSelected(chip.label) ? 'true' : 'false'"
           :class="[
-            'relative flex min-h-[44px] cursor-pointer items-center gap-2 rounded-full border px-[14px] py-[12px] text-left transition-[transform,box-shadow,border-color,background-color] duration-[180ms] ease-[var(--motion-ease-standard)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#003745]',
-            isSelected(chip.label) ? 'border-[#003745] bg-[#003745]/5 shadow-sm' : 'border-[#003745]/20 bg-white hover:border-[#003745]',
+            'ui-option-card relative flex min-h-[44px] cursor-pointer items-center gap-2 rounded-full px-[14px] py-[12px] text-left',
+            isSelected(chip.label) ? 'is-selected shadow-sm' : 'hover:border-[#003745]',
           ]"
           @click="toggleCalculationFactor(chip.label)"
         >
@@ -128,7 +96,7 @@ const isSelected = (label: string) => calculationFactors.value.includes(label)
           </span>
           <span
             class="ml-1 text-sm font-medium"
-            :class="chip.cost === 0 ? 'text-[#9FB6BC]' : chip.cost > 0 ? 'text-[#277A6B]' : 'text-[#AD1111]'"
+            :class="chip.cost === 0 ? 'ui-text-muted' : chip.cost > 0 ? 'text-[#277A6B]' : 'text-[#AD1111]'"
           >
             {{ chip.cost === 0 ? '± 0 EUR' : `${chip.cost > 0 ? '+' : '−'}${Math.abs(chip.cost).toLocaleString('de-DE')} EUR` }}
           </span>
@@ -141,9 +109,42 @@ const isSelected = (label: string) => calculationFactors.value.includes(label)
         </button>
       </div>
 
-      <p class="mt-6 px-2 text-sm italic leading-relaxed text-[#568996]">
-        Ausgangspunkt ist ein typischer Durchschnittswert. Ihre Auswahl kann den Betrag erhoehen oder senken.
+      <p class="ui-text-secondary mt-6 px-2 text-sm italic leading-relaxed">
+        Ausgangspunkt ist ein typischer Durchschnittswert. Ihre Auswahl kann den Betrag erhöhen oder senken.
       </p>
     </section>
+
+    <aside class="mt-2 w-full md:mt-0 md:w-1/3">
+      <div class="relative overflow-hidden rounded-[var(--radius-card)] border border-[#003745]/20 bg-white p-8 shadow-[var(--shadow-card)] md:sticky md:top-[var(--app-sticky-content-offset)]">
+        <div class="absolute left-0 top-0 h-2 w-full bg-[#003745]" />
+        <h3 class="ui-text-secondary mb-2 text-xs font-bold uppercase tracking-wider">Zielbetrag</h3>
+
+        <div class="text-5xl font-bold tracking-tight text-[#003745]" :class="delta !== 0 ? 'mb-2' : 'mb-6'">
+          {{ formatCurrency(currentTotal) }}
+        </div>
+
+        <div
+          v-if="delta !== 0"
+          class="mb-6 text-lg font-medium"
+          :class="delta > 0 ? 'text-[#277A6B]' : 'text-[#AD1111]'"
+        >
+          {{ delta > 0 ? '+' : '−' }}{{ Math.abs(delta).toLocaleString('de-DE') }} EUR durch Ihre Auswahl
+        </div>
+
+        <div class="mb-8 flex gap-3 rounded-[var(--radius-control)] border border-[#E6EEF0] bg-[#F4F9FA] p-4 text-sm text-[#003745]">
+          <span class="shrink-0 font-semibold">Info</span>
+          <p class="leading-relaxed">Dieser Wert dient als erste Orientierung für {{ goalLabel }}.</p>
+        </div>
+
+        <span class="ui-text-secondary mb-4 block text-center text-sm">Im nächsten Schritt legen Sie die Laufzeit fest.</span>
+        <button
+          type="button"
+          class="ui-button ui-button-solid motion-cta w-full px-4 py-3"
+          @click="handleContinue"
+        >
+          Weiter zur Laufzeit
+        </button>
+      </div>
+    </aside>
   </div>
 </template>

@@ -42,15 +42,15 @@ const handleIncrement = () => {
 
 <template>
   <div class="flex w-full flex-col">
-    <span v-if="props.label" class="mb-[4px] block text-[12px] font-normal text-[#568996]">
+    <span v-if="props.label" class="ui-text-secondary mb-[4px] block text-[12px] font-normal">
       {{ props.label }}
     </span>
 
-    <div class="flex h-[40px] items-center overflow-hidden rounded-[4px] border border-[#003745] bg-[#FFFFFF]">
+    <div class="flex h-[44px] items-center overflow-hidden rounded-[var(--radius-control)] border border-[#003745] bg-[#FFFFFF]">
       <button
         type="button"
         :disabled="props.value <= props.min"
-        class="flex h-full w-[40px] items-center justify-center bg-transparent text-[#003745] focus:outline-none disabled:opacity-50"
+        class="ui-button-ghost flex h-full w-[44px] items-center justify-center bg-transparent text-[#003745] disabled:opacity-50"
         @click="handleDecrement"
       >
         -
@@ -68,14 +68,14 @@ const handleIncrement = () => {
       <button
         type="button"
         :disabled="props.value >= props.max"
-        class="flex h-full w-[40px] items-center justify-center bg-transparent text-[#003745] focus:outline-none disabled:opacity-50"
+        class="ui-button-ghost flex h-full w-[44px] items-center justify-center bg-transparent text-[#003745] disabled:opacity-50"
         @click="handleIncrement"
       >
         +
       </button>
     </div>
 
-    <span v-if="props.note" class="mt-[4px] block text-[12px] font-normal text-[#568996]">
+    <span v-if="props.note" class="ui-text-secondary mt-[4px] block text-[12px] font-normal">
       {{ props.note }}
     </span>
   </div>

@@ -53,7 +53,7 @@ const handleShowResult = () => {
   <div class="relative mx-auto flex min-h-[60vh] max-w-3xl flex-col items-center px-4 pb-12 pt-20">
     <button
       type="button"
-      class="absolute left-4 top-8 flex items-center gap-2 text-sm font-medium text-[#568996] transition-colors hover:text-[#003745] md:left-0 md:top-8"
+      class="ui-text-secondary absolute left-4 top-8 flex items-center gap-2 text-sm font-medium transition-colors hover:text-[#003745] md:left-0 md:top-8"
       @click="handleBack"
     >
       Zurück
@@ -73,11 +73,12 @@ const handleShowResult = () => {
           :initial="optionInitial(optionIndex)"
           :enter="optionEnter(optionIndex)"
           type="button"
-          class="py-4 text-lg font-medium transition-[transform,box-shadow,border-color,background-color,color] duration-[180ms] ease-[var(--motion-ease-standard)]"
+          :aria-pressed="durationYears === years ? 'true' : 'false'"
+          class="ui-option-card py-4 text-lg font-medium"
           :class="
             durationYears === years
-              ? 'border-2 border-[#003745] bg-[#003745]/10 text-[#003745]'
-              : 'border border-[#003745]/20 bg-white text-[#568996] hover:border-[#003745]'
+              ? 'is-selected text-[#003745]'
+              : 'ui-text-secondary hover:border-[#003745]'
           "
           @click="setDurationYears(years)"
         >
@@ -102,7 +103,7 @@ const handleShowResult = () => {
 
       <div
         v-if="currentGoal.whatItMeans.length > 0"
-        class="mb-8 flex items-start gap-4 rounded-[4px] border border-[#E6EEF0] bg-[#F4F9FA] p-5 text-sm leading-relaxed text-[#003745]"
+        class="mb-8 flex items-start gap-4 rounded-[var(--radius-control)] border border-[#E6EEF0] bg-[#F4F9FA] p-5 text-sm leading-relaxed text-[#003745]"
       >
         <div class="shrink-0 rounded-[4px] border border-[#E6EEF0] bg-white p-2 font-semibold">Info</div>
         <div class="pt-1">
@@ -114,10 +115,10 @@ const handleShowResult = () => {
       </div>
 
       <div class="flex flex-col items-center justify-center">
-        <span class="mb-4 block text-sm text-[#568996]">Fast geschafft. Gleich sehen Sie Ihren Plan.</span>
+        <span class="ui-text-secondary mb-4 block text-sm">Fast geschafft. Gleich sehen Sie Ihren Plan.</span>
         <button
           type="button"
-          class="motion-cta w-full rounded-[4px] border border-[#003745] bg-[#003745] px-12 py-3 font-medium text-white transition-colors hover:bg-[#002C36] md:w-auto"
+          class="ui-button ui-button-solid motion-cta w-full px-12 py-3 md:w-auto"
           @click="handleShowResult"
         >
           Ergebnis anzeigen

@@ -127,6 +127,11 @@ const cardStates = computed(() => {
     }
   })
 })
+
+const selectedGoalOptionId = computed(() => {
+  const selectedGoal = props.goals[activeIndex.value]
+  return selectedGoal ? `goal-option-${selectedGoal.id}` : undefined
+})
 </script>
 
 <template>
@@ -134,7 +139,7 @@ const cardStates = computed(() => {
     <button
       type="button"
       aria-label="Vorheriges Ziel"
-      class="absolute left-4 z-[60] flex h-10 w-10 items-center justify-center border border-[#003745] bg-white text-[#003745] transition-colors hover:bg-[#F4F9FA] focus:outline-none focus:ring-2 focus:ring-[#0043B4] md:left-10"
+      class="ui-button ui-button-secondary absolute left-4 z-[60] flex h-11 w-11 items-center justify-center md:left-10"
       @click="handlePrev"
     >
       ‹
@@ -143,16 +148,22 @@ const cardStates = computed(() => {
     <button
       type="button"
       aria-label="Nächstes Ziel"
-      class="absolute right-4 z-[60] flex h-10 w-10 items-center justify-center border border-[#003745] bg-white text-[#003745] transition-colors hover:bg-[#F4F9FA] focus:outline-none focus:ring-2 focus:ring-[#0043B4] md:right-10"
+      class="ui-button ui-button-secondary absolute right-4 z-[60] flex h-11 w-11 items-center justify-center md:right-10"
       @click="handleNext"
     >
       ›
     </button>
 
-    <div class="relative flex h-full w-full items-center justify-center">
+    <div
+      class="relative flex h-full w-full items-center justify-center"
+      role="listbox"
+      aria-label="Sparziel auswählen"
+      :aria-activedescendant="selectedGoalOptionId"
+    >
       <MotionGoalCard
         v-for="card in cardStates"
         :key="card.goal.id"
+        :option-id="`goal-option-${card.goal.id}`"
         :goal="card.goal"
         :index="card.index"
         :is-selected="card.isSelected"
