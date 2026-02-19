@@ -2,6 +2,16 @@ import { fileURLToPath } from 'node:url'
 
 const internalNuxtPathsAlias = fileURLToPath(new URL('./internal/nuxt-paths.mjs', import.meta.url))
 const internalAppManifestAlias = fileURLToPath(new URL('./internal/app-manifest.mjs', import.meta.url))
+const seoTitle =
+  process.env.NUXT_PUBLIC_SEO_TITLE ||
+  'Sparc Light Prototyp MVP 1.0 | Internal Use only'
+const seoDescription =
+  process.env.NUXT_PUBLIC_SEO_DESCRIPTION ||
+  'Sparc Light Prototyp MVP 1.0 (Internal Use only) – Teil der Deka-Projektinitiative »Wertpapiersparen 2.0«, erstellt von applied by zeb.'
+const seoSiteUrl = (process.env.NUXT_PUBLIC_SITE_URL || '').replace(/\/$/, '')
+const seoImagePath = process.env.NUXT_PUBLIC_SEO_IMAGE || '/og-image.png'
+const normalizedSeoImagePath = seoImagePath.startsWith('/') ? seoImagePath : `/${seoImagePath}`
+const seoImageUrl = seoImagePath.startsWith('http') ? seoImagePath : `${seoSiteUrl}${normalizedSeoImagePath}`
 
 export default defineNuxtConfig({
   ssr: true,
@@ -47,11 +57,43 @@ export default defineNuxtConfig({
   },
   app: {
     head: {
-      title: 'Sparc Light (Nuxt)',
+      title: seoTitle,
       meta: [
         {
           name: 'description',
-          content: 'Sparc Light MVP/POC as Nuxt 3 app with Codex starter contracts',
+          content: seoDescription,
+        },
+        {
+          property: 'og:type',
+          content: 'website',
+        },
+        {
+          property: 'og:title',
+          content: seoTitle,
+        },
+        {
+          property: 'og:description',
+          content: seoDescription,
+        },
+        {
+          property: 'og:image',
+          content: seoImageUrl,
+        },
+        {
+          name: 'twitter:card',
+          content: 'summary_large_image',
+        },
+        {
+          name: 'twitter:title',
+          content: seoTitle,
+        },
+        {
+          name: 'twitter:description',
+          content: seoDescription,
+        },
+        {
+          name: 'twitter:image',
+          content: seoImageUrl,
         },
       ],
       link: [

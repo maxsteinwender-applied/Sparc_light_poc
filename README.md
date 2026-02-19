@@ -103,6 +103,10 @@ Current keys:
 - `NUXT_PUBLIC_EMAIL_FROM_NAME` (optional sender name, default: `Sparc Light POC`)
 - `NUXT_PUBLIC_CHART_PROVIDER` (`echarts` by default)
 - `NUXT_PUBLIC_ENABLE_HIGHCHARTS` (`false` by default, enable only when needed)
+- `NUXT_PUBLIC_SEO_TITLE` (optional SEO/page title)
+- `NUXT_PUBLIC_SEO_DESCRIPTION` (optional meta description for SEO/preview cards)
+- `NUXT_PUBLIC_SEO_IMAGE` (optional OpenGraph/Twitter preview image path, default: `/og-image.png`)
+- `NUXT_PUBLIC_SITE_URL` (optional absolute base URL, used to build absolute `og:image` URL)
 
 Recommended flow:
 1. Copy `.env.example` to `.env.local`.
