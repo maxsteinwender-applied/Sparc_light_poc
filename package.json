@@ -31,11 +31,11 @@
     "echarts": "^5.6.0",
     "highcharts": "^11.4.8",
     "highcharts-vue": "^2.0.1",
-    "html2canvas": "^1.4.1",
-    "jspdf": "^2.5.2",
     "nuxt": "^3.17.7",
+    "pdf-lib": "^1.17.1",
     "pinia": "^3.0.4",
     "primevue": "^4.4.1",
+    "qrcode": "^1.5.4",
     "vue": "^3.5.13",
     "vue-echarts": "^7.0.3"
   },

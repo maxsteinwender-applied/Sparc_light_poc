@@ -13,12 +13,12 @@ Stand: 2026-02-10
 ## Setup
 
 ```bash
-cd "/Users/maxsteinwender/Documents/Codex Projects/Sparc Light MVP"
+cd "/Users/maxsteinwender/Documents/Codex Projects/Sparc Light POC"
 npm run dev
 ```
 
 App im Browser öffnen:
-- `http://localhost:5173/` (oder die URL aus dem Terminal)
+- `http://127.0.0.1:3000/` (oder die URL aus dem Terminal)
 
 ## Testfall 1: Schritt 1 Zielauswahl
 
@@ -58,35 +58,37 @@ Erwartung:
 
 ## Testfall 5: Schritt 5 Ergebnisansicht
 
-- [x] Kennzahlen sichtbar (Sparrate, Laufzeit, Zielbetrag)
-- [x] Strategieauswahl umschalten
-- [x] Tabelle / Übersicht aktualisiert sich
-- [x] "0 % Vergleich" ein-/ausblenden
+- [x] Hero sichtbar inkl. Headline, Top-Aktionen, Monatsraten-KPI
+- [x] Renditekarten (Option A/B/C + Individuelle Rendite) umschalten
+- [x] Steckbriefkarte: Zielbetrag/Laufzeit inline bearbeiten
+- [x] Tab-Logik prüfen (`Übersicht`, `Optimierung`, `Umsetzung`)
+- [x] "Wie setzt sich der Zielbetrag zusammen?" öffnet/schließt Modal
 
 Erwartung:
 - Werte reagieren plausibel auf Laufzeit/Strategie.
 
 ## Testfall 6: PDF-Export
 
-- [x] "PDF exportieren" klicken
+- [x] "Als PDF herunterladen" klicken
 - [x] Datei wird heruntergeladen
 - [x] PDF-Inhalt ist lesbar und enthält Kerndaten
+- [x] PDF enthält DK-Rot-Branding, Titel "Ihr persönlicher Vorsparplan" und prominente Sparrate
+- [x] PDF enthält Ergebnis-Link und QR-Code mit identischem Ziel
+- [x] PDF enthält "Ihre nächsten Schritte", Kontakt-Platzhalter und rechtliche Hinweise (vorläufig)
 
 Erwartung:
 - Kein Fehlerdialog.
+- QR-Code und ausgeschriebener Link öffnen die Ergebnisseite mit derselben Konfiguration.
 
-## Testfall 7: E-Mail-Versand (nur wenn EmailJS konfiguriert)
+## Testfall 7: Link-Kopie und Top-Aktionen
 
-Voraussetzung:
-- `.env` enthält `VITE_EMAILJS_SERVICE_ID`, `VITE_EMAILJS_TEMPLATE_ID`, `VITE_EMAILJS_PUBLIC_KEY`
-
-- [x] "Ergebnis per E-Mail" öffnet Dialog
-- [x] Ungültige E-Mail zeigt Validierungsfehler
-- [x] Gültige E-Mail senden
+- [x] "Link kopieren" klicken
+- [x] Erfolgsmeldung erscheint
+- [x] Kopierter Link enthält `goal`, `target`, `years`, `strategy` und ggf. `rate`
+- [x] Kopierten Link in neuem Tab öffnen
 
 Erwartung:
-- Erfolgsfeedback wird angezeigt.
-- Cooldown (30s) verhindert direktes Spammen.
+- Ergebnisansicht wird mit derselben Konfiguration wiederhergestellt.
 
 ## Abschluss
 

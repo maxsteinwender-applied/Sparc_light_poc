@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useWizard } from '../composables/useWizard'
 import {
   calculateSavingsPlan,
   calculateTimeGainWithExtraMonthly,
 } from '../domain/savingsPlan'
+import { buildResultDeepLink } from '../domain/resultDeepLink'
 import { runMotionLeave } from '../motion/leaveHook'
 import {
   getModalBackdropVariants,
@@ -12,6 +13,7 @@ import {
 } from '../motion/presets'
 import { useMotionSafety } from '../motion/useMotionSafety'
 import { parseEuroInput } from '../domain/wizardValidation'
+import { exportResultPdf } from '../services/resultPdf'
 import { getGoal } from './goalsData'
 import { formatCurrency } from './ui/utils'
 import type { StrategyType } from '../stores/wizard'
@@ -49,7 +51,6 @@ const isExporting = ref(false)
 const isCopyingLink = ref(false)
 const copyFeedback = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 const feedbackTimeout = ref<number | null>(null)
-const pdfContainerRef = ref<HTMLElement | null>(null)
 const targetAmountInput = ref(String(targetAmount.value))
 const durationInput = ref(String(durationYears.value))
 const customRatePercentInput = ref((customAnnualRate.value * 100).toFixed(1))
@@ -273,6 +274,21 @@ const goBack = () => {
   setStep(4)
 }
 
+const getResultDeepLink = (): string | null => {
+  if (!import.meta.client) {
+    return null
+  }
+
+  const baseUrl = `${window.location.origin}${window.location.pathname}`
+  return buildResultDeepLink(baseUrl, {
+    goal: goal.value,
+    target: targetAmount.value,
+    years: durationYears.value,
+    strategy: selectedStrategy.value,
+    rate: selectedAnnualRate.value,
+  })
+}
+
 const handleCopyLink = async () => {
   if (!import.meta.client || isCopyingLink.value) {
     return
@@ -280,15 +296,10 @@ const handleCopyLink = async () => {
 
   isCopyingLink.value = true
   try {
-    const params = new URLSearchParams({
-      goal: goal.value,
-      target: `${targetAmount.value}`,
-      years: `${durationYears.value}`,
-      strategy: selectedStrategy.value,
-      rate: `${selectedAnnualRate.value}`,
-    })
-
-    const shareUrl = `${window.location.origin}${window.location.pathname}?${params.toString()}`
+    const shareUrl = getResultDeepLink()
+    if (!shareUrl) {
+      throw new Error('Link generation unavailable')
+    }
 
     if (!navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') {
       throw new Error('Clipboard API unavailable')
@@ -311,64 +322,34 @@ const handleCopyLink = async () => {
 }
 
 const handleExportPdf = async () => {
-  if (!pdfContainerRef.value || isExporting.value) {
+  if (isExporting.value) {
     return
   }
 
   isExporting.value = true
-  await nextTick()
 
   try {
     if (!import.meta.client) {
       return
     }
 
-    const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
-      import('html2canvas'),
-      import('jspdf'),
-    ])
-
-    if (document.fonts?.ready) {
-      await document.fonts.ready
+    const resultDeepLink = getResultDeepLink()
+    if (!resultDeepLink) {
+      throw new Error('Link generation unavailable')
     }
 
-    const canvas = await html2canvas(pdfContainerRef.value, {
-      backgroundColor: '#FFFFFF',
-      scale: 2,
-      useCORS: true,
-      logging: false,
+    await exportResultPdf({
+      goalLabel: goalLabel.value,
+      durationYears: durationYears.value,
+      targetYear: targetYear.value,
+      targetAmount: targetAmount.value,
+      monthlySavings: monthlySavings.value,
+      annualRate: selectedAnnualRate.value,
+      totalInvested: totalInvested.value,
+      totalReturn: totalReturn.value,
+      generatedAt: new Date(),
+      resultDeepLink,
     })
-
-    const pdf = new jsPDF({
-      orientation: 'portrait',
-      unit: 'mm',
-      format: 'a4',
-    })
-
-    const pageWidth = pdf.internal.pageSize.getWidth()
-    const pageHeight = pdf.internal.pageSize.getHeight()
-    const margin = 10
-    const maxWidth = pageWidth - margin * 2
-    const maxHeight = pageHeight - margin * 2
-    const widthScale = maxWidth / canvas.width
-    const heightScale = maxHeight / canvas.height
-    const scale = Math.min(widthScale, heightScale)
-    const renderWidth = canvas.width * scale
-    const renderHeight = canvas.height * scale
-    const offsetX = (pageWidth - renderWidth) / 2
-    const offsetY = (pageHeight - renderHeight) / 2
-
-    pdf.addImage(canvas.toDataURL('image/png'), 'PNG', offsetX, offsetY, renderWidth, renderHeight, undefined, 'FAST')
-
-    const slug =
-      goalLabel.value
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/(^-|-$)/g, '') || 'ziel'
-    const datePart = new Date().toISOString().slice(0, 10)
-    pdf.save(`sparplan-${slug}-${datePart}.pdf`)
   } catch (error) {
     console.error('PDF export failed:', error)
     window.alert('PDF konnte nicht erstellt werden. Bitte versuchen Sie es erneut.')
@@ -862,45 +843,5 @@ onBeforeUnmount(() => {
       </div>
     </div>
 
-    <div class="pointer-events-none fixed left-[-10000px] top-0 z-[-1]">
-      <div
-        ref="pdfContainerRef"
-        class="bg-white"
-        style="width: 794px; min-height: 1123px; padding: 64px; color: #003745; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;"
-      >
-        <div style="border-bottom: 2px solid #003745; padding-bottom: 24px; margin-bottom: 28px;">
-          <div style="font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #568996; font-weight: 700;">
-            Sparc Light · Ergebnisbericht
-          </div>
-          <h1 style="font-size: 38px; line-height: 1.15; font-weight: 700; margin: 10px 0 0 0; letter-spacing: -0.02em;">
-            Ihr Sparplan auf einen Blick
-          </h1>
-          <p style="margin-top: 12px; margin-bottom: 0; font-size: 14px; color: #568996; line-height: 1.45;">
-            Ziel: <strong>{{ goalLabel }}</strong>
-          </p>
-        </div>
-
-        <div style="display: grid; gap: 10px;">
-          <p style="margin: 0; font-size: 14px; line-height: 1.5;">
-            Monatliche Sparrate: <strong>{{ formatCurrency(monthlySavings) }}</strong>
-          </p>
-          <p style="margin: 0; font-size: 14px; line-height: 1.5;">
-            Laufzeit: <strong>{{ durationYears }} Jahre</strong> (bis {{ targetYear }})
-          </p>
-          <p style="margin: 0; font-size: 14px; line-height: 1.5;">
-            Angespartes Kapital: <strong>{{ formatCurrency(totalInvested) }}</strong>
-          </p>
-          <p style="margin: 0; font-size: 14px; line-height: 1.5;">
-            Davon Erträge: <strong>+{{ formatCurrency(totalReturn) }}</strong>
-          </p>
-          <p style="margin: 0; font-size: 14px; line-height: 1.5;">
-            Ohne Rendite benötigte Rate: <strong>{{ formatCurrency(zeroReturnMonthly) }}</strong>
-          </p>
-          <p style="margin: 0; font-size: 14px; line-height: 1.5;">
-            Renditeannahme: <strong>{{ formatPercent(selectedAnnualRate) }}</strong>
-          </p>
-        </div>
-      </div>
-    </div>
   </div>
 </template>

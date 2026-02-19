@@ -2,12 +2,12 @@
 import { computed, defineAsyncComponent, markRaw, onMounted, ref, type Component, watch } from 'vue'
 import dekaLogoImage from '~/assets/e088cf5e6488ed30341523cb4f504779a4587bd6.png'
 import { useWizard } from '../composables/useWizard'
+import { parseResultDeepLink } from '../domain/resultDeepLink'
 import { runMotionLeave } from '../motion/leaveHook'
 import MotionStepShell from './motion/MotionStepShell.vue'
 import PrototypeTickerBar from './PrototypeTickerBar.vue'
 import { GOALS } from './goalsData'
 import type { GoalId } from './goalsData'
-import type { StrategyType } from '../stores/wizard'
 
 const route = useRoute()
 const {
@@ -67,60 +67,30 @@ watch(
 )
 
 const GOAL_IDS = new Set<GoalId>(GOALS.map((entry) => entry.id))
-const DEEP_LINK_STRATEGIES = new Set<StrategyType>(['security', 'balanced', 'growth', 'custom'])
-
-const parseQueryNumber = (value: unknown) => {
-  if (typeof value !== 'string') {
-    return null
-  }
-
-  const parsed = Number(value)
-  return Number.isFinite(parsed) ? parsed : null
-}
 
 const applyResultDeepLink = () => {
   if (hasResolvedDeepLink.value) {
     return
   }
 
-  const goalParam = route.query.goal
-  const targetParam = route.query.target
-  const yearsParam = route.query.years
-  const strategyParam = route.query.strategy
-  const rateParam = route.query.rate
-
-  if (
-    typeof goalParam !== 'string' ||
-    typeof strategyParam !== 'string' ||
-    !GOAL_IDS.has(goalParam as GoalId) ||
-    !DEEP_LINK_STRATEGIES.has(strategyParam as StrategyType)
-  ) {
+  const parsed = parseResultDeepLink(route.query as Record<string, unknown>)
+  if (!parsed || !GOAL_IDS.has(parsed.goal as GoalId)) {
     hasResolvedDeepLink.value = true
     return
   }
 
-  const parsedTarget = parseQueryNumber(targetParam)
-  const parsedYears = parseQueryNumber(yearsParam)
-
-  if (parsedTarget === null || parsedYears === null || parsedTarget <= 0 || parsedYears <= 0) {
-    hasResolvedDeepLink.value = true
-    return
-  }
-
-  const strategy = strategyParam as StrategyType
-  const parsedRate = parseQueryNumber(rateParam)
-  if (strategy === 'custom') {
-    if (parsedRate === null || parsedRate < 0 || parsedRate > 0.15) {
+  if (parsed.strategy === 'custom') {
+    if (typeof parsed.rate !== 'number') {
       hasResolvedDeepLink.value = true
       return
     }
-    setCustomAnnualRate(parsedRate)
+    setCustomAnnualRate(parsed.rate)
   }
 
-  setGoal(goalParam as GoalId)
-  setTargetAmount(parsedTarget)
-  setDurationYears(parsedYears)
-  setSelectedStrategy(strategy)
+  setGoal(parsed.goal as GoalId)
+  setTargetAmount(parsed.target)
+  setDurationYears(parsed.years)
+  setSelectedStrategy(parsed.strategy)
   setStep(5)
   hasResolvedDeepLink.value = true
 }
