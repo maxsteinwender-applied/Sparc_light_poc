@@ -3,7 +3,7 @@ export interface SavingsProjectionPoint {
   invested: number
   value: number
   zeroReturn: number
-  isTargetFonds: boolean
+  isTargetProjection: boolean
   isTargetZero: boolean
 }
 
@@ -155,7 +155,7 @@ export const calculateSavingsPlan = ({
       invested: Math.round(currentInvested),
       value: Math.round(currentBalance),
       zeroReturn: Math.round(zeroReturnBalance),
-      isTargetFonds: yearIndex === years,
+      isTargetProjection: yearIndex === years,
       isTargetZero: yearIndex === yearsNeededZero,
     })
 

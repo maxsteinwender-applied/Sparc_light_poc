@@ -3,7 +3,18 @@ import path from 'node:path'
 import process from 'node:process'
 
 const ROOT = process.cwd()
-const DIRECTORIES = ['src', 'tests']
+const DIRECTORIES = [
+  'charts',
+  'components',
+  'composables',
+  'domain',
+  'motion',
+  'pages',
+  'services',
+  'stores',
+  'tests',
+  'types',
+]
 const FILE_EXTENSIONS = new Set(['.ts', '.vue', '.js', '.mjs', '.cjs'])
 
 const checkers = [
@@ -60,6 +71,25 @@ for (const directory of DIRECTORIES) {
 
 const violations = []
 
+const collectSemicolonViolations = (file, content) => {
+  const extension = path.extname(file)
+  if (extension !== '.ts' && extension !== '.vue') {
+    return
+  }
+
+  const lines = content.split('\n')
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index].trim()
+    if (!line || line.startsWith('//')) {
+      continue
+    }
+
+    if (line.endsWith(';')) {
+      violations.push(`${file}:${index + 1}: Semikolon am Zeilenende`)
+    }
+  }
+}
+
 for (const file of files) {
   const absolutePath = path.join(ROOT, file)
   const content = await readFile(absolutePath, 'utf8')
@@ -69,6 +99,8 @@ for (const file of files) {
       violations.push(`${file}: ${checker.name}`)
     }
   }
+
+  collectSemicolonViolations(file, content)
 }
 
 if (violations.length > 0) {

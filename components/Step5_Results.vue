@@ -34,6 +34,7 @@ const {
 
 type ResultTab = 'overview' | 'optimization' | 'implementation'
 type BaseStrategyType = Exclude<StrategyType, 'custom'>
+type ActionFeedback = { type: 'success' | 'error'; text: string }
 
 const LINKS = {
   sparrechner: 'https://www.deka.de/privatkunden/unser-angebot/wertpapiersparen/vorsorge-und-sparen#Sparrechner',
@@ -49,7 +50,7 @@ const LINKS = {
 const activeTab = ref<ResultTab>('overview')
 const isExporting = ref(false)
 const isCopyingLink = ref(false)
-const copyFeedback = ref<{ type: 'success' | 'error'; text: string } | null>(null)
+const actionFeedback = ref<ActionFeedback | null>(null)
 const feedbackTimeout = ref<number | null>(null)
 const targetAmountInput = ref(String(targetAmount.value))
 const durationInput = ref(String(durationYears.value))
@@ -314,25 +315,25 @@ const handleTabKeydown = (event: KeyboardEvent, index: number, key: ResultTab) =
 
 const formatPercent = (value: number) => `${(value * 100).toFixed(1).replace('.', ',')} % p. a.`
 
-const clearCopyFeedback = () => {
+const clearActionFeedback = () => {
   if (feedbackTimeout.value !== null && import.meta.client) {
     window.clearTimeout(feedbackTimeout.value)
   }
 
   feedbackTimeout.value = null
-  copyFeedback.value = null
+  actionFeedback.value = null
 }
 
-const setCopyFeedback = (feedback: { type: 'success' | 'error'; text: string }) => {
-  clearCopyFeedback()
-  copyFeedback.value = feedback
+const setActionFeedback = (feedback: ActionFeedback) => {
+  clearActionFeedback()
+  actionFeedback.value = feedback
 
   if (!import.meta.client) {
     return
   }
 
   feedbackTimeout.value = window.setTimeout(() => {
-    copyFeedback.value = null
+    actionFeedback.value = null
     feedbackTimeout.value = null
   }, 3200)
 }
@@ -500,13 +501,13 @@ const handleCopyLink = async () => {
     }
 
     await navigator.clipboard.writeText(shareUrl)
-    setCopyFeedback({
+    setActionFeedback({
       type: 'success',
       text: 'Link wurde in die Zwischenablage kopiert.',
     })
   } catch (error) {
     console.error('Copy link failed:', error)
-    setCopyFeedback({
+    setActionFeedback({
       type: 'error',
       text: 'Link konnte nicht kopiert werden. Bitte erneut versuchen.',
     })
@@ -544,9 +545,16 @@ const handleExportPdf = async () => {
       generatedAt: new Date(),
       resultDeepLink,
     })
+    setActionFeedback({
+      type: 'success',
+      text: 'PDF wurde erstellt und heruntergeladen.',
+    })
   } catch (error) {
     console.error('PDF export failed:', error)
-    window.alert('PDF konnte nicht erstellt werden. Bitte versuchen Sie es erneut.')
+    setActionFeedback({
+      type: 'error',
+      text: 'PDF konnte nicht erstellt werden. Bitte versuchen Sie es erneut.',
+    })
   } finally {
     isExporting.value = false
   }
@@ -617,7 +625,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-  clearCopyFeedback()
+  clearActionFeedback()
 })
 </script>
 
@@ -669,13 +677,13 @@ onBeforeUnmount(() => {
         </div>
 
         <p
-          v-if="copyFeedback"
+          v-if="actionFeedback"
           class="mt-4 text-center text-sm"
           role="status"
           aria-live="polite"
-          :class="copyFeedback.type === 'success' ? 'text-[#277A6B]' : 'text-[#AD1111]'"
+          :class="actionFeedback.type === 'success' ? 'text-[#277A6B]' : 'text-[#AD1111]'"
         >
-          {{ copyFeedback.text }}
+          {{ actionFeedback.text }}
         </p>
 
         <div class="mt-10 grid items-start gap-7 lg:grid-cols-[1.2fr_1fr]">

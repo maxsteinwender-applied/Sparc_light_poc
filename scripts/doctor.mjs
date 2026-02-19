@@ -1,19 +1,19 @@
 #!/usr/bin/env node
 
-import { existsSync } from "node:fs";
-import { resolve } from "node:path";
+import { existsSync } from "node:fs"
+import { resolve } from "node:path"
 
-const REQUIRED_NODE_MAJOR = 20;
-const root = process.cwd();
+const REQUIRED_NODE_MAJOR = 20
+const root = process.cwd()
 
-const errors = [];
-const warnings = [];
+const errors = []
+const warnings = []
 
-const nodeMajor = Number.parseInt(process.versions.node.split(".")[0] ?? "0", 10);
+const nodeMajor = Number.parseInt(process.versions.node.split(".")[0] ?? "0", 10)
 if (Number.isNaN(nodeMajor) || nodeMajor < REQUIRED_NODE_MAJOR) {
   errors.push(
     `Node.js ${REQUIRED_NODE_MAJOR}+ is required. Current version: ${process.versions.node}.`
-  );
+  )
 }
 
 const requiredPaths = [
@@ -27,34 +27,34 @@ const requiredPaths = [
   ".codex/skills/start/PROJECT_START_CHECKLIST.md",
   ".codex/skills/product/PRD.md",
   ".codex/skills/product/features/INDEX.md",
-];
+]
 
 for (const relPath of requiredPaths) {
   if (!existsSync(resolve(root, relPath))) {
-    errors.push(`Missing required path: ${relPath}`);
+    errors.push(`Missing required path: ${relPath}`)
   }
 }
 
 if (!existsSync(resolve(root, ".env.local"))) {
   warnings.push(
     "Optional file .env.local not found. This is fine unless your project needs backend credentials."
-  );
+  )
 }
 
 if (errors.length === 0) {
-  console.log("Doctor check passed.");
+  console.log("Doctor check passed.")
 } else {
-  console.error("Doctor check failed:");
+  console.error("Doctor check failed:")
   for (const error of errors) {
-    console.error(`- ${error}`);
+    console.error(`- ${error}`)
   }
 }
 
 if (warnings.length > 0) {
-  console.warn("Warnings:");
+  console.warn("Warnings:")
   for (const warning of warnings) {
-    console.warn(`- ${warning}`);
+    console.warn(`- ${warning}`)
   }
 }
 
-process.exit(errors.length > 0 ? 1 : 0);
+process.exit(errors.length > 0 ? 1 : 0)

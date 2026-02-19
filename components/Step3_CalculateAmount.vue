@@ -55,7 +55,9 @@ const handleBack = () => {
 }
 
 const handleContinue = () => {
-  setStep(4)
+  setStep(4, {
+    previousStep: calculationFactors.value.length > 0 ? 3 : 2,
+  })
 }
 
 const isSelected = (label: string) => calculationFactors.value.includes(label)

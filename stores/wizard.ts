@@ -8,6 +8,7 @@ type GoalSelections = Partial<Record<GoalId, string[]>>
 
 export interface WizardState {
   step: number
+  previousStep: number | null
   transitionDirection: 1 | -1
   goal: GoalId
   customGoalName: string
@@ -26,8 +27,13 @@ export interface WizardGoalDefaults {
   clearCustomGoalName?: boolean
 }
 
+interface SetStepOptions {
+  previousStep?: number | null
+}
+
 const DEFAULTS = {
   step: 1,
+  previousStep: null as number | null,
   transitionDirection: 1 as 1 | -1,
   goal: 'travel' as GoalId,
   customGoalName: '',
@@ -56,7 +62,7 @@ export const useWizardStore = defineStore('wizard', {
     calculationFactors: (state): string[] => state.selections[state.goal] ?? [],
   },
   actions: {
-    setStep(step: number) {
+    setStep(step: number, options?: SetStepOptions) {
       const nextStep = Number.isFinite(step) ? Math.round(step) : this.step
 
       if (nextStep === this.step) {
@@ -64,6 +70,7 @@ export const useWizardStore = defineStore('wizard', {
       }
 
       this.transitionDirection = nextStep > this.step ? 1 : -1
+      this.previousStep = options?.previousStep ?? this.step
       this.step = nextStep
     },
     setGoal(goal: GoalId) {

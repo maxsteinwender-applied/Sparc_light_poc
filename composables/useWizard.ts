@@ -7,6 +7,7 @@ export const useWizard = () => {
   const wizardStore = useWizardStore()
   const {
     step,
+    previousStep,
     transitionDirection,
     goal,
     customGoalName,
@@ -19,6 +20,7 @@ export const useWizard = () => {
 
   return {
     step,
+    previousStep,
     transitionDirection,
     goal,
     customGoalName,
@@ -27,7 +29,8 @@ export const useWizard = () => {
     selectedStrategy,
     customAnnualRate,
     calculationFactors,
-    setStep: (stepValue: number) => wizardStore.setStep(stepValue),
+    setStep: (stepValue: number, options?: { previousStep?: number | null }) =>
+      wizardStore.setStep(stepValue, options),
     setGoal: (goalValue: GoalId) => wizardStore.setGoal(goalValue),
     setCustomGoalName: (name: string) => wizardStore.setCustomGoalName(name),
     setTargetAmount: (amount: number) => wizardStore.setTargetAmount(amount),

@@ -1,6 +1,6 @@
-import { defineConfig, devices } from "@playwright/test";
+import { defineConfig, devices } from "@playwright/test"
 
-const isCI = Boolean(process.env.CI);
+const isCI = Boolean(process.env.CI)
 
 export default defineConfig({
   testDir: "./tests/e2e",
@@ -26,4 +26,4 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"] },
     },
   ],
-});
+})

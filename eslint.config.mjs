@@ -9,4 +9,10 @@ export default [
       "coverage/**",
     ],
   },
-];
+  {
+    files: ["**/*.js", "**/*.mjs", "**/*.cjs"],
+    rules: {
+      semi: ["error", "never"],
+    },
+  },
+]

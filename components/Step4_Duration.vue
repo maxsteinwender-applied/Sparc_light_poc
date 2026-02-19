@@ -8,11 +8,11 @@ import NumericInputStepper from './ui/NumericInputStepper.vue'
 
 const {
   setStep,
+  previousStep,
   durationYears,
   setDurationYears,
   goal,
   customGoalName,
-  calculationFactors,
 } = useWizard()
 
 const currentGoal = computed(() => getGoal(goal.value))
@@ -36,8 +36,8 @@ const goalLabel = computed(() => {
 const quickOptions = computed(() => currentGoal.value.typicalTimeHorizonOptions)
 
 const handleBack = () => {
-  if (calculationFactors.value.length > 0) {
-    setStep(3)
+  if (previousStep.value === 2 || previousStep.value === 3) {
+    setStep(previousStep.value)
     return
   }
 

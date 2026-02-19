@@ -1,61 +1,51 @@
-export type GoalId = 'wealth' | 'retirement' | 'kids' | 'property' | 'car' | 'travel' | 'purchase' | 'custom';
+export type GoalId = 'wealth' | 'retirement' | 'kids' | 'property' | 'car' | 'travel' | 'purchase' | 'custom'
 
 export interface GoalStrategy {
-  label: string;
-  rate: number;
-  product: string;
-  description: string;
+  label: string
+  rate: number
 }
 
 export interface AmountFinderChip {
-  label: string;
-  emoji: string;
-  cost: number;
+  label: string
+  emoji: string
+  cost: number
 }
 
 export interface GoalData {
-  id: GoalId;
-  label: string;
-  icon?: string;
-  image: string;
-  shortTeaser: string;
-  whatItMeans: string[];
-  typicalTimeHorizonOptions: number[];
-  defaultTimeHorizonYears: number;
-  targetAmountModeOptions: ('known' | 'calculate')[];
-  avgTargetAmountHint: string;
-  amountFinderCategories: string[];
-  amountFinderChips: AmountFinderChip[];
-  baseTargetAmount: number;
+  id: GoalId
+  label: string
+  icon?: string
+  image: string
+  shortTeaser: string
+  whatItMeans: string[]
+  typicalTimeHorizonOptions: number[]
+  defaultTimeHorizonYears: number
+  avgTargetAmountHint: string
+  amountFinderCategories: string[]
+  amountFinderChips: AmountFinderChip[]
+  baseTargetAmount: number
   strategies: {
-    security: GoalStrategy;
-    balanced: GoalStrategy;
-    growth: GoalStrategy;
-  };
-  defaultStrategy: 'security' | 'balanced' | 'growth';
-  disclaimerShort: string;
+    security: GoalStrategy
+    balanced: GoalStrategy
+    growth: GoalStrategy
+  }
+  defaultStrategy: 'security' | 'balanced' | 'growth'
 }
 
 const COMMON_STRATEGIES = {
   security: {
     label: 'Sicherheitsorientiert',
     rate: 0.03,
-    product: 'Deka-Nachhaltigkeit Rentenfonds',
-    description: 'Solide Basis mit geringen Schwankungen.'
   },
   balanced: {
     label: 'Ausgewogen',
     rate: 0.056,
-    product: 'Deka-Global Champions Fonds',
-    description: 'Gute Balance aus Chance und Risiko.'
   },
   growth: {
     label: 'Chancenorientiert',
     rate: 0.065,
-    product: 'Deka-Global Aktienfonds',
-    description: 'Maximale Ertragschancen langfristig.'
   }
-};
+}
 
 export const GOALS: GoalData[] = [
   {
@@ -71,7 +61,6 @@ export const GOALS: GoalData[] = [
     ],
     typicalTimeHorizonOptions: [1, 2, 5],
     defaultTimeHorizonYears: 2,
-    targetAmountModeOptions: ['known', 'calculate'],
     avgTargetAmountHint: "Als Orientierung: Eine größere Reise liegt oft bei 3.000–10.000 EUR pro Person.",
     amountFinderCategories: ["Dauer", "Reisestil", "Regionen", "Unterkunft", "Komfort"],
     amountFinderChips: [
@@ -88,7 +77,6 @@ export const GOALS: GoalData[] = [
     baseTargetAmount: 6000,
     strategies: COMMON_STRATEGIES,
     defaultStrategy: 'balanced',
-    disclaimerShort: "Je nach Strategie können Zwischenstände schwanken."
   },
   {
     id: 'kids',
@@ -103,7 +91,6 @@ export const GOALS: GoalData[] = [
     ],
     typicalTimeHorizonOptions: [10, 15, 20],
     defaultTimeHorizonYears: 15,
-    targetAmountModeOptions: ['known', 'calculate'],
     avgTargetAmountHint: "Viele Familien setzen Ziele wie 10.000–30.000 EUR bis zum 18. Lebensjahr.",
     amountFinderCategories: ["Ausbildung", "Start ins Leben", "Flexibilität", "Meilensteine", "Sicherheit"],
     amountFinderChips: [
@@ -117,7 +104,6 @@ export const GOALS: GoalData[] = [
     baseTargetAmount: 15000,
     strategies: COMMON_STRATEGIES,
     defaultStrategy: 'balanced',
-    disclaimerShort: "Je nach Anlagestrategie sind Schwankungen möglich."
   },
   {
     id: 'retirement',
@@ -132,7 +118,6 @@ export const GOALS: GoalData[] = [
     ],
     typicalTimeHorizonOptions: [15, 25, 35],
     defaultTimeHorizonYears: 25,
-    targetAmountModeOptions: ['known', 'calculate'],
     avgTargetAmountHint: "Als grobe Orientierung: Viele planen mit 100.000–250.000 EUR zusätzlichem Kapital.",
     amountFinderCategories: ["Ruhestand", "Lebensstandard", "Inflation", "Sicherheit", "Zusatzrente"],
     amountFinderChips: [
@@ -146,7 +131,6 @@ export const GOALS: GoalData[] = [
     baseTargetAmount: 250000,
     strategies: COMMON_STRATEGIES,
     defaultStrategy: 'balanced',
-    disclaimerShort: "Die Berechnung basiert auf Annahmen und dient der Orientierung."
   },
   {
     id: 'property',
@@ -161,7 +145,6 @@ export const GOALS: GoalData[] = [
     ],
     typicalTimeHorizonOptions: [5, 8, 12],
     defaultTimeHorizonYears: 8,
-    targetAmountModeOptions: ['known', 'calculate'],
     avgTargetAmountHint: "Viele planen z. B. 30.000–80.000 EUR Eigenkapital als Zielgröße.",
     amountFinderCategories: ["Kauf", "Sanierung", "Puffer", "Nebenkosten", "Eigenkapitalquote"],
     amountFinderChips: [
@@ -176,7 +159,6 @@ export const GOALS: GoalData[] = [
     baseTargetAmount: 350000,
     strategies: COMMON_STRATEGIES,
     defaultStrategy: 'security',
-    disclaimerShort: "Kürzere Laufzeiten bedeuten oft weniger Schwankungstoleranz."
   },
   {
     id: 'car',
@@ -191,7 +173,6 @@ export const GOALS: GoalData[] = [
     ],
     typicalTimeHorizonOptions: [2, 4, 6],
     defaultTimeHorizonYears: 4,
-    targetAmountModeOptions: ['known', 'calculate'],
     avgTargetAmountHint: "Viele setzen je nach Fahrzeug z. B. 10.000–30.000 EUR an.",
     amountFinderCategories: ["Fahrzeugtyp", "Neu/Gebraucht", "Extras", "Puffer", "Zeitpunkt"],
     amountFinderChips: [
@@ -205,7 +186,6 @@ export const GOALS: GoalData[] = [
     baseTargetAmount: 25000,
     strategies: COMMON_STRATEGIES,
     defaultStrategy: 'security',
-    disclaimerShort: "Bei kürzeren Laufzeiten kann eine konservativere Annahme sinnvoll sein."
   },
   {
     id: 'purchase',
@@ -220,7 +200,6 @@ export const GOALS: GoalData[] = [
     ],
     typicalTimeHorizonOptions: [1, 3, 5],
     defaultTimeHorizonYears: 3,
-    targetAmountModeOptions: ['known', 'calculate'],
     avgTargetAmountHint: "Viele planen für Anschaffungen z. B. 2.000–15.000 EUR.",
     amountFinderCategories: ["Kategorie", "Qualität", "Menge", "Timing", "Puffer"],
     amountFinderChips: [
@@ -233,7 +212,6 @@ export const GOALS: GoalData[] = [
     baseTargetAmount: 5000,
     strategies: COMMON_STRATEGIES,
     defaultStrategy: 'security',
-    disclaimerShort: "Für kürzere Ziele ist Planbarkeit besonders wichtig."
   },
   {
     id: 'wealth',
@@ -248,7 +226,6 @@ export const GOALS: GoalData[] = [
     ],
     typicalTimeHorizonOptions: [10, 20, 30],
     defaultTimeHorizonYears: 20,
-    targetAmountModeOptions: ['known', 'calculate'],
     avgTargetAmountHint: "Viele Anlegerinnen und Anleger starten z. B. mit 25.000 EUR als langfristigem Ziel.",
     amountFinderCategories: ["Zielgröße", "Risikoneigung", "Flexibilität", "Lebensstil", "Sicherheitsreserve"],
     amountFinderChips: [
@@ -261,7 +238,6 @@ export const GOALS: GoalData[] = [
     baseTargetAmount: 25000,
     strategies: COMMON_STRATEGIES,
     defaultStrategy: 'balanced',
-    disclaimerShort: "Wertentwicklungen sind nicht garantiert und können schwanken."
   },
   {
     id: 'custom',
@@ -272,7 +248,6 @@ export const GOALS: GoalData[] = [
     whatItMeans: [],
     typicalTimeHorizonOptions: [3, 5, 10],
     defaultTimeHorizonYears: 5,
-    targetAmountModeOptions: ['known', 'calculate'],
     avgTargetAmountHint: "Tipp: Starten Sie mit einer groben Schätzung. Sie können später alles anpassen.",
     amountFinderCategories: ["Zielgröße", "Risikoneigung", "Flexibilität", "Lebensstil", "Sicherheitsreserve"],
     amountFinderChips: [
@@ -285,8 +260,7 @@ export const GOALS: GoalData[] = [
     baseTargetAmount: 10000,
     strategies: COMMON_STRATEGIES,
     defaultStrategy: 'balanced',
-    disclaimerShort: "Individuelle Ziele erfordern individuelle Planung."
   }
-];
+]
 
-export const getGoal = (id: GoalId) => GOALS.find(g => g.id === id) || GOALS[0];
+export const getGoal = (id: GoalId) => GOALS.find(g => g.id === id) || GOALS[0]
