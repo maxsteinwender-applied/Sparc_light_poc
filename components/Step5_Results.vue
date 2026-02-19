@@ -314,6 +314,7 @@ const handleTabKeydown = (event: KeyboardEvent, index: number, key: ResultTab) =
 }
 
 const formatPercent = (value: number) => `${(value * 100).toFixed(1).replace('.', ',')} % p. a.`
+const formatPercentCompact = (value: number) => `${(value * 100).toFixed(1).replace('.', ',')} % p.a.`
 
 const clearActionFeedback = () => {
   if (feedbackTimeout.value !== null && import.meta.client) {
@@ -646,7 +647,11 @@ onBeforeUnmount(() => {
 
         <div class="flex flex-col items-center text-center">
           <span class="mb-3 block text-xs font-semibold uppercase tracking-[0.16em] text-[#EE0000]">Schritt 5 von 5</span>
-          <h1 class="mb-4 text-4xl font-bold tracking-tight text-[#003745] md:text-5xl">Ihre Weltreise wird greifbar.</h1>
+          <h1 class="mb-4 text-4xl font-bold tracking-tight text-[#003745]/70 md:text-5xl">
+            Ihr Sparziel
+            <span class="text-[#003745]">{{ goalLabel }}</span>
+            wird greifbar.
+          </h1>
           <p class="ui-text-secondary max-w-3xl text-lg md:text-xl">
             Mit Ihrem Plan sparen Sie
             <span class="font-semibold text-[#003745]">{{ formatCurrency(targetAmount) }}</span>
@@ -696,7 +701,9 @@ onBeforeUnmount(() => {
                 </span>
               </div>
               <div class="text-4xl font-bold tracking-tight">{{ formatCurrency(monthlySavings) }}</div>
-              <div class="mt-2 text-sm text-white/80">Errechnet für {{ durationYears }} Jahre</div>
+              <div class="mt-2 text-sm text-white/80">
+                Errechnet für {{ durationYears }} Jahre | {{ formatPercentCompact(selectedAnnualRate) }} Rendite
+              </div>
             </article>
 
             <p class="ui-text-secondary text-sm">Passen Sie hier Ihre Renditeannahme für das Sparziel an:</p>
@@ -800,7 +807,7 @@ onBeforeUnmount(() => {
                 <p class="text-xs font-semibold uppercase tracking-widest text-[var(--text-secondary)]">Sparziel</p>
                 <h2 class="mt-2 text-2xl font-bold text-[#003745]">{{ goalLabel }}</h2>
                 <p class="mt-3 text-sm text-[#1B4A5A]">
-                  Ihr Sparziel im Überblick
+                  Alle Details im Überblick
                 </p>
               </div>
               <div class="flex h-20 w-20 items-center justify-center rounded-full border border-[#0A4F5E] bg-[#0E6073] text-white">

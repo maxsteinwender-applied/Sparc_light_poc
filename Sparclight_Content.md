@@ -161,7 +161,7 @@ Quelle: `components/Step5_Results.vue`
 
 - Button: `Zurück`
 - `Schritt 5 von 5`
-- Titel: `Ihre Weltreise wird greifbar.`
+- Titel: `Ihr Sparziel {{ goalLabel }} wird greifbar.`
 - Untertitel: `Mit Ihrem Plan sparen Sie {{ Betrag }} in {{ durationYears }} Jahren.`
 
 ### Top-Aktionen
@@ -175,7 +175,7 @@ Quelle: `components/Step5_Results.vue`
 ### Hero-Links (linke Spalte)
 
 - KPI-Label: `Monatliche Sparrate`
-- KPI-Hinweis: `Errechnet für {{ durationYears }} Jahre`
+- KPI-Hinweis: `Errechnet für {{ durationYears }} Jahre | {{ selectedAnnualRate }} % p.a. Rendite`
 - Renditekarten:
   - `Option A` / `Niedrige Rendite` / `Geringeres Risiko`
   - `Option B` / `Mittlere Rendite` / `Mittleres Risiko`

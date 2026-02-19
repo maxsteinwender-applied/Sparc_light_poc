@@ -19,7 +19,7 @@ test('sparc light smoke test', async ({ page }) => {
   await page.getByRole('button', { name: 'Mit diesem Betrag fortfahren' }).click()
   await expect(page.getByRole('heading', { level: 2, name: /Wann möchten Sie/i })).toBeVisible()
   await page.getByRole('button', { name: 'Ergebnis anzeigen' }).click()
-  await expect(page.getByRole('heading', { level: 1, name: 'Ihre Weltreise wird greifbar.' })).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1, name: 'Ihr Sparziel Urlaub / Reise wird greifbar.' })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Als PDF herunterladen' })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Link kopieren' })).toBeVisible()
   await page.getByRole('tab', { name: 'Optimierung' }).click()
