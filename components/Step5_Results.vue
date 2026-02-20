@@ -35,6 +35,26 @@ const {
 type ResultTab = 'overview' | 'optimization' | 'implementation'
 type BaseStrategyType = Exclude<StrategyType, 'custom'>
 type ActionFeedback = { type: 'success' | 'error'; text: string }
+type OptimizationCard = {
+  key: string
+  chip: string
+  title: string
+  body: string
+  icon: string
+  href?: string
+  highlight?: string
+}
+type ImplementationCard = {
+  key: string
+  title: string
+  bodyBeforeLink: string
+  linkLabel?: string
+  bodyAfterLink?: string
+  href?: string
+  imageSrc: string
+  imageAlt: string
+  note?: string
+}
 
 const LINKS = {
   sparrechner: 'https://www.deka.de/privatkunden/unser-angebot/wertpapiersparen/vorsorge-und-sparen#Sparrechner',
@@ -104,8 +124,8 @@ const STRATEGY_COPY: Record<
 }
 
 const goalSymbolMap: Record<string, string> = {
-  globe: 'travel_explore',
-  heart: 'favorite',
+  globe: 'beach_access',
+  heart: 'child_hat',
   hourglass: 'schedule',
   home: 'home',
   gauge: 'directions_car',
@@ -125,6 +145,36 @@ const fundFavorites = [
   { rank: 8, name: 'Deka-Künstliche Intelligenz CF', isin: 'LU2339791803', type: 'Aktienfonds' },
   { rank: 9, name: 'Deka MSCI World Climate Change ESG UCITS ETF', isin: 'DE000ETFL581', type: 'ETF' },
   { rank: 10, name: 'Deka-Globale Aktien LowRisk CF (A)', isin: 'LU0851806900', type: 'Aktienfonds' },
+]
+
+const implementationCards: ImplementationCard[] = [
+  {
+    key: 'branch',
+    title: 'Abschluss in der Filiale',
+    bodyBeforeLink: 'Sie möchten persönlich beraten werden. Vereinbaren Sie einen',
+    linkLabel: 'Termin in Ihrer Sparkassenfiliale',
+    bodyAfterLink: 'und schließen Sie Ihren FondsSparplan direkt vor Ort ab.',
+    href: LINKS.termin,
+    imageSrc: '/images/results/implementation-steps/Abschluss_Filiale.jpeg',
+    imageAlt: 'Beratung in einer Sparkassenfiliale',
+  },
+  {
+    key: 'online',
+    title: 'Abschluss in der Internetfiliale',
+    bodyBeforeLink: 'Sie möchten Ihren Sparplan direkt digital umsetzen. Öffnen Sie die',
+    linkLabel: 'Internetfiliale',
+    bodyAfterLink: 'und schließen Sie Ihren Auftrag online ab.',
+    href: LINKS.internetfiliale,
+    imageSrc: '/images/results/implementation-steps/Abschluss_Internetfiliale.jpeg',
+    imageAlt: 'Digitale Umsetzung in der Internetfiliale',
+  },
+  {
+    key: 'app',
+    title: 'Abschluss in der S-Invest App',
+    bodyBeforeLink: 'Sie nutzen die S-Invest App. Übertragen Sie Ihre Sparplan-Werte aus dieser Seite und schließen Sie den Plan direkt in der App ab.',
+    imageSrc: '/images/results/implementation-steps/Abschluss_SInvest.jpeg',
+    imageAlt: 'Umsetzung in der S-Invest App',
+  },
 ]
 
 const currentGoal = computed(() => getGoal(goal.value))
@@ -212,10 +262,45 @@ const optimizationTimeGainLabel = computed(() => {
   return `${months} Monat${months > 1 ? 'e' : ''} früher am Ziel`
 })
 
+const optimizationCards = computed<OptimizationCard[]>(() => [
+  {
+    key: 'dynamisierung',
+    chip: 'Dynamisierung',
+    title: 'Inflation ausgleichen',
+    body: 'Erhöhung der Sparrate um 2 % pro Jahr.',
+    icon: 'show_chart',
+    href: LINKS.dynamisierung,
+  },
+  {
+    key: 'starteinlage',
+    chip: 'Starteinlage',
+    title: 'Einmaliger Boost zum Start',
+    body: 'Einmalige Starteinlage von 1.000 EUR zu Beginn.',
+    icon: 'rocket_launch',
+    href: LINKS.starteinlage,
+  },
+  {
+    key: 'abraeumsparen',
+    chip: 'Deka-Abräumsparen',
+    title: 'Überschüsse automatisch sparen',
+    body: 'Automatisch 80 EUR monatlich zusätzlich investieren.',
+    icon: 'savings',
+    href: LINKS.abraeumsparen,
+  },
+  {
+    key: 'hoehere-sparrate',
+    chip: 'Höhere Sparrate',
+    title: 'Schneller ans Ziel',
+    body: 'Erhöhung der monatlichen Sparrate um 20 EUR.',
+    icon: 'trending_up',
+    highlight: optimizationTimeGainLabel.value,
+  },
+])
+
 const tabItems: Array<{ key: ResultTab; label: string; icon: string; disabled?: boolean }> = [
-  { key: 'overview', label: 'Übersicht', icon: 'dashboard' },
-  { key: 'optimization', label: 'Optimierung', icon: 'tune' },
-  { key: 'implementation', label: 'Umsetzung', icon: 'task_alt' },
+  { key: 'overview', label: 'Übersicht', icon: 'list' },
+  { key: 'optimization', label: 'Optimierung', icon: 'trending_up' },
+  { key: 'implementation', label: 'Umsetzung', icon: 'assignment' },
 ]
 
 const tabRefs = ref<Array<HTMLButtonElement | null>>([])
@@ -957,11 +1042,11 @@ onBeforeUnmount(() => {
         id="result-panel-overview"
         role="tabpanel"
         aria-labelledby="result-tab-overview"
-        class="space-y-6 rounded-[4px] border border-[#003745]/10 bg-white p-5 md:p-8"
+        class="space-y-8"
       >
         <div>
           <h2 class="text-2xl font-bold text-[#003745]">Warum Wertpapiersparen sinnvoll ist</h2>
-          <p class="mt-2 text-sm text-[var(--text-secondary)]">
+          <p class="mt-2 text-base text-[var(--text-secondary)]">
             Mit Renditeannahmen kann Ihr Ziel bei gleicher Laufzeit mit einer geringeren monatlichen Sparrate erreicht werden.
           </p>
         </div>
@@ -970,7 +1055,7 @@ onBeforeUnmount(() => {
           <article class="rounded-[4px] border border-[#003745]/20 bg-[#003745]/5 p-5">
             <div class="mb-4 flex items-center justify-between">
               <h3 class="text-lg font-semibold text-[#003745]">Mit Deka-FondsSparplan</h3>
-              <span class="rounded-full bg-[#003745] px-3 py-1 text-xs font-semibold text-white">Aktive Annahme</span>
+              <span class="ui-chip ui-chip-secondary-subtle">Aktive Annahme</span>
             </div>
             <div class="mb-4 flex items-end justify-between">
               <div>
@@ -1019,10 +1104,15 @@ onBeforeUnmount(() => {
         id="result-panel-optimization"
         role="tabpanel"
         aria-labelledby="result-tab-optimization"
-        class="space-y-6 rounded-[4px] border border-[#003745]/10 bg-white p-5 md:p-8"
+        class="space-y-8"
       >
-        <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <h2 class="text-2xl font-bold text-[#003745]">Optimierung</h2>
+        <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+          <div>
+            <h2 class="text-2xl font-bold text-[#003745]">Finde Wege um deinen Sparplan zu optimieren</h2>
+            <p class="mt-2 text-base text-[var(--text-secondary)]">
+              Schon kleine Anpassungen können helfen, Ihr Sparziel schneller und stabiler zu erreichen.
+            </p>
+          </div>
           <a
             :href="LINKS.sparrechner"
             target="_blank"
@@ -1033,53 +1123,30 @@ onBeforeUnmount(() => {
           </a>
         </div>
 
-        <div class="grid gap-4 md:grid-cols-2">
-          <article class="rounded-[4px] border border-[#003745]/15 p-5">
-            <div class="mb-3 flex items-center justify-between">
-              <p class="text-sm font-semibold text-[#003745]">Dynamisierung</p>
-              <span class="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#003745]/15 bg-[#F4F9FA] text-[#003745]">
-                <span class="material-symbols-outlined text-[18px]">show_chart</span>
-              </span>
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <article
+            v-for="card in optimizationCards"
+            :key="card.key"
+            class="flex h-full flex-col rounded-[4px] border border-[#003745]/15 p-5"
+          >
+            <div class="mb-4 flex aspect-[16/9] items-center justify-center rounded-[4px] bg-[#F4F9FA] text-[#003745]">
+              <span class="material-symbols-outlined text-[48px] md:text-[56px]">{{ card.icon }}</span>
             </div>
-            <h3 class="text-lg font-semibold text-[#003745]">Inflation ausgleichen</h3>
-            <p class="mt-1 text-[var(--text-secondary)]">+2 % p. a.</p>
-            <a :href="LINKS.dynamisierung" target="_blank" rel="noopener noreferrer" class="result-link mt-4 text-sm"><span class="result-link-label">Mehr erfahren</span><span class="material-symbols-outlined">chevron_right</span></a>
-          </article>
-
-          <article class="rounded-[4px] border border-[#003745]/15 p-5">
-            <div class="mb-3 flex items-center justify-between">
-              <p class="text-sm font-semibold text-[#003745]">Starteinlage</p>
-              <span class="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#003745]/15 bg-[#F4F9FA] text-[#003745]">
-                <span class="material-symbols-outlined text-[18px]">rocket_launch</span>
-              </span>
-            </div>
-            <h3 class="text-lg font-semibold text-[#003745]">Einmaliger Boost zum Start</h3>
-            <p class="mt-1 text-[var(--text-secondary)]">+1.000 EUR einmalig</p>
-            <a :href="LINKS.starteinlage" target="_blank" rel="noopener noreferrer" class="result-link mt-4 text-sm"><span class="result-link-label">Mehr erfahren</span><span class="material-symbols-outlined">chevron_right</span></a>
-          </article>
-
-          <article class="rounded-[4px] border border-[#003745]/15 p-5">
-            <div class="mb-3 flex items-center justify-between">
-              <p class="text-sm font-semibold text-[#003745]">Deka-Abräumsparen</p>
-              <span class="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#003745]/15 bg-[#F4F9FA] text-[#003745]">
-                <span class="material-symbols-outlined text-[18px]">savings</span>
-              </span>
-            </div>
-            <h3 class="text-lg font-semibold text-[#003745]">Überschüsse automatisch sparen</h3>
-            <p class="mt-1 text-[var(--text-secondary)]">+80 EUR monatlich</p>
-            <a :href="LINKS.abraeumsparen" target="_blank" rel="noopener noreferrer" class="result-link mt-4 text-sm"><span class="result-link-label">Mehr erfahren</span><span class="material-symbols-outlined">chevron_right</span></a>
-          </article>
-
-          <article class="rounded-[4px] border border-[#003745]/15 p-5">
-            <div class="mb-3 flex items-center justify-between">
-              <p class="text-sm font-semibold text-[#003745]">Höhere Sparrate</p>
-              <span class="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#003745]/15 bg-[#F4F9FA] text-[#003745]">
-                <span class="material-symbols-outlined text-[18px]">trending_up</span>
-              </span>
-            </div>
-            <h3 class="text-lg font-semibold text-[#003745]">Schneller ans Ziel</h3>
-            <p class="mt-1 text-[var(--text-secondary)]">+20 EUR monatlich</p>
-            <p class="mt-4 text-sm font-semibold text-[#277A6B]">{{ optimizationTimeGainLabel }}</p>
+            <span class="ui-chip ui-chip-secondary-subtle">
+              {{ card.chip }}
+            </span>
+            <h3 class="mt-4 text-[20px] font-normal text-[#003745]">{{ card.title }}</h3>
+            <p class="mt-2 text-base text-[var(--text-secondary)]">{{ card.body }}</p>
+            <p v-if="card.highlight" class="mt-3 text-sm font-semibold text-[#277A6B]">{{ card.highlight }}</p>
+            <a
+              v-if="card.href"
+              :href="card.href"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="ui-button ui-button-secondary motion-cta mt-5 inline-flex h-11 items-center justify-center self-start px-4 text-sm font-semibold"
+            >
+              Mehr erfahren
+            </a>
           </article>
         </div>
       </section>
@@ -1089,25 +1156,17 @@ onBeforeUnmount(() => {
         id="result-panel-implementation"
         role="tabpanel"
         aria-labelledby="result-tab-implementation"
-        class="space-y-6 rounded-[4px] border border-[#003745]/10 bg-white p-5 md:p-8"
+        class="space-y-10"
       >
-        <article class="rounded-[4px] border border-[#D3DEE3] bg-[#EEF3F6] p-6 md:p-8">
+        <article class="rounded-[4px] border border-[#D3DEE3] bg-white p-6 md:p-8">
           <div class="mb-5 flex flex-wrap items-start justify-between gap-4">
             <div>
               <p class="text-sm font-bold uppercase tracking-widest text-[#EE0000]">Kundenfavoriten</p>
               <h2 class="mt-2 text-4xl font-bold tracking-tight text-[#003745] md:text-5xl">Die Sparplan-Favoriten.</h2>
             </div>
-            <a
-              :href="LINKS.fondsfinder"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="motion-cta rounded-[4px] bg-[#315EB7] px-6 py-3 text-base font-medium text-white hover:bg-[#274E9B]"
-            >
-              Zum Fondsfinder
-            </a>
           </div>
 
-          <p class="mb-4 max-w-4xl text-lg text-[#1B4A5A]">
+          <p class="mb-6 max-w-4xl text-base text-[#1B4A5A]">
             Nachfolgend zeigen wir Ihnen die Fonds, die von unseren Kunden im letzten Monat am häufigsten für Fondssparpläne im DekaBank Depot ausgewählt wurden.
           </p>
 
@@ -1134,61 +1193,43 @@ onBeforeUnmount(() => {
         </article>
 
         <article>
-          <h3 class="mb-4 text-2xl font-bold text-[#003745]">Weitere Schritte</h3>
-          <div class="grid gap-4 md:grid-cols-3">
-            <section class="rounded-[4px] border border-[#003745]/15 p-5">
-              <div class="flex items-start gap-3">
-                <span class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#003745]/15 bg-[#F4F9FA] text-[#003745]">
-                  <span class="material-symbols-outlined text-[18px]">storefront</span>
-                </span>
-                <h4 class="text-lg font-semibold text-[#003745]">Abschluss in der Filiale</h4>
+          <h3 class="text-2xl font-bold text-[#003745]">Sparziel zur Realität werden lassen</h3>
+          <p class="mt-2 text-base text-[var(--text-secondary)]">
+            Sie haben mehrere Möglichkeiten, Ihren FondsSparplan passend zu Ihrem Alltag einzurichten.
+          </p>
+          <div class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <section
+              v-for="card in implementationCards"
+              :key="card.key"
+              class="flex h-full flex-col rounded-[4px] border border-[#003745]/15 p-5"
+            >
+              <div class="mb-4 aspect-[16/9] overflow-hidden rounded-[4px] bg-[#F4F9FA]">
+                <img
+                  :src="card.imageSrc"
+                  :alt="card.imageAlt"
+                  class="h-full w-full object-cover"
+                  loading="lazy"
+                >
               </div>
-              <p class="mt-2 text-sm text-[#4F7280]">Sie möchten persönlich beraten werden. Nehmen Sie Ihren Sparplan einfach mit in die Filiale. Eine Beraterin oder ein Berater prüft Ihren Plan gemeinsam mit Ihnen und schließt ihn direkt vor Ort ab.</p>
-              <p class="mt-3 text-sm font-semibold text-[#003745]">So geht's</p>
-              <ol class="mt-2 space-y-1 text-sm text-[#4F7280]">
-                <li>1. Sparplan speichern oder ausdrucken.</li>
-                <li>
-                  2.
-                  <a :href="LINKS.termin" target="_blank" rel="noopener noreferrer" class="result-link ml-1 text-sm"><span class="result-link-label">Termin in Ihrer Sparkassenfiliale vereinbaren.</span><span class="material-symbols-outlined">chevron_right</span></a>
-                </li>
-                <li>3. Persönlich besprechen und abschließen.</li>
-              </ol>
-            </section>
-
-            <section class="rounded-[4px] border border-[#003745]/15 p-5">
-              <div class="flex items-start gap-3">
-                <span class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#003745]/15 bg-[#F4F9FA] text-[#003745]">
-                  <span class="material-symbols-outlined text-[18px]">language</span>
-                </span>
-                <h4 class="text-lg font-semibold text-[#003745]">Abschluss in der Internetfiliale</h4>
-              </div>
-              <p class="mt-2 text-sm text-[#4F7280]">Sie möchten Ihren Sparplan direkt digital umsetzen. Öffnen Sie die Internetfiliale, übernehmen Sie Ihre Eckdaten und schließen Sie den Auftrag online ab.</p>
-              <p class="mt-3 text-sm font-semibold text-[#003745]">So geht's</p>
-              <ol class="mt-2 space-y-1 text-sm text-[#4F7280]">
-                <li>1. Sparplan-Daten bereithalten.</li>
-                <li>
-                  2.
-                  <a :href="LINKS.internetfiliale" target="_blank" rel="noopener noreferrer" class="result-link ml-1 text-sm"><span class="result-link-label">Internetfiliale öffnen.</span><span class="material-symbols-outlined">chevron_right</span></a>
-                </li>
-                <li>3. Auftrag online prüfen und absenden.</li>
-              </ol>
-            </section>
-
-            <section class="rounded-[4px] border border-[#003745]/15 p-5">
-              <div class="flex items-start gap-3">
-                <span class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#003745]/15 bg-[#F4F9FA] text-[#003745]">
-                  <span class="material-symbols-outlined text-[18px]">smartphone</span>
-                </span>
-                <h4 class="text-lg font-semibold text-[#003745]">Abschluss in der S-Invest App</h4>
-              </div>
-              <p class="mt-2 text-sm text-[#4F7280]">Sie nutzen die S-Invest App. Übertragen Sie Ihre Sparplan-Werte aus dieser Seite und schließen Sie den Plan direkt in der App ab.</p>
-              <p class="mt-3 text-sm font-semibold text-[#003745]">So geht's</p>
-              <ol class="mt-2 space-y-1 text-sm text-[#4F7280]">
-                <li>1. Sparplan-Werte notieren oder als PDF speichern.</li>
-                <li>2. S-Invest App öffnen und Sparplan anlegen.</li>
-                <li>3. Daten übernehmen und Abschluss durchführen.</li>
-              </ol>
-              <p class="mt-3 text-xs font-medium text-[var(--text-secondary)]">Aktuell ist kein Direktlink zur S-Invest App hinterlegt.</p>
+              <span class="ui-chip ui-chip-secondary-subtle">
+                Abschluss
+              </span>
+              <h4 class="mt-4 text-[20px] font-normal text-[#003745]">{{ card.title }}</h4>
+              <p class="mt-2 text-base text-[var(--text-secondary)]">
+                {{ card.bodyBeforeLink }}
+                <template v-if="card.href && card.linkLabel">
+                  <a
+                    :href="card.href"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-[#0043B4] underline underline-offset-2 hover:text-[#003A99]"
+                  >
+                    {{ card.linkLabel }}
+                  </a>
+                </template>
+                {{ card.bodyAfterLink }}
+              </p>
+              <p v-if="card.note" class="mt-3 text-xs font-medium text-[var(--text-secondary)]">{{ card.note }}</p>
             </section>
           </div>
         </article>

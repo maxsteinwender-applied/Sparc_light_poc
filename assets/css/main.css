@@ -126,7 +126,7 @@ select:disabled,
 
 .ui-button {
   min-height: 44px;
-  border-radius: var(--radius-control);
+  border-radius: 0;
   border: 1px solid transparent;
   font-weight: 600;
   line-height: 1.25;
@@ -204,6 +204,7 @@ select:disabled,
 }
 
 .ui-button-ghost {
+  border-radius: 0;
   border-color: transparent;
   background-color: transparent;
   color: var(--foreground);
@@ -268,6 +269,23 @@ select:disabled,
   color: var(--text-muted);
   background-color: #f8fbfc;
   box-shadow: none;
+}
+
+.ui-chip {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  border-radius: 9999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.ui-chip-secondary-subtle {
+  border: 0;
+  background-color: #f5efe4;
+  color: #664c3d;
 }
 
 .ui-tabs {
@@ -380,6 +398,7 @@ select:disabled,
 }
 
 .motion-cta {
+  border-radius: 0;
   will-change: transform;
   transition-property: transform, box-shadow, background-color, border-color, color;
   transition-duration: var(--motion-duration-normal);
@@ -387,7 +406,7 @@ select:disabled,
 }
 
 .motion-cta:hover {
-  transform: translateY(-2px) scale(1.01);
+  transform: none;
 }
 
 .motion-cta:active {

@@ -24,10 +24,10 @@ test('sparc light smoke test', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'Link kopieren' })).toBeVisible()
   await page.getByRole('tab', { name: 'Optimierung' }).click()
   await expect(page.locator('#result-panel-optimization')).toBeVisible()
-  await expect(page.getByRole('heading', { level: 2, name: 'Optimierung' })).toBeVisible()
+  await expect(page.getByRole('heading', { level: 2, name: 'Finde Wege um deinen Sparplan zu optimieren' })).toBeVisible()
   await page.getByRole('tab', { name: 'Umsetzung' }).click()
   await expect(page.locator('#result-panel-implementation')).toBeVisible()
-  await expect(page.getByRole('heading', { level: 2, name: 'Die Sparplan-Favoriten.' })).toBeVisible()
+  await expect(page.getByRole('heading', { level: 3, name: 'Sparziel zur Realität werden lassen' })).toBeVisible()
 
   await page.goto('/__smoke/chart')
   await expect(page.getByRole('heading', { level: 1, name: 'Chart Smoke' })).toBeVisible()

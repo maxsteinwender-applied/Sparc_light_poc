@@ -2,6 +2,16 @@
 
 Build production-ready products faster with an explicit, file-based Codex workflow.
 
+## Fast Path
+
+```bash
+npm install
+npm run doctor
+npm run dev
+```
+
+Open: `http://sparc-light-poc.localhost`
+
 This starter kit is optimized for fast team onboarding:
 - clear agent routing in `AGENTS.md`
 - mandatory new-project kickoff gate via `/start`
@@ -61,10 +71,17 @@ cp .env.example .env.local
 npm run doctor
 ```
 
-4. Start the app:
+4. Start the app with local hosting via `portless`:
 
 ```bash
 npm run dev
+```
+
+In this project, it maps to `http://sparc-light-poc.localhost`.
+If you want the previous fixed-port mode, use:
+
+```bash
+npm run dev:direct
 ```
 
 5. Start a new project with the mandatory kickoff gate:
@@ -90,6 +107,29 @@ Run the full project start checklist and ask only missing mandatory questions.
 
 For new projects, always start with `/start`.
 
+## Portless Usage
+
+`portless` exposes stable `.localhost` hostnames for local services.
+
+```bash
+# Basic
+portless myapp next dev
+# -> http://myapp.localhost:1355
+
+# Subdomains
+portless api.myapp pnpm start
+# -> http://api.myapp.localhost:1355
+
+portless docs.myapp next dev
+# -> http://docs.myapp.localhost:1355
+```
+
+## Portless Services (This Project)
+
+| Service | Hostname | Notes |
+|---|---|---|
+| Frontend | `http://sparc-light-poc.localhost` | Proxy default `:1355` |
+
 ## Environment Variables
 
 Base template:
@@ -97,15 +137,15 @@ Base template:
 - `.env.local.example` is provided for local-only override workflows.
 
 Current keys:
-- `NUXT_PUBLIC_EMAILJS_SERVICE_ID` (required for "Ergebnis per E-Mail senden")
-- `NUXT_PUBLIC_EMAILJS_TEMPLATE_ID` (required for "Ergebnis per E-Mail senden")
-- `NUXT_PUBLIC_EMAILJS_PUBLIC_KEY` (required for "Ergebnis per E-Mail senden")
+- `NUXT_PUBLIC_EMAILJS_SERVICE_ID` (required for "Send results by email")
+- `NUXT_PUBLIC_EMAILJS_TEMPLATE_ID` (required for "Send results by email")
+- `NUXT_PUBLIC_EMAILJS_PUBLIC_KEY` (required for "Send results by email")
 - `NUXT_PUBLIC_EMAIL_FROM_NAME` (optional sender name, default: `Sparc Light POC`)
 - `NUXT_PUBLIC_CHART_PROVIDER` (`echarts` by default)
 - `NUXT_PUBLIC_ENABLE_HIGHCHARTS` (`false` by default, enable only when needed)
 - `NUXT_PUBLIC_SEO_TITLE` (optional SEO/page title)
 - `NUXT_PUBLIC_SEO_DESCRIPTION` (optional meta description for SEO/preview cards)
-- `NUXT_PUBLIC_SEO_IMAGE` (optional OpenGraph/Twitter preview image path, default: `/og-image.png`)
+- `NUXT_PUBLIC_SEO_IMAGE` (optional OpenGraph/Twitter preview image path, default: `og-image.png`)
 - `NUXT_PUBLIC_SITE_URL` (optional absolute base URL, used to build absolute `og:image` URL)
 
 Recommended flow:
@@ -148,7 +188,7 @@ Recommended flow:
 - Feature specifications: `.codex/skills/product/features/PROJ-*.md`
 - QA report format: `.codex/skills/qa/qa-report.md`
 
-## Available Commands And Responsibilities
+## Available Commands and Responsibilities
 
 | Command | Role | Primary Outcome |
 |---|---|---|
@@ -176,19 +216,24 @@ Recommended flow:
 ## Common Pitfalls
 
 1. Missing routing tag in prompt line 1.
-Fix: the assistant should suggest likely agents and let you choose one without retyping the full prompt.
+**Issue:** No routing tag is provided on line 1.
+**Fix:** The assistant should suggest likely agents and let you choose one without retyping the full prompt.
 
 2. Starting new projects with `/prod`.
-Fix: kickoff must begin with `/start`.
+**Issue:** Kickoff is started with `/prod`.
+**Fix:** Kickoff must begin with `/start`.
 
 3. Missing `stack` on coding track kickoff.
-Fix: include `stack: vue` when `project_track: coding`.
+**Issue:** Coding kickoff omits `stack`.
+**Fix:** Include `stack: vue` when `project_track: coding`.
 
 4. Skipping UX/copy handoff before frontend implementation.
-Fix: complete `/ux` and `/copy` outputs before `/fe` for user-facing features.
+**Issue:** UX/copy handoff is skipped before implementation.
+**Fix:** Complete `/ux` and `/copy` outputs before `/fe` for user-facing features.
 
 5. Inconsistent docs after workflow edits.
-Fix: run `npm run validate:docs` after changing `README.md`, `AGENTS.md`, `.codex/skills/prompts.md`, or onboarding UI text.
+**Issue:** Workflow docs become inconsistent after edits.
+**Fix:** Run `npm run validate:docs` after changing `README.md`, `AGENTS.md`, `.codex/skills/prompts.md`, or onboarding UI text.
 
 ## Repo Map (Active Codex Files)
 
@@ -211,6 +256,7 @@ Fix: run `npm run validate:docs` after changing `README.md`, `AGENTS.md`, `.code
 
 ```bash
 npm run dev
+npm run dev:direct
 npm run doctor
 npm run validate:docs
 npm run lint
@@ -235,6 +281,16 @@ Fix:
 1. Run `npm install`
 2. Run `npm run doctor`
 3. Retry `npm run dev` or `npm run check`
+
+### Portless proxy not running
+
+Symptoms:
+- `http://sparc-light-poc.localhost` does not respond.
+- `npm run dev` exits after a proxy error.
+
+Fix:
+1. Stop any stale proxy process: `npx portless proxy stop`
+2. Start the app again: `npm run dev`
 
 ### Missing EmailJS environment variables
 
