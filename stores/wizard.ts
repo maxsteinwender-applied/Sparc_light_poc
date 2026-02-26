@@ -3,6 +3,8 @@ import type { GoalId } from '../components/goalsData'
 import { clampDurationYears, clampTargetAmount } from '../domain/wizardValidation'
 
 export type StrategyType = 'security' | 'balanced' | 'growth' | 'custom'
+export type AmountSelectionMode = 'manual' | 'guided'
+export type DurationSelectionMode = 'preset' | 'stepper'
 
 type GoalSelections = Partial<Record<GoalId, string[]>>
 
@@ -11,6 +13,9 @@ export interface WizardState {
   previousStep: number | null
   transitionDirection: 1 | -1
   goal: GoalId
+  goalSelectionConfirmed: boolean
+  amountSelectionMode: AmountSelectionMode | null
+  durationSelectionMode: DurationSelectionMode | null
   customGoalName: string
   targetAmount: number
   durationYears: number
@@ -31,11 +36,18 @@ interface SetStepOptions {
   previousStep?: number | null
 }
 
+interface SetGoalOptions {
+  confirmSelection?: boolean
+}
+
 const DEFAULTS = {
   step: 1,
   previousStep: null as number | null,
   transitionDirection: 1 as 1 | -1,
   goal: 'travel' as GoalId,
+  goalSelectionConfirmed: false,
+  amountSelectionMode: null as AmountSelectionMode | null,
+  durationSelectionMode: null as DurationSelectionMode | null,
   customGoalName: '',
   targetAmount: 6000,
   durationYears: 2,
@@ -73,8 +85,18 @@ export const useWizardStore = defineStore('wizard', {
       this.previousStep = options?.previousStep ?? this.step
       this.step = nextStep
     },
-    setGoal(goal: GoalId) {
+    setGoal(goal: GoalId, options?: SetGoalOptions) {
       this.goal = goal
+      this.goalSelectionConfirmed = options?.confirmSelection ?? true
+    },
+    setGoalSelectionConfirmed(value: boolean) {
+      this.goalSelectionConfirmed = value
+    },
+    setAmountSelectionMode(mode: AmountSelectionMode | null) {
+      this.amountSelectionMode = mode
+    },
+    setDurationSelectionMode(mode: DurationSelectionMode | null) {
+      this.durationSelectionMode = mode
     },
     setCustomGoalName(name: string) {
       this.customGoalName = name
@@ -110,6 +132,9 @@ export const useWizardStore = defineStore('wizard', {
     },
     applyGoalDefaults(defaults: WizardGoalDefaults) {
       this.goal = defaults.goal
+      this.goalSelectionConfirmed = true
+      this.amountSelectionMode = null
+      this.durationSelectionMode = null
       this.targetAmount = clampTargetAmount(defaults.targetAmount)
       this.durationYears = clampDurationYears(defaults.durationYears)
       this.selectedStrategy = defaults.selectedStrategy

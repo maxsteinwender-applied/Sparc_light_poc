@@ -54,6 +54,17 @@ Use the completed kickoff summary.
 Define MVP scope, non-goals, and testable acceptance criteria for the first feature.
 ```
 
+### Scope drift sync (ongoing)
+
+```text
+/prod
+project_track: coding
+stack: vue
+Check MVP scope drift between Notion scoping and mvpscope.md.
+If there are deviations, update mvpscope.md and sync required PRD/feature spec deltas.
+Keep open decisions explicit.
+```
+
 ### 20-30 min: UX and copy handoff prep
 
 ```text

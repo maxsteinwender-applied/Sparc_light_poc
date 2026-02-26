@@ -8,6 +8,7 @@ import GoalCarousel3D from './GoalCarousel3D.vue'
 
 const {
   goal,
+  goalSelectionConfirmed,
   customGoalName,
   setStep,
   setCustomGoalName,
@@ -39,6 +40,10 @@ const handleGoalSelect = (id: GoalId) => {
 }
 
 const handleContinue = () => {
+  if (!goalSelectionConfirmed.value) {
+    return
+  }
+
   if (goal.value === 'custom') {
     const normalizedName = normalizeCustomGoalName(customGoalName.value)
     if (!normalizedName) {
@@ -51,6 +56,10 @@ const handleContinue = () => {
 }
 
 const canContinue = computed(() => {
+  if (!goalSelectionConfirmed.value) {
+    return false
+  }
+
   if (goal.value !== 'custom') {
     return true
   }
@@ -62,7 +71,6 @@ const canContinue = computed(() => {
 <template>
   <div class="mx-auto flex w-full max-w-7xl flex-col items-center px-4 py-8 text-center md:py-12">
     <div class="relative z-10 mb-8 md:mb-12">
-      <span class="mb-3 block text-sm font-medium uppercase tracking-widest text-[#EE0000]">Schritt 1 von 5</span>
       <h1 class="mb-4 text-3xl font-bold tracking-tight text-[#003745] md:text-5xl">Wofür möchten Sie sparen?</h1>
       <p class="ui-text-secondary text-lg font-light md:text-xl">Ihr Ziel bestimmt alle weiteren Schritte.</p>
     </div>
@@ -73,9 +81,18 @@ const canContinue = computed(() => {
       </div>
 
       <div class="mx-auto mt-8 flex w-full max-w-md flex-col items-center gap-4">
+        <p
+          v-if="!goalSelectionConfirmed"
+          class="rounded-[4px] border border-[#EE0000]/30 bg-[#FFF3F3] px-4 py-2 text-sm font-medium text-[#8D0000]"
+          role="status"
+          aria-live="polite"
+        >
+          Bitte wählen Sie Ihr Sparziel aktiv aus, um fortzufahren.
+        </p>
         <span class="ui-text-secondary mb-1 block text-sm">Als Nächstes bestimmen wir den Betrag.</span>
         <button
           type="button"
+          :disabled="!canContinue"
           class="ui-button ui-button-primary motion-cta h-auto w-full px-8 py-4 text-lg"
           @click="handleContinue"
         >

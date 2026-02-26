@@ -1,7 +1,12 @@
 import { storeToRefs } from 'pinia'
 import { useWizardStore } from '../stores/wizard'
 import type { GoalId } from '../components/goalsData'
-import type { StrategyType, WizardGoalDefaults } from '../stores/wizard'
+import type {
+  AmountSelectionMode,
+  DurationSelectionMode,
+  StrategyType,
+  WizardGoalDefaults,
+} from '../stores/wizard'
 
 export const useWizard = () => {
   const wizardStore = useWizardStore()
@@ -10,6 +15,9 @@ export const useWizard = () => {
     previousStep,
     transitionDirection,
     goal,
+    goalSelectionConfirmed,
+    amountSelectionMode,
+    durationSelectionMode,
     customGoalName,
     targetAmount,
     durationYears,
@@ -23,6 +31,9 @@ export const useWizard = () => {
     previousStep,
     transitionDirection,
     goal,
+    goalSelectionConfirmed,
+    amountSelectionMode,
+    durationSelectionMode,
     customGoalName,
     targetAmount,
     durationYears,
@@ -31,7 +42,13 @@ export const useWizard = () => {
     calculationFactors,
     setStep: (stepValue: number, options?: { previousStep?: number | null }) =>
       wizardStore.setStep(stepValue, options),
-    setGoal: (goalValue: GoalId) => wizardStore.setGoal(goalValue),
+    setGoal: (goalValue: GoalId, options?: { confirmSelection?: boolean }) =>
+      wizardStore.setGoal(goalValue, options),
+    setGoalSelectionConfirmed: (value: boolean) => wizardStore.setGoalSelectionConfirmed(value),
+    setAmountSelectionMode: (mode: AmountSelectionMode | null) =>
+      wizardStore.setAmountSelectionMode(mode),
+    setDurationSelectionMode: (mode: DurationSelectionMode | null) =>
+      wizardStore.setDurationSelectionMode(mode),
     setCustomGoalName: (name: string) => wizardStore.setCustomGoalName(name),
     setTargetAmount: (amount: number) => wizardStore.setTargetAmount(amount),
     setDurationYears: (years: number) => wizardStore.setDurationYears(years),

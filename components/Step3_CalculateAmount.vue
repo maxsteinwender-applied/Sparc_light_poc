@@ -14,6 +14,7 @@ const {
   toggleCalculationFactor,
   goal,
   customGoalName,
+  amountSelectionMode,
 } = useWizard()
 
 const currentGoal = computed(() => getGoal(goal.value))
@@ -61,21 +62,41 @@ const handleContinue = () => {
 }
 
 const isSelected = (label: string) => calculationFactors.value.includes(label)
+const modeSummary = computed(() => {
+  if (amountSelectionMode.value === 'manual') {
+    return 'Sie haben bereits einen Startbetrag eingegeben. Jetzt können Sie die Summe mit den Kriterien feinjustieren.'
+  }
+
+  return 'Sie haben den geführten Weg gewählt. Wählen Sie jetzt die Kriterien, die Ihren Zielbetrag beeinflussen.'
+})
 </script>
 
 <template>
   <div class="relative mx-auto flex min-h-[60vh] max-w-6xl flex-col items-start gap-8 px-4 pb-12 pt-20 md:flex-row">
     <button
       type="button"
-      class="ui-text-secondary absolute left-4 top-8 flex items-center gap-2 text-sm font-medium transition-colors hover:text-[#003745] md:left-4 md:top-8"
+      class="ui-button ui-button-secondary absolute left-4 top-8 inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold md:left-4 md:top-8"
       @click="handleBack"
     >
+      <span class="material-symbols-outlined text-[18px]" aria-hidden="true">arrow_back</span>
       Zurück
     </button>
 
     <section class="mt-8 w-full md:mt-0 md:w-2/3">
-      <span class="mb-3 block px-2 text-sm font-medium uppercase tracking-widest text-[#EE0000]">Schritt 3 von 5</span>
       <h2 class="mb-8 px-2 text-3xl font-bold text-[#003745]">Was ist Ihnen bei {{ goalLabel }} wichtig?</h2>
+      <div class="mx-2 mb-6 rounded-[4px] border border-[#E6EEF0] bg-[#F4F9FA] p-4 text-sm text-[#003745]">
+        <p class="font-semibold">Ihre Kriterien aus Schritt 2:</p>
+        <p class="mt-1 leading-relaxed">{{ modeSummary }}</p>
+        <div class="mt-3 flex flex-wrap gap-2">
+          <span
+            v-for="category in currentGoal.amountFinderCategories"
+            :key="category"
+            class="inline-flex items-center rounded-full border border-[#D6E3E8] bg-white px-3 py-1 text-xs font-semibold text-[#1B4A5A]"
+          >
+            {{ category }}
+          </span>
+        </div>
+      </div>
 
       <div class="flex flex-wrap gap-3 md:gap-4">
         <button

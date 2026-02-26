@@ -6,12 +6,6 @@ import {
   calculateTimeGainWithExtraMonthly,
 } from '../domain/savingsPlan'
 import { buildResultDeepLink } from '../domain/resultDeepLink'
-import { runMotionLeave } from '../motion/leaveHook'
-import {
-  getModalBackdropVariants,
-  getModalPanelVariants,
-} from '../motion/presets'
-import { useMotionSafety } from '../motion/useMotionSafety'
 import { parseEuroInput } from '../domain/wizardValidation'
 import { exportResultPdf } from '../services/resultPdf'
 import { getGoal } from './goalsData'
@@ -23,6 +17,7 @@ const {
   setTargetAmount,
   durationYears,
   setDurationYears,
+  calculationFactors,
   selectedStrategy,
   setSelectedStrategy,
   customAnnualRate,
@@ -78,19 +73,7 @@ const formatRatePercentInput = (annualRate: number) => (annualRate * 100).toFixe
 const customRatePercentInput = ref(formatRatePercentInput(customAnnualRate.value))
 const isEditingTarget = ref(false)
 const isEditingDuration = ref(false)
-const isGoalInfoModalOpen = ref(false)
-const goalInfoTriggerRef = ref<HTMLButtonElement | null>(null)
-const modalPanelRef = ref<HTMLElement | null>(null)
-const modalTitleId = 'goal-info-modal-title'
-const modalFocusOrigin = ref<HTMLElement | null>(null)
 
-const { prefersReducedMotion } = useMotionSafety()
-const modalBackdropVariants = computed(() =>
-  getModalBackdropVariants(prefersReducedMotion.value),
-)
-const modalPanelVariants = computed(() =>
-  getModalPanelVariants(prefersReducedMotion.value),
-)
 const FALLBACK_PRESET_STRATEGY: BaseStrategyType = 'balanced'
 const lastPresetStrategy = ref<BaseStrategyType>(
   selectedStrategy.value === 'custom'
@@ -106,19 +89,19 @@ const STRATEGY_COPY: Record<
   security: {
     option: 'Variante A',
     title: 'Sicherheitsorientiert',
-    risk: 'Geringeres Risiko',
+    risk: 'Geringeres Risiko, z. B. defensiver Mischfonds-/Rentenfondsanteil',
     icon: 'shield',
   },
   balanced: {
     option: 'Variante B',
     title: 'Ausgewogen',
-    risk: 'Mittleres Risiko',
+    risk: 'Mittleres Risiko, z. B. breit gestreuter Mischfonds',
     icon: 'balance',
   },
   growth: {
     option: 'Variante C',
     title: 'Wachstumsorientiert',
-    risk: 'Höheres Risiko',
+    risk: 'Höheres Risiko, z. B. aktienlastige Fonds/ETFs',
     icon: 'trending_up',
   },
 }
@@ -191,6 +174,13 @@ const goalSymbol = computed(() => {
   }
 
   return goalSymbolMap[currentGoal.value.icon] || 'flag'
+})
+const selectedFactorsLabel = computed(() => {
+  if (calculationFactors.value.length === 0) {
+    return 'Es wurden keine zusätzlichen Faktoren ausgewählt.'
+  }
+
+  return calculationFactors.value.join(', ')
 })
 
 const strategyCards = computed(() => {
@@ -310,12 +300,6 @@ const setTabRef = (element: Element | ComponentPublicInstance | null, index: num
   const resolvedElement =
     element && '$el' in element ? (element.$el as Element | null) : element
   tabRefs.value[index] = resolvedElement instanceof HTMLButtonElement ? resolvedElement : null
-}
-
-const setGoalInfoTriggerRef = (element: Element | ComponentPublicInstance | null) => {
-  const resolvedElement =
-    element && '$el' in element ? (element.$el as Element | null) : element
-  goalInfoTriggerRef.value = resolvedElement instanceof HTMLButtonElement ? resolvedElement : null
 }
 
 const getTabIndex = (key: ResultTab) => tabItems.findIndex((tab) => tab.key === key)
@@ -463,6 +447,21 @@ const applyCustomRateInput = () => {
   setSelectedStrategy('custom')
 }
 
+const handleCustomRateTyping = () => {
+  if (!isCustomRateEnabled.value) {
+    return
+  }
+
+  const parsed = Number(customRatePercentInput.value.replace(',', '.'))
+  if (!Number.isFinite(parsed)) {
+    return
+  }
+
+  const normalized = Math.min(15, Math.max(0, parsed))
+  setCustomAnnualRate(normalized / 100)
+  setSelectedStrategy('custom')
+}
+
 const selectPresetStrategy = (strategy: BaseStrategyType) => {
   lastPresetStrategy.value = strategy
   setSelectedStrategy(strategy)
@@ -485,70 +484,6 @@ const saveTargetEdit = () => {
 const saveDurationEdit = () => {
   applyDurationInput()
   isEditingDuration.value = false
-}
-
-const closeGoalInfoModal = () => {
-  isGoalInfoModalOpen.value = false
-}
-
-const getModalFocusableElements = () => {
-  const panel = modalPanelRef.value
-  if (!panel) {
-    return []
-  }
-
-  const selectors = [
-    'button:not([disabled])',
-    '[href]',
-    'input:not([disabled])',
-    'select:not([disabled])',
-    'textarea:not([disabled])',
-    '[tabindex]:not([tabindex="-1"])',
-  ].join(', ')
-
-  return Array.from(panel.querySelectorAll<HTMLElement>(selectors)).filter((node) => {
-    if (node.getAttribute('aria-hidden') === 'true') {
-      return false
-    }
-
-    return node.offsetParent !== null || node === document.activeElement
-  })
-}
-
-const handleModalKeydown = (event: KeyboardEvent) => {
-  if (event.key === 'Escape') {
-    event.preventDefault()
-    closeGoalInfoModal()
-    return
-  }
-
-  if (event.key !== 'Tab') {
-    return
-  }
-
-  const focusableElements = getModalFocusableElements()
-  if (focusableElements.length === 0) {
-    event.preventDefault()
-    modalPanelRef.value?.focus()
-    return
-  }
-
-  const firstElement = focusableElements[0]
-  const lastElement = focusableElements[focusableElements.length - 1]
-  const activeElement = document.activeElement as HTMLElement | null
-
-  if (event.shiftKey) {
-    if (!activeElement || activeElement === firstElement || !modalPanelRef.value?.contains(activeElement)) {
-      event.preventDefault()
-      lastElement.focus()
-    }
-    return
-  }
-
-  if (!activeElement || activeElement === lastElement || !modalPanelRef.value?.contains(activeElement)) {
-    event.preventDefault()
-    firstElement.focus()
-  }
 }
 
 const goBack = () => {
@@ -671,35 +606,6 @@ watch(activeTab, (nextValue) => {
   })
 })
 
-watch(isGoalInfoModalOpen, (isOpen) => {
-  if (!import.meta.client) {
-    return
-  }
-
-  if (isOpen) {
-    modalFocusOrigin.value = document.activeElement instanceof HTMLElement ? document.activeElement : null
-    nextTick(() => {
-      const focusableElements = getModalFocusableElements()
-      if (focusableElements.length > 0) {
-        focusableElements[0].focus()
-        return
-      }
-
-      modalPanelRef.value?.focus()
-    })
-    return
-  }
-
-  nextTick(() => {
-    if (goalInfoTriggerRef.value) {
-      goalInfoTriggerRef.value.focus()
-    } else {
-      modalFocusOrigin.value?.focus()
-    }
-    modalFocusOrigin.value = null
-  })
-})
-
 onMounted(() => {
   if (!import.meta.client) {
     return
@@ -731,7 +637,6 @@ onBeforeUnmount(() => {
         </div>
 
         <div class="flex flex-col items-center text-center">
-          <span class="mb-3 block text-xs font-semibold uppercase tracking-[0.16em] text-[#EE0000]">Schritt 5 von 5</span>
           <h1 class="mb-4 text-4xl font-bold tracking-tight text-[#003745]/70 md:text-5xl">
             Ihr Sparziel
             <span class="text-[#003745]">{{ goalLabel }}</span>
@@ -792,6 +697,9 @@ onBeforeUnmount(() => {
             </article>
 
             <p class="ui-text-secondary text-sm">Passen Sie hier Ihre Renditeannahme für das Sparziel an:</p>
+            <div class="rounded-[4px] border border-[#D7E4E8] bg-[#F6FAFB] p-3 text-xs leading-relaxed text-[#1B4A5A]">
+              Renditen sind Annahmen, keine Garantien. Höhere Renditechancen gehen typischerweise mit stärkeren Kursschwankungen einher.
+            </div>
 
             <div class="space-y-4">
               <button
@@ -823,7 +731,7 @@ onBeforeUnmount(() => {
                     </span>
                     <div class="min-w-0">
                       <h3 class="text-base font-semibold leading-tight text-[#003745] md:text-[1.2rem]">{{ strategyCard.title }}</h3>
-                      <p class="mt-1 text-xs text-[var(--text-secondary)] md:text-sm">{{ strategyCard.risk }}</p>
+                      <p class="mt-1 text-xs leading-relaxed text-[var(--text-secondary)] md:text-sm">{{ strategyCard.risk }}</p>
                     </div>
                   </div>
                   <p class="text-2xl font-bold tracking-tight text-[#003745] sm:text-right md:text-[2rem]">{{ formatPercent(strategyCard.rate) }}</p>
@@ -870,6 +778,7 @@ onBeforeUnmount(() => {
                         ? 'bg-white'
                         : 'text-[var(--text-muted)]'
                     "
+                    @input="handleCustomRateTyping"
                     @blur="applyCustomRateInput"
                   />
                   <button
@@ -882,6 +791,9 @@ onBeforeUnmount(() => {
                   </button>
                 </div>
                 <p class="mt-2 text-xs text-[var(--text-secondary)]">Wert zwischen 0,0 % und 15,0 % p. a.</p>
+                <p class="mt-1 text-xs font-medium text-[#1B4A5A]" aria-live="polite">
+                  Aktuelle monatliche Sparrate bei dieser Rendite: {{ formatCurrency(monthlySavings) }}
+                </p>
               </div>
             </div>
           </section>
@@ -983,21 +895,30 @@ onBeforeUnmount(() => {
               </div>
             </div>
 
-            <button
-              type="button"
-              :ref="setGoalInfoTriggerRef"
-              class="result-link mt-5 text-sm"
-              @click="isGoalInfoModalOpen = true"
-            >
-              <span class="result-link-label">Wie setzt sich der Zielbetrag zusammen?</span>
-              <span class="material-symbols-outlined">chevron_right</span>
-            </button>
+            <div class="mt-5 rounded-[4px] border border-[#D4E0E5] bg-white/90 p-4">
+              <h3 class="text-sm font-semibold text-[#003745]">Wie setzt sich der Zielbetrag zusammen?</h3>
+              <p class="mt-2 text-sm leading-relaxed text-[#4F7280]">
+                Der Zielbetrag basiert auf Ihrem Sparziel, der Laufzeit und den von Ihnen gewählten Kriterien.
+                Sie können Zielbetrag und Laufzeit jederzeit anpassen.
+              </p>
+              <p class="mt-2 text-xs text-[#1B4A5A]">
+                Berücksichtigte Kriterien: {{ selectedFactorsLabel }}
+              </p>
+            </div>
           </aside>
         </div>
       </div>
     </div>
 
     <div class="mx-auto mt-8 max-w-6xl px-4">
+      <section class="mb-8 rounded-[4px] border border-[#D3DEE3] bg-[#F8FCFD] p-5 md:p-6">
+        <h2 class="text-2xl font-bold text-[#003745]">Sparziel zur Realität werden lassen</h2>
+        <p class="mt-2 text-sm leading-relaxed text-[#1B4A5A]">
+          Sie können den Sparplan in der Filiale, in der Internetfiliale oder in der S-Invest App umsetzen.
+          Diese Wege sind jederzeit verfügbar und unten im Tab „Umsetzung“ detailliert beschrieben.
+        </p>
+      </section>
+
       <nav
         class="ui-tabs mb-6"
         role="tablist"
@@ -1079,6 +1000,8 @@ onBeforeUnmount(() => {
               class="result-link mt-4 text-sm"
             >
               <span class="result-link-label">Mehr zum Deka-FondsSparplan erfahren</span>
+              <span class="text-xs text-[#4F7280]">(öffnet in neuem Tab)</span>
+              <span class="material-symbols-outlined text-[16px]">open_in_new</span>
               <span class="material-symbols-outlined">chevron_right</span>
             </a>
           </article>
@@ -1120,6 +1043,8 @@ onBeforeUnmount(() => {
             class="motion-cta inline-flex h-11 items-center justify-center self-start rounded-[4px] border border-[#003745] bg-[#003745] px-6 text-sm font-semibold text-white hover:bg-[#002C36]"
           >
             Zum Sparrechner
+            <span class="ml-2 text-xs font-medium text-white/80">(neuer Tab)</span>
+            <span class="material-symbols-outlined ml-1 text-[16px]">open_in_new</span>
           </a>
         </div>
 
@@ -1146,6 +1071,7 @@ onBeforeUnmount(() => {
               class="ui-button ui-button-secondary motion-cta mt-5 inline-flex h-11 items-center justify-center self-start px-4 text-sm font-semibold"
             >
               Mehr erfahren
+              <span class="material-symbols-outlined ml-1 text-[16px]">open_in_new</span>
             </a>
           </article>
         </div>
@@ -1225,6 +1151,7 @@ onBeforeUnmount(() => {
                     class="text-[#0043B4] underline underline-offset-2 hover:text-[#003A99]"
                   >
                     {{ card.linkLabel }}
+                    <span class="material-symbols-outlined ml-1 text-[14px]">open_in_new</span>
                   </a>
                 </template>
                 {{ card.bodyAfterLink }}
@@ -1236,52 +1163,31 @@ onBeforeUnmount(() => {
       </section>
     </div>
 
-    <div class="pointer-events-none fixed inset-0 z-[120]">
-      <Transition :css="false" @leave="runMotionLeave">
-        <button
-          v-if="isGoalInfoModalOpen"
-          v-motion
-          :initial="modalBackdropVariants.initial"
-          :enter="modalBackdropVariants.enter"
-          :leave="modalBackdropVariants.leave"
-          aria-label="Modal schließen"
-          class="pointer-events-auto absolute inset-0 bg-[#003745]/45 backdrop-blur-[1px]"
-          @click="closeGoalInfoModal"
-        />
-      </Transition>
-
-      <div class="absolute inset-0 flex items-center justify-center p-4">
-        <Transition :css="false" @leave="runMotionLeave">
-          <div
-            v-if="isGoalInfoModalOpen"
-            ref="modalPanelRef"
-            v-motion
-            :initial="modalPanelVariants.initial"
-            :enter="modalPanelVariants.enter"
-            :leave="modalPanelVariants.leave"
-            role="dialog"
-            aria-modal="true"
-            :aria-labelledby="modalTitleId"
-            tabindex="-1"
-            class="pointer-events-auto relative w-full max-w-xl space-y-4 rounded-[4px] border border-[#D8E5E8] bg-[#F4F9FA] p-5 shadow-xl sm:p-6"
-            @keydown="handleModalKeydown"
+    <div class="mx-auto mt-10 max-w-6xl px-4">
+      <section class="rounded-[4px] border border-[#D3DEE3] bg-white p-5 md:p-6">
+        <h3 class="text-xl font-bold text-[#003745]">Plan speichern oder teilen</h3>
+        <p class="mt-2 text-sm text-[#4F7280]">Sie können Ihren aktuellen Stand jederzeit herunterladen oder per Link teilen.</p>
+        <div class="mt-4 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
+          <button
+            type="button"
+            :disabled="isExporting"
+            :aria-busy="isExporting ? 'true' : 'false'"
+            class="ui-button ui-button-primary motion-cta h-12 w-full px-5 text-sm sm:w-[220px]"
+            @click="handleExportPdf"
           >
-            <div class="flex items-start justify-between gap-3">
-              <h3 :id="modalTitleId" class="text-lg font-bold text-[#003745]">Wie setzt sich der Zielbetrag zusammen?</h3>
-              <button
-                type="button"
-                class="ui-button ui-button-secondary h-auto px-2 py-1 text-sm"
-                @click="closeGoalInfoModal"
-              >
-                Schließen
-              </button>
-            </div>
-            <p class="text-sm text-[#4F7280]">
-              Der Zielbetrag basiert auf Ihrem ausgewählten Sparziel und Ihren Eingaben. Sie können Zielbetrag und Laufzeit jederzeit bearbeiten. Die monatliche Sparrate wird danach automatisch neu berechnet.
-            </p>
-          </div>
-        </Transition>
-      </div>
+            {{ isExporting ? 'Erzeuge PDF...' : 'Als PDF herunterladen' }}
+          </button>
+          <button
+            type="button"
+            :disabled="isCopyingLink"
+            :aria-busy="isCopyingLink ? 'true' : 'false'"
+            class="ui-button ui-button-secondary motion-cta h-12 w-full px-5 text-sm sm:w-[220px]"
+            @click="handleCopyLink"
+          >
+            {{ isCopyingLink ? 'Kopiere Link...' : 'Link kopieren' }}
+          </button>
+        </div>
+      </section>
     </div>
 
   </div>

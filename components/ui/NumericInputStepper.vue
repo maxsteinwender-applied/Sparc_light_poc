@@ -5,17 +5,23 @@ const props = withDefaults(
     label?: string
     unit?: string
     note?: string
+    helpText?: string
     min?: number
     max?: number
     step?: number
+    decrementLabel?: string
+    incrementLabel?: string
   }>(),
   {
     label: '',
     unit: '',
     note: '',
+    helpText: '',
     min: 0,
     max: 100,
     step: 1,
+    decrementLabel: 'Wert verringern',
+    incrementLabel: 'Wert erhöhen',
   },
 )
 
@@ -51,6 +57,7 @@ const handleIncrement = () => {
         type="button"
         :disabled="props.value <= props.min"
         class="ui-button-ghost flex h-full w-[44px] items-center justify-center bg-transparent text-[#003745] disabled:opacity-50"
+        :aria-label="props.decrementLabel"
         @click="handleDecrement"
       >
         -
@@ -69,6 +76,7 @@ const handleIncrement = () => {
         type="button"
         :disabled="props.value >= props.max"
         class="ui-button-ghost flex h-full w-[44px] items-center justify-center bg-transparent text-[#003745] disabled:opacity-50"
+        :aria-label="props.incrementLabel"
         @click="handleIncrement"
       >
         +
@@ -77,6 +85,9 @@ const handleIncrement = () => {
 
     <span v-if="props.note" class="ui-text-secondary mt-[4px] block text-[12px] font-normal">
       {{ props.note }}
+    </span>
+    <span v-if="props.helpText" class="ui-text-secondary mt-[4px] block text-[12px]">
+      {{ props.helpText }}
     </span>
   </div>
 </template>

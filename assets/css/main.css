@@ -29,8 +29,8 @@
   --chart-2: #568996;
   --chart-3: #9fb6bc;
   --prototype-ticker-height: 2rem;
-  --app-header-height: 5rem;
-  --app-sticky-stack-height: calc(var(--prototype-ticker-height) + var(--app-header-height));
+  --app-header-height: 0rem;
+  --app-sticky-stack-height: var(--prototype-ticker-height);
   --app-sticky-content-offset: calc(var(--app-sticky-stack-height) + 1rem);
   --motion-duration-fast: 120ms;
   --motion-duration-normal: 180ms;

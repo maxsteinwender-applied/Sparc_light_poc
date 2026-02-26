@@ -105,7 +105,7 @@ vue | n/a (operations)
 ### Project Start Summary
 
 - Status: Complete
-- Date: 2026-02-19
+- Date: 2026-02-25
 - Owner: Sparc Light POC Team
 
 #### Vision
@@ -129,6 +129,24 @@ coding
 - Fokus liegt auf funktionalem technischen POC statt Pixel-Perfect-Ausarbeitung
 - Erste Ausbaustufe ist POC/MVP, daher schlanker Feature- und Funktionsumfang
 
+#### MVP Scope Snapshot (Source: Notion Scoping, 2026-02-20)
+- MVP ist fuer einen produktiven Einsatz auf deka.de zugeschnitten (vermarktbar, conversion-orientiert, bewusst reduziert aber rund nutzbar).
+- Durchgaengiger Core Flow von Intro bis Ergebnis:
+  - Intro-/Einstiegsseite als Start der Strecke,
+  - Sparzielauswahl (7 vordefinierte Ziele + 1 individuelles),
+  - Zielbetrag und Laufzeit numerisch mit Orientierungswerten/Empfehlungen,
+  - reduzierte, emotional gefuehrte Ergebnisseite mit Renditevarianten und Quick Edit.
+- Ergebnisseite im MVP:
+  - Renditeauswahl (3 Presets, optional custom),
+  - Top-Aktionen Link teilen und PDF-Download,
+  - 3 Tabs: Uebersicht, Optimierung (4 statische Karten), Umsetzung (Favoriten + Next Steps).
+- Conversion-Fokus:
+  - Nutzer sollen nicht bei der Berechnung enden, sondern in die Umsetzung gefuehrt werden
+  - Abschlusswege: Filiale, Internetfiliale, S-Invest App.
+- Deep-Linking als MVP-Baustein:
+  - Ergebniszustand ueber URL-Parameter reproduzierbar,
+  - keine personenbezogenen Daten in geteilten Links.
+
 #### Stack
 vue (Nuxt + PrimeVue)
 
@@ -136,7 +154,11 @@ vue (Nuxt + PrimeVue)
 `/prod` -> `/ux` -> `/copy` -> `/fe` -> `/qa`
 
 #### Open Questions
-- Keine offenen Pflichtfragen fuer den Start-Gate; Detailfragen werden in `/prod` konkretisiert.
+- Keine offenen Pflichtfragen fuer den Start-Gate.
+- Offene Scope-Entscheidungen aus MVP-Scoping:
+  - Betrag-ermitteln-Logik mit statischen Werten: final MVP oder Ausbaustufe?
+  - Individuelle Renditeeingabe (0-15%) zusaetzlich zu 3 Presets im finalen MVP?
+  - PDF-Download im finalen MVP-Release technisch abgesichert im Zeitrahmen?
 
 ## Decision Log
 

@@ -97,7 +97,7 @@ const handleSelect = () => {
     :aria-label="`Ziel auswählen: ${goal.label}`"
     :aria-selected="isSelected ? 'true' : 'false'"
     :style="cardStyle"
-    class="motion-carousel-card absolute h-72 w-56 cursor-pointer overflow-hidden rounded-[var(--radius-control)] border border-[#003745]/20 bg-white shadow-xl"
+    class="motion-carousel-card absolute h-64 w-48 cursor-pointer overflow-hidden rounded-[var(--radius-control)] border border-[#003745]/20 bg-white shadow-xl md:h-72 md:w-56"
     :class="isVisible ? 'visible pointer-events-auto' : 'invisible pointer-events-none'"
     @click="handleSelect"
     @keydown.enter.prevent="handleSelect"
