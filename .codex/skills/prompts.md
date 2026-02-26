@@ -4,8 +4,9 @@ Use this as the fast reference for the Codex agent workflow.
 
 ## Quick Rule
 
-- Line 1 must contain exactly one tag: `/start`, `/prod`, `/ux`, `/copy`, `/fe`, `/qa`, or `/help`.
-- If line 1 is missing a valid tag, suggest 1-3 likely agents and ask the user to choose (`1/2/3` or tag). Reuse the existing prompt body after selection.
+- If exactly one routing tag (`/prod`, `/ux`, `/copy`, `/fe`, `/qa`) appears anywhere in the prompt, it is selected.
+- If no routing tag is found in the prompt, suggest 1-3 likely agents and ask the user to choose (`1/2/3` or tag). Reuse the existing prompt body after selection.
+- If multiple routing tags appear in the prompt, ask the user to pick exactly one.
 - Use one agent at a time.
 - New projects must start with `/start`.
 - For `project_track: coding`, `stack: vue` is required.
@@ -158,7 +159,7 @@ Show a short overview of all agents, default flow, and key files.
 
 ## Troubleshooting
 
-### Invalid first line (no tag)
+### No routing tag in prompt
 
 Issue:
 - Prompt starts without a routing tag.
@@ -173,13 +174,13 @@ Example:
 I need help defining MVP scope for a team invite flow.
 ```
 
-### Multiple tags in line 1
+### Multiple routing tags in prompt
 
 Issue:
-- Prompt line 1 contains more than one tag.
+- Prompt contains more than one routing tag.
 
 Fix:
-- Keep exactly one tag in line 1.
+- Keep exactly one routing tag in the prompt.
 
 ### New project started with `/prod`
 

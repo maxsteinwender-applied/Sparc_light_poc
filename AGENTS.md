@@ -2,14 +2,14 @@
 
 This project uses a simple, explicit agent system controlled by prompts.
 
-- One agent is selected by a slash tag in the first line of the prompt.
+- One agent is selected by a slash tag found in the prompt.
 - `/help` and `/start` are special non-agent commands.
 - There is no auto-routing and no hidden logic.
 - All behavior is defined in Markdown and can be read or edited by humans.
 
 ## Routing
 
-Use exactly one of these tags in line 1 of your prompt:
+Use exactly one of these tags in your prompt:
 
 | Tag | Agent | Responsibility |
 |---|---|---|
@@ -28,11 +28,13 @@ Special commands:
 
 ## Selection Rule
 
-The first line of the prompt is binding.
+Routing tag detection is prompt-wide.
 
-- Line 1 must contain exactly one valid routing tag (`/ux`, `/copy`, `/fe`, `/qa`, `/prod`) or one special command (`/help`, `/start`).
-- The rest of the prompt provides the task context for that selected agent.
-- If line 1 has no valid tag, do not execute work yet. Suggest 1-3 likely agents, ask the user to choose one, and reuse the existing prompt body after selection (no re-paste required).
+- Scan the full prompt for routing tags (`/ux`, `/copy`, `/fe`, `/qa`, `/prod`).
+- If exactly one routing tag is present anywhere in the prompt, treat it as selected and do not ask for agent selection again.
+- If multiple routing tags are present, stop and ask the user to select exactly one.
+- The rest of the prompt provides task context for the selected agent.
+- If no routing tag is present, do not execute work yet. Suggest 1-3 likely agents, ask the user to choose one, and reuse the existing prompt body after selection (no re-paste required).
 
 ## Help Command Behavior
 
@@ -40,7 +42,7 @@ When line 1 is exactly `/help`, return only the fixed short template below and d
 
 ```text
 Help
-- Use different agents by starting line 1 with a slash tag (example: /ux).
+- Use different agents by including one routing slash tag in the prompt (example: /ux).
 - /prod: scope, priorities, requirements, feature framing
 - /ux: UX flows, interaction logic, usability decisions
 - /copy: UX copy (headlines, CTAs, labels, helper/error/empty states)
@@ -48,7 +50,7 @@ Help
 - /qa: test strategy, bug finding, acceptance validation
 
 Rules
-- First line must contain exactly one tag.
+- Include exactly one slash tag in the prompt (`/help`, `/start`, or one routing tag).
 - Use one agent at a time.
 - For a new project: start with /start.
 
@@ -112,8 +114,8 @@ New-project prompt contract:
 3. Do not repeat the slash tag in the final output.
 4. If line 1 is `/help`, return only the help reference defined above.
 5. If line 1 is `/start`, run only the kickoff checklist flow defined above.
-6. If no valid agent tag or special command is selected in line 1, suggest 1-3 likely agents and ask the user to select one (`1/2/3` or exact tag). Do not execute the task before selection.
-7. If multiple tags are provided, stop and ask the user to select exactly one.
+6. If no valid routing tag is present in the prompt, suggest 1-3 likely agents and ask the user to select one (`1/2/3` or exact tag). Do not execute the task before selection.
+7. If multiple routing tags are present, stop and ask the user to select exactly one.
 8. For new projects, start only via `/start` and the checklist gate.
 9. For `project_track: coding`, require `stack: vue`; if missing, stop and ask.
 10. For `project_track: operations`, stack is optional and must not be enforced.
@@ -159,7 +161,7 @@ Show a short overview of all agents and suggest the next prompt to run.
 
 ## Invalid Input Examples
 
-No routing tag in line 1:
+No routing tag in prompt:
 
 ```text
 Please review this feature and tell me what to improve.

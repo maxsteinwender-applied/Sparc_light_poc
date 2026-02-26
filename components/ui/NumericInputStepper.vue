@@ -52,22 +52,22 @@ const handleIncrement = () => {
       {{ props.label }}
     </span>
 
-    <div class="flex h-[44px] items-center overflow-hidden rounded-[var(--radius-control)] border border-[#003745] bg-[#FFFFFF]">
+    <div class="flex h-14 items-center overflow-hidden rounded-none border border-[#003745] bg-[#FFFFFF]">
       <button
         type="button"
         :disabled="props.value <= props.min"
-        class="ui-button-ghost flex h-full w-[44px] items-center justify-center bg-transparent text-[#003745] disabled:opacity-50"
+        class="ui-button-ghost flex h-full w-[56px] items-center justify-center border-r border-[#003745] bg-transparent text-[32px] leading-none text-[#003745] disabled:opacity-50"
         :aria-label="props.decrementLabel"
         @click="handleDecrement"
       >
-        -
+        <span aria-hidden="true">−</span>
       </button>
 
-      <div class="flex flex-grow items-center justify-center gap-[6px]">
-        <span class="text-[16px] font-semibold text-[#003745]">
+      <div class="flex min-w-0 flex-grow items-center justify-between px-4">
+        <span class="text-left text-[18px] font-normal leading-none text-[#003745]">
           {{ props.value }}
         </span>
-        <span v-if="props.unit" class="text-[14px] font-semibold text-[#003745]">
+        <span v-if="props.unit" class="text-right text-[16px] font-bold text-[#1A6B80]">
           {{ props.unit }}
         </span>
       </div>
@@ -75,11 +75,11 @@ const handleIncrement = () => {
       <button
         type="button"
         :disabled="props.value >= props.max"
-        class="ui-button-ghost flex h-full w-[44px] items-center justify-center bg-transparent text-[#003745] disabled:opacity-50"
+        class="ui-button-ghost flex h-full w-[56px] items-center justify-center border-l border-[#003745] bg-transparent text-[32px] leading-none text-[#003745] disabled:opacity-50"
         :aria-label="props.incrementLabel"
         @click="handleIncrement"
       >
-        +
+        <span aria-hidden="true">+</span>
       </button>
     </div>
 

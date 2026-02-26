@@ -38,8 +38,12 @@ const parsedAmount = computed(() => parseEuroInput(inputAmount.value))
 const canContinue = computed(() => parsedAmount.value !== null)
 const quickAmounts = computed(() => {
   const base = orientationValue.value
-  const factors = [0.5, 1, 1.5, 2]
-  return factors.map((factor) => Math.max(1_000, Math.round((base * factor) / 500) * 500))
+  const factors = [0.5, 0.75, 1.25, 1.5]
+  const values = factors
+    .map((factor) => Math.max(1_000, Math.round((base * factor) / 500) * 500))
+    .filter((value) => value !== base)
+
+  return [...new Set(values)]
 })
 const currentAmount = computed(() => parsedAmount.value ?? orientationValue.value)
 
@@ -99,7 +103,7 @@ const handleContinue = () => {
 </script>
 
 <template>
-  <div class="mx-auto flex min-h-[60vh] max-w-5xl flex-col items-center px-4 pb-12 pt-12">
+  <div class="mx-auto flex min-h-[60vh] max-w-3xl flex-col items-center px-4 pb-12 pt-12">
     <div class="mb-8 max-w-3xl text-center">
       <div class="mb-4 flex justify-center">
         <div class="inline-flex items-center gap-3 rounded-[4px] bg-[#F1F3F4] px-3 py-2 text-sm text-[#003745]">
@@ -114,13 +118,13 @@ const handleContinue = () => {
     </div>
 
     <div class="w-full space-y-4">
-      <section class="rounded-[var(--radius-card)] border border-[#003745]/15 bg-white p-5 md:p-6">
-        <div class="mb-3 flex items-center gap-2">
+      <section class="rounded-[4px] border border-[#003745]/15 bg-white p-5 md:p-6">
+        <div class="mb-5 flex items-center gap-2">
           <h3 class="text-xl font-bold text-[#003745]">Zielbetrag angeben</h3>
           <span class="ui-chip ui-chip-secondary-subtle">Direkter Weg</span>
         </div>
         <div class="space-y-4">
-          <p class="text-sm font-semibold text-[#003745]">Schnellauswahl</p>
+          <p class="text-sm font-semibold text-[#003745]">Passende Zielbeträge für dieses Ziel</p>
           <div class="grid gap-2 sm:grid-cols-4">
             <button
               v-for="amount in quickAmounts"
@@ -134,10 +138,11 @@ const handleContinue = () => {
             </button>
           </div>
           <div class="pt-2">
-            <p class="mb-2 text-sm font-semibold text-[#003745]">Zielbetrag</p>
+            <label for="target-amount-input" class="mb-2 block text-sm font-semibold text-[#003745]">Zielbetrag</label>
           </div>
           <div class="relative">
             <input
+              id="target-amount-input"
               :value="inputAmount"
               type="text"
               inputmode="numeric"
@@ -146,7 +151,7 @@ const handleContinue = () => {
               class="ui-input h-14 w-full p-4 pr-14 text-lg"
               @input="handleAmountInput"
             >
-            <span class="ui-text-muted absolute right-4 top-1/2 -translate-y-1/2 font-medium">EUR</span>
+            <span class="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-[#1A6B80]" aria-hidden="true">EUR</span>
           </div>
           <div class="flex items-center gap-2 text-sm text-[#003745]">
             <span class="material-symbols-outlined text-[16px] text-[var(--text-secondary)]" aria-hidden="true">info</span>
@@ -241,16 +246,16 @@ const handleContinue = () => {
     <div class="mt-8 flex w-full items-center justify-between gap-3">
       <button
         type="button"
-        class="ui-button ui-button-secondary inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold"
+        class="group inline-flex h-auto items-center gap-1 py-4 text-base font-semibold text-[#1A6B80]"
         @click="handleBack"
       >
-        <span class="material-symbols-outlined text-[18px]" aria-hidden="true">arrow_back</span>
-        Zurück
+        <span class="material-symbols-outlined text-[18px]" aria-hidden="true">chevron_left</span>
+        <span class="group-hover:underline">Zurück</span>
       </button>
       <button
         type="button"
         :disabled="!canContinue"
-        class="ui-button ui-button-solid motion-cta px-6 py-3"
+        class="ui-button ui-button-primary motion-cta h-auto px-8 py-4 text-lg"
         @click="handleContinue"
       >
         Weiter zur Spardauer

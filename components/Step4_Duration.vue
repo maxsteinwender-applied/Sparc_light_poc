@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 import { useWizard } from '../composables/useWizard'
 import { calculateSavingsPlan } from '../domain/savingsPlan'
 import { getStaggerItemVariants } from '../motion/presets'
@@ -17,8 +17,6 @@ const {
   goal,
   customGoalName,
   targetAmount,
-  selectedStrategy,
-  customAnnualRate,
   durationSelectionMode,
   setDurationSelectionMode,
 } = useWizard()
@@ -42,43 +40,58 @@ const goalLabel = computed(() => {
 })
 const goalSymbol = computed(() => resolveGoalSymbol(currentGoal.value.icon))
 
+const PREVIEW_ANNUAL_RATE = 0.04
+const monthlyCurrencyFormatter = new Intl.NumberFormat('de-DE', {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+})
+const infoPoints = [
+  'Je länger der Zeitraum, desto mehr wirkt der Zinseszinseffekt.',
+  'Regelmäßiges Sparen kann Schwankungen ausgleichen.',
+]
 const quickOptions = computed(() => currentGoal.value.typicalTimeHorizonOptions)
-const selectedAnnualRate = computed(() => {
-  if (selectedStrategy.value === 'custom') {
-    return customAnnualRate.value
-  }
-
-  return currentGoal.value.strategies[selectedStrategy.value].rate
+const quickOptionPreviews = computed(() => {
+  return quickOptions.value.map((years) => ({
+    years,
+    monthlySavings: calculateSavingsPlan({
+      targetAmount: targetAmount.value,
+      durationYears: years,
+      annualRate: PREVIEW_ANNUAL_RATE,
+    }).monthlySavings,
+  }))
 })
 const projectionPreview = computed(() => {
   return calculateSavingsPlan({
     targetAmount: targetAmount.value,
     durationYears: durationYears.value,
-    annualRate: selectedAnnualRate.value,
+    annualRate: PREVIEW_ANNUAL_RATE,
   })
 })
+const formatMonthlyRate = (value: number) => `${monthlyCurrencyFormatter.format(value)} €`
+const formatMonthlyEstimate = (value: number) => `~${monthlyCurrencyFormatter.format(value)} EUR/Mo.`
 const canContinue = computed(() => durationSelectionMode.value !== null)
-const durationModeSummary = computed(() => {
-  if (durationSelectionMode.value === 'preset') {
-    return 'Sie nutzen einen empfohlenen Zeitraum.'
-  }
 
-  if (durationSelectionMode.value === 'stepper') {
-    return 'Sie haben die Laufzeit manuell angepasst.'
-  }
+watch(
+  [durationSelectionMode, quickOptions],
+  ([mode, options]) => {
+    if (mode !== null || options.length === 0) {
+      return
+    }
 
-  return 'Bitte wählen Sie einen Weg: empfohlenen Zeitraum oder manuelle Anpassung.'
-})
-const recommendationReason = computed(() => {
-  if (currentGoal.value.whatItMeans.length === 0) {
-    return 'Die empfohlenen Zeiträume basieren auf typischen Verläufen für dieses Sparziel.'
-  }
+    const middleIndex = Math.floor(options.length / 2)
+    const middleYears = options[middleIndex]
+    if (!Number.isFinite(middleYears)) {
+      return
+    }
 
-  return currentGoal.value.whatItMeans.slice(0, 2).join(' ')
-})
+    setDurationYears(middleYears)
+    setDurationSelectionMode('preset')
+  },
+  { immediate: true },
+)
 
 const handleBack = () => {
-  if (previousStep.value === 2 || previousStep.value === 3) {
+  if (previousStep.value === 2) {
     setStep(previousStep.value)
     return
   }
@@ -123,108 +136,106 @@ const handleShowResult = () => {
             <span>Zielbetrag: <span class="font-semibold">{{ formatCurrency(targetAmount) }}</span></span>
           </div>
         </div>
-        <h2 class="mb-4 text-[32px] font-bold text-[#003745]">Wann möchten Sie {{ goalLabel }} erreichen?</h2>
-        <p class="rounded-[4px] border border-[#003745]/15 bg-[#F4F9FA] px-4 py-3 text-sm text-[#003745]">
-          {{ durationModeSummary }}
+        <h2 class="mb-4 text-[32px] font-bold text-[#003745]">Wann möchten Sie Ihr Sparziel erreichen?</h2>
+        <p class="ui-text-secondary text-base font-light">
+          Wählen Sie eine empfohlene Spardauer oder geben Sie eine eigene Spardauer ein.
         </p>
       </div>
 
-      <div class="mb-4 rounded-[4px] border border-[#D8E5E8] bg-white p-4 text-sm text-[#003745]">
-        <p class="font-semibold">Warum diese empfohlenen Zeiträume?</p>
-        <p class="mt-1 leading-relaxed">{{ recommendationReason }}</p>
+      <section class="mb-8 rounded-[4px] border border-[#003745]/15 bg-white p-5 md:p-6">
+        <div class="mb-5 flex items-center gap-2">
+          <h3 class="text-xl font-bold text-[#003745]">Spardauer angeben</h3>
+        </div>
+        <div class="space-y-4">
+          <p class="text-sm font-semibold text-[#003745]">Empfohlene Spardauern für dieses Ziel</p>
+          <div class="grid gap-2 sm:grid-cols-3">
+            <button
+              v-for="({ years, monthlySavings }, optionIndex) in quickOptionPreviews"
+              :key="years"
+              v-motion
+              :initial="optionInitial(optionIndex)"
+              :enter="optionEnter(optionIndex)"
+              type="button"
+              :aria-pressed="durationSelectionMode === 'preset' && durationYears === years ? 'true' : 'false'"
+              class="ui-button h-auto px-3 py-2 text-sm font-semibold"
+              :class="
+                durationSelectionMode === 'preset' && durationYears === years
+                  ? 'ui-button-solid'
+                  : 'ui-button-secondary'
+              "
+              @click="selectPresetDuration(years)"
+            >
+              <span class="block">in {{ years }} Jahren</span>
+              <span
+                class="mt-1 block text-xs font-normal"
+                :class="durationSelectionMode === 'preset' && durationYears === years ? 'text-white/80' : 'ui-text-secondary'"
+              >
+                {{ formatMonthlyEstimate(monthlySavings) }}
+              </span>
+            </button>
+          </div>
+          <div class="pt-2">
+            <p class="mb-2 text-sm font-semibold text-[#003745]">Spardauer</p>
+            <div class="w-full" @click="activateStepperMode" @focusin="activateStepperMode">
+              <NumericInputStepper
+                :value="durationYears"
+                :min="1"
+                :max="40"
+                :step="1"
+                unit="Jahre"
+                decrement-label="Laufzeit um ein Jahr verkürzen"
+                increment-label="Laufzeit um ein Jahr verlängern"
+                @update:value="updateStepperDuration"
+              />
+            </div>
+            <div class="mt-4 flex items-center gap-2 text-sm text-[#003745]">
+              <span class="material-symbols-outlined text-[16px] text-[var(--text-secondary)]" aria-hidden="true">info</span>
+              <span>
+                Sie erreichen Ihr Ziel im <span class="font-semibold">Jahr {{ targetYear }}</span>. Bitte wählen Sie eine Spardauer zwischen 1 und 40 Jahren.
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="mb-8 rounded-[4px] bg-[#1A6B80] p-5 text-white">
+        <p class="text-sm font-medium">Voraussichtliche monatliche Sparrate (bei 4 % p.a.)</p>
+        <p class="mt-2 text-5xl font-bold leading-none">{{ formatMonthlyRate(projectionPreview.monthlySavings) }}</p>
+        <p class="mt-2 text-sm text-white/85">für {{ formatCurrency(targetAmount) }} in {{ durationYears }} Jahren</p>
+        <p class="mt-4 text-sm text-white/80">
+          Im nächsten Schritt legen Sie die Renditeannahme fest. Die Werte hier sind eine erste Orientierung.
+        </p>
       </div>
 
-      <div class="mb-10 grid grid-cols-3 gap-4">
+      <div
+        v-if="infoPoints.length > 0"
+        class="mb-8 rounded-[var(--radius-control)] border border-[#E6EEF0] bg-[#F4F9FA] p-5 text-sm leading-relaxed text-[#003745]"
+      >
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-[18px] text-[#003745]" aria-hidden="true">lightbulb</span>
+          <p class="text-base font-semibold">Gut zu wissen:</p>
+        </div>
+        <ul class="mt-2 list-inside list-disc space-y-1">
+          <li v-for="point in infoPoints" :key="point">{{ point }}</li>
+        </ul>
+      </div>
+
+      <div class="mt-8 flex w-full items-center justify-between gap-3">
         <button
-          v-for="(years, optionIndex) in quickOptions"
-          :key="years"
-          v-motion
-          :initial="optionInitial(optionIndex)"
-          :enter="optionEnter(optionIndex)"
           type="button"
-          :aria-pressed="durationSelectionMode === 'preset' && durationYears === years ? 'true' : 'false'"
-          class="ui-option-card py-4 text-lg font-medium"
-          :class="
-            durationSelectionMode === 'preset' && durationYears === years
-              ? 'is-selected text-[#003745]'
-              : 'ui-text-secondary hover:border-[#003745]'
-          "
-          @click="selectPresetDuration(years)"
+          class="group inline-flex h-auto items-center gap-1 py-4 text-base font-semibold text-[#1A6B80]"
+          @click="handleBack"
         >
-          in {{ years }} Jahren
+          <span class="material-symbols-outlined text-[18px]" aria-hidden="true">chevron_left</span>
+          <span class="group-hover:underline">Zurück</span>
         </button>
-      </div>
-
-      <div
-        class="mb-8 flex flex-col items-center rounded-[4px] border bg-white p-8"
-        :class="durationSelectionMode === 'stepper' ? 'border-[#003745] shadow-[var(--shadow-card)]' : 'border-[#003745]/20'"
-        role="button"
-        tabindex="0"
-        :aria-pressed="durationSelectionMode === 'stepper' ? 'true' : 'false'"
-        @click="activateStepperMode"
-        @keydown.enter.prevent="activateStepperMode"
-        @keydown.space.prevent="activateStepperMode"
-      >
-        <div class="w-full max-w-sm">
-          <NumericInputStepper
-            :value="durationYears"
-            :min="1"
-            :max="40"
-            :step="1"
-            label="Laufzeit manuell anpassen"
-            unit="Jahre"
-            :note="`Zieljahr ${targetYear}`"
-            help-text="Mit +/- passen Sie die Laufzeit schrittweise um jeweils 1 Jahr an."
-            decrement-label="Laufzeit um ein Jahr verkürzen"
-            increment-label="Laufzeit um ein Jahr verlängern"
-            @update:value="updateStepperDuration"
-          />
-        </div>
-      </div>
-
-      <div class="mb-8 rounded-[4px] border border-[#E6EEF0] bg-[#F4F9FA] p-5 text-sm leading-relaxed text-[#003745]">
-        <p class="font-semibold">Auswirkung Ihrer Laufzeitwahl</p>
-        <p class="mt-1">
-          Mit {{ durationYears }} Jahren liegt die aktuelle monatliche Sparrate bei
-          <span class="font-semibold">{{ formatCurrency(projectionPreview.monthlySavings) }}</span>.
-          Kürzere Laufzeit erhöht meist die Rate, längere Laufzeit senkt sie häufig.
-        </p>
-      </div>
-
-      <div
-        v-if="currentGoal.whatItMeans.length > 0"
-        class="mb-8 flex items-start gap-4 rounded-[var(--radius-control)] border border-[#E6EEF0] bg-[#F4F9FA] p-5 text-sm leading-relaxed text-[#003745]"
-      >
-        <div class="shrink-0 rounded-[4px] border border-[#E6EEF0] bg-white p-2 font-semibold">Info</div>
-        <div class="pt-1">
-          <p class="mb-1 font-semibold">Gut zu wissen:</p>
-          <ul class="list-disc space-y-1 pl-4">
-            <li v-for="point in currentGoal.whatItMeans" :key="point">{{ point }}</li>
-            <li>Die Laufzeit können Sie später in der Ergebnisansicht jederzeit erneut anpassen.</li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="flex flex-col items-center justify-center">
-        <span class="ui-text-secondary mb-4 block text-sm">Fast geschafft. Gleich sehen Sie Ihren Plan.</span>
         <button
           type="button"
           :disabled="!canContinue"
-          class="ui-button ui-button-solid motion-cta w-full px-12 py-3 md:w-auto"
+          class="ui-button ui-button-primary motion-cta h-auto px-8 py-4 text-lg"
           @click="handleShowResult"
         >
           Ergebnis anzeigen
-        </button>
-      </div>
-
-      <div class="mt-8 flex w-full justify-start">
-        <button
-          type="button"
-          class="ui-button ui-button-secondary inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold"
-          @click="handleBack"
-        >
-          <span class="material-symbols-outlined text-[18px]" aria-hidden="true">arrow_back</span>
-          Zurück
         </button>
       </div>
     </div>

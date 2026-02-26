@@ -9,6 +9,9 @@
   --foreground: #003745;
   --text-secondary: #4e6b75;
   --text-muted: #516f79;
+  --progress-text-open: #5f7a83;
+  --progress-text-done: #3a5660;
+  --progress-text-active: #003745;
   --deka-primary-red: #ee0000;
   --deka-divider: #e6eef0;
   --radius-control: 4px;
@@ -215,8 +218,8 @@ select:disabled,
 }
 
 .ui-input {
-  border-radius: var(--radius-control);
-  border: 1px solid var(--border-subtle);
+  border-radius: 0;
+  border: 1px solid #003745;
   background-color: #ffffff;
   color: var(--foreground);
   transition:
@@ -247,7 +250,7 @@ select:disabled,
     border-color var(--motion-duration-normal) var(--motion-ease-standard),
     background-color var(--motion-duration-normal) var(--motion-ease-standard),
     box-shadow var(--motion-duration-normal) var(--motion-ease-standard),
-    transform var(--motion-duration-fast) var(--motion-ease-standard);
+    outline-color var(--motion-duration-normal) var(--motion-ease-standard);
 }
 
 .ui-option-card:hover:not(:disabled):not([aria-disabled='true']) {
@@ -255,14 +258,13 @@ select:disabled,
   box-shadow: var(--shadow-card);
 }
 
-.ui-option-card:active:not(:disabled):not([aria-disabled='true']) {
-  transform: scale(0.99);
-}
-
 .ui-option-card.is-selected,
 .ui-option-card[aria-selected='true'],
 .ui-option-card[aria-pressed='true'] {
-  border: 2px solid var(--border-strong);
+  border-color: var(--border-strong);
+  box-shadow: none;
+  outline: 1px solid var(--border-strong);
+  outline-offset: 0;
   background-color: rgba(0, 55, 69, 0.07);
 }
 

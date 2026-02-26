@@ -215,8 +215,8 @@ Recommended flow:
 
 ## Common Pitfalls
 
-1. Missing routing tag in prompt line 1.
-**Issue:** No routing tag is provided on line 1.
+1. Missing routing tag in prompt.
+**Issue:** No routing tag is provided in the prompt.
 **Fix:** The assistant should suggest likely agents and let you choose one without retyping the full prompt.
 
 2. Starting new projects with `/prod`.

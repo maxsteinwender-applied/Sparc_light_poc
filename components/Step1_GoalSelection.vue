@@ -120,21 +120,24 @@ const canContinue = computed(() => {
 </script>
 
 <template>
-  <div class="mx-auto flex w-full max-w-7xl flex-col items-center px-4 py-8 md:py-12">
+  <div class="mx-auto flex w-full max-w-3xl flex-col items-center px-4 py-8 md:py-12">
     <div class="relative z-10 mb-8 md:mb-12">
       <h1 class="mb-4 text-center text-[32px] font-bold tracking-tight text-[#003745]">Wofür möchten Sie sparen?</h1>
       <p class="ui-text-secondary text-center text-base font-light">Wählen Sie ein Ziel – wir helfen Ihnen, die passende Sparrate zu finden.</p>
     </div>
 
     <div class="w-full space-y-8">
-      <div class="mx-auto grid w-full max-w-5xl grid-cols-1 gap-4 sm:grid-cols-2">
+      <div
+        class="mx-auto grid w-full grid-cols-1 gap-4 sm:grid-cols-2"
+        role="group"
+        aria-label="Sparziel auswählen"
+      >
         <button
           v-for="entry in gridGoals"
           :key="entry.id"
           type="button"
-          role="option"
           :aria-label="`Ziel auswählen: ${getGoalCardLabel(entry.id)}`"
-          :aria-selected="isGoalSelected(entry.id) ? 'true' : 'false'"
+          :aria-pressed="isGoalSelected(entry.id) ? 'true' : 'false'"
           :class="[
             'ui-option-card flex h-full flex-col rounded-[var(--radius-card)] border p-5 text-left',
             isGoalSelected(entry.id) ? 'is-selected border-[#003745]' : 'border-[#003745]/15 hover:border-[#003745]/45',
@@ -151,7 +154,7 @@ const canContinue = computed(() => {
 
       <div
         v-if="isCustomMode"
-        class="mx-auto w-full max-w-5xl rounded-[4px] border border-[#003745]/20 bg-[#F4F9FA] p-6"
+        class="mx-auto w-full rounded-[4px] border border-[#003745]/20 bg-[#F4F9FA] p-6"
       >
         <div class="space-y-3 text-left">
           <label for="custom-goal-name" class="block text-lg font-semibold text-[#003745]">Wie heißt Ihr Sparziel?</label>
@@ -167,7 +170,6 @@ const canContinue = computed(() => {
       </div>
 
       <div class="mx-auto flex w-full max-w-md flex-col items-center gap-4">
-        <span class="ui-text-secondary mb-1 block text-sm">Als Nächstes bestimmen wir den Betrag.</span>
         <button
           type="button"
           :disabled="!canContinue"

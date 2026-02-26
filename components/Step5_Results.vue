@@ -674,13 +674,13 @@ onBeforeUnmount(() => {
           <section class="space-y-5 rounded-[4px] border border-[#003745]/10 bg-white p-5 md:p-6">
             <article class="rounded-[4px] bg-[var(--deka-primary-red)] p-6 text-white">
               <div class="mb-2 flex items-center justify-between gap-3">
-                <div class="text-xs font-semibold uppercase tracking-widest text-white/80">Monatliche Sparrate</div>
+                <div class="text-xs font-semibold uppercase tracking-widest text-white">Monatliche Sparrate</div>
                 <span class="inline-flex h-7 items-center rounded-full border border-white/35 bg-white/15 px-3 text-[11px] font-semibold uppercase tracking-wide text-white">
                   Errechnet
                 </span>
               </div>
               <div class="text-4xl font-bold tracking-tight">{{ formatCurrency(monthlySavings) }}</div>
-              <div class="mt-2 text-sm text-white/80">
+              <div class="mt-2 text-sm text-white">
                 Errechnet für {{ durationYears }} Jahre | {{ formatPercentCompact(selectedAnnualRate) }} Rendite
               </div>
             </article>
@@ -756,11 +756,14 @@ onBeforeUnmount(() => {
                   </label>
                 </div>
                 <div class="mt-3 flex items-center gap-2">
+                  <label for="custom-rate-percent-input" class="sr-only">Individuelle Rendite in Prozent</label>
                   <input
+                    id="custom-rate-percent-input"
                     v-model="customRatePercentInput"
                     type="text"
                     inputmode="decimal"
                     :disabled="!isCustomRateEnabled"
+                    aria-describedby="custom-rate-percent-hint"
                     class="ui-input h-10 w-full px-3 text-sm"
                     :class="
                       isCustomRateEnabled
@@ -779,7 +782,7 @@ onBeforeUnmount(() => {
                     OK
                   </button>
                 </div>
-                <p class="mt-2 text-xs text-[var(--text-secondary)]">Wert zwischen 0,0 % und 15,0 % p. a.</p>
+                <p id="custom-rate-percent-hint" class="mt-2 text-xs text-[var(--text-secondary)]">Wert zwischen 0,0 % und 15,0 % p. a.</p>
                 <p class="mt-1 text-xs font-medium text-[#1B4A5A]" aria-live="polite">
                   Aktuelle monatliche Sparrate bei dieser Rendite: {{ formatCurrency(monthlySavings) }}
                 </p>
@@ -815,7 +818,9 @@ onBeforeUnmount(() => {
                   </button>
                 </div>
                 <div v-else class="space-y-2">
+                  <label for="result-target-amount-input" class="sr-only">Zielbetrag bearbeiten</label>
                   <input
+                    id="result-target-amount-input"
                     v-model="targetAmountInput"
                     type="text"
                     inputmode="numeric"
@@ -856,7 +861,9 @@ onBeforeUnmount(() => {
                   </button>
                 </div>
                 <div v-else class="space-y-2">
+                  <label for="result-duration-input" class="sr-only">Laufzeit in Jahren bearbeiten</label>
                   <input
+                    id="result-duration-input"
                     v-model="durationInput"
                     type="number"
                     min="1"
@@ -990,8 +997,8 @@ onBeforeUnmount(() => {
             >
               <span class="result-link-label">Mehr zum Deka-FondsSparplan erfahren</span>
               <span class="text-xs text-[#4F7280]">(öffnet in neuem Tab)</span>
-              <span class="material-symbols-outlined text-[16px]">open_in_new</span>
-              <span class="material-symbols-outlined">chevron_right</span>
+              <span class="material-symbols-outlined text-[16px]" aria-hidden="true">open_in_new</span>
+              <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
             </a>
           </article>
 
@@ -1033,7 +1040,7 @@ onBeforeUnmount(() => {
           >
             Zum Sparrechner
             <span class="ml-2 text-xs font-medium text-white/80">(neuer Tab)</span>
-            <span class="material-symbols-outlined ml-1 text-[16px]">open_in_new</span>
+            <span class="material-symbols-outlined ml-1 text-[16px]" aria-hidden="true">open_in_new</span>
           </a>
         </div>
 
@@ -1140,7 +1147,7 @@ onBeforeUnmount(() => {
                     class="text-[#0043B4] underline underline-offset-2 hover:text-[#003A99]"
                   >
                     {{ card.linkLabel }}
-                    <span class="material-symbols-outlined ml-1 text-[14px]">open_in_new</span>
+                    <span class="material-symbols-outlined ml-1 text-[14px]" aria-hidden="true">open_in_new</span>
                   </a>
                 </template>
                 {{ card.bodyAfterLink }}
@@ -1185,7 +1192,7 @@ onBeforeUnmount(() => {
         class="ui-button ui-button-secondary inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold"
         @click="goBack"
       >
-        <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+        <span class="material-symbols-outlined text-[18px]" aria-hidden="true">arrow_back</span>
         Zurück
       </button>
     </div>

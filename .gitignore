@@ -2,6 +2,7 @@ node_modules/
 dist/
 .nuxt/
 .output/
+.portless-state/
 coverage/
 playwright-report/
 test-results/
