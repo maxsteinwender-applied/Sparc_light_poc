@@ -3,7 +3,7 @@
 ## Dokumentstatus
 - Quelle: [Notion – Sparc Light MVP Scoping](https://www.notion.so/30c36743f26b8085b84fd851ccf56a15)
 - Letzter Notion-Stand (Snapshot): 2026-02-20
-- Letzte Markdown-Aktualisierung: 2026-02-25
+- Letzte Markdown-Aktualisierung: 2026-02-26
 - Zweck: Zentrale, laufend gepflegte MVP-Scope-Dokumentation für Product, UX, FE und QA.
 
 ## 1) MVP Ziel
@@ -160,4 +160,12 @@ Status-Konvention:
 ## 9) Änderungsprotokoll
 | Datum | Quelle | Änderung | Verantwortlich |
 |---|---|---|---|
+| 2026-02-26 | Codex UI-Feinschliff (Zielbetrag-Seite v5) | CTA „Betrag übernehmen“ in der „Errechneter Zielbetrag“-Box neu ausgerichtet: Desktop vertikal mittig rechts neben dem Textblock; Mobile Umbruch unter den Textblock mit voller Breite (`w-full`). | Codex (/fe) |
+| 2026-02-26 | Codex UI-Feinschliff (Zielbetrag-Seite v4) | „Errechneter Zielbetrag“-Card von Beige auf hellblauen Akzent (`#F4F9FA`) umgestellt; „Betrag übernehmen“-Button in der Card-Kopfzeile vertikal mittig ausgerichtet. | Codex (/fe) |
+| 2026-02-26 | Codex UI-Feinschliff (Zielbetrag-Seite v3) | Accordion-Header „Betrag ermitteln“ auf 4px-Radius und saubere Clipping-Kanten angepasst (Visual-Bug-Fix). „Errechneter Zielbetrag“-Box auf Beige-Akzent `#F5EFE4` umgestellt; Wert nicht mehr grün. „Betrag übernehmen“ in die Ergebnis-Box rechts verschoben und mit Arrow-Right-Icon ergänzt. | Codex (/fe) |
+| 2026-02-26 | Codex UI-Feinschliff (Zielbetrag-Seite v2) | Headerbereich von „Betrag ermitteln“ mit hellem Blau hinterlegt zur klareren visuellen Trennung von der Zielbetrag-Card; Orientierungswert im Info-Satz zusätzlich fett hervorgehoben. | Codex (/fe) |
+| 2026-02-26 | Codex UI-Feinschliff (Zielbetrag-Seite) | Step-2-UI verfeinert: Titel zu „Zielbetrag angeben“ mit linksbündigem „Direkter Weg“-Chip, Label „Schnellauswahl“, aktive Quick-Option als gefüllter Button, zusätzliches Label „Zielbetrag“ über Input, Orientierungswert als Plain-Text mit Info-Icon und „(übernehmen)“-Link, flexible Wrap-Darstellung der Ausprägungen mit Checkmark wiederhergestellt, Accordion schließt nach „Betrag übernehmen“ automatisch. | Codex (/fe) |
+| 2026-02-26 | Codex UI-Änderung (Zielbetrag-Seite) | Schritt 2 grundlegend umgebaut: Fokus auf Zielbetrag-Input mit Orientierungswert-Übernahme, 4 Schnellauswahl-Buttons und integriertem „Betrag ermitteln“-Accordion (inkl. Selektieren/Deselektieren der Ausprägungen, errechnetem Zielbetrag, Differenzanzeige und „Betrag übernehmen“). Navigation führt von Schritt 2 direkt zu Schritt 4, separate Betrag-ermitteln-Seite ist damit aus dem aktiven Flow entfernt. | Codex (/fe) |
+| 2026-02-26 | Codex UI-Änderung (Wizard Schritt 1) | „Sparziel auswählen“ ohne vorausgewähltes Ziel umgesetzt; CTA bleibt deaktiviert bis zur aktiven Zielauswahl durch den Nutzer | Codex (/fe) |
+| 2026-02-26 | Codex UI-Umsetzung (Figma-Make-Layout-Alignment) | Heading-Harmonisierung auf 32 px im Wizard, Hero-Sublines auf 16 px, Sparziel-Icon-Hintergrund auf `#1A6B80`, neue Summary-Zeilen über den Headlines in Schritt 2 (Icon + Sparziel) und Schritt 4 (Icon + Sparziel + Zielbetrag) | Codex (/fe) |
 | 2026-02-25 | Notion Snapshot vom 2026-02-20 | Initiale Überführung des MVP-Scopes nach `mvpscope.md` inkl. Struktur für laufende Iterationen | Codex (/prod) |

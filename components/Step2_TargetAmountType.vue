@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useWizard } from '../composables/useWizard'
+import { calculateTargetAmountFromFactors } from '../domain/targetAmount'
 import { parseEuroInput } from '../domain/wizardValidation'
-import { getStaggerItemVariants } from '../motion/presets'
-import { useMotionSafety } from '../motion/useMotionSafety'
 import { getGoal } from './goalsData'
 import { resolveGoalSymbol } from './ui/goalSymbol'
+import { formatCurrency } from './ui/utils'
 
 const {
   setStep,
@@ -13,12 +13,14 @@ const {
   targetAmount,
   goal,
   customGoalName,
-  amountSelectionMode,
-  setAmountSelectionMode,
+  calculationFactors,
+  toggleCalculationFactor,
 } = useWizard()
 
 const formatAmountForInput = (value: number) => new Intl.NumberFormat('de-DE').format(value)
+const formatEuro = (value: number) => `${value.toLocaleString('de-DE')} €`
 const inputAmount = ref(targetAmount.value > 0 ? formatAmountForInput(targetAmount.value) : '')
+const isEstimatorOpen = ref(false)
 
 const currentGoal = computed(() => getGoal(goal.value))
 
@@ -30,18 +32,25 @@ const goalLabel = computed(() => {
   return currentGoal.value.label
 })
 const goalSymbol = computed(() => resolveGoalSymbol(currentGoal.value.icon))
+const orientationValue = computed(() => currentGoal.value.baseTargetAmount)
 
 const parsedAmount = computed(() => parseEuroInput(inputAmount.value))
-const isManualSelected = computed(() => amountSelectionMode.value === 'manual')
-const isGuidedSelected = computed(() => amountSelectionMode.value === 'guided')
-const canContinueManual = computed(() => isManualSelected.value && parsedAmount.value !== null)
-const canContinueGuided = computed(() => isGuidedSelected.value)
-const { prefersReducedMotion } = useMotionSafety()
+const canContinue = computed(() => parsedAmount.value !== null)
+const quickAmounts = computed(() => {
+  const base = orientationValue.value
+  const factors = [0.5, 1, 1.5, 2]
+  return factors.map((factor) => Math.max(1_000, Math.round((base * factor) / 500) * 500))
+})
+const currentAmount = computed(() => parsedAmount.value ?? orientationValue.value)
 
-const cardInitial = (index: number) =>
-  getStaggerItemVariants(index, prefersReducedMotion.value).initial
-const cardEnter = (index: number) =>
-  getStaggerItemVariants(index, prefersReducedMotion.value).enter
+const calculatedTargetAmount = computed(() => {
+  return calculateTargetAmountFromFactors(
+    orientationValue.value,
+    currentGoal.value.amountFinderChips,
+    calculationFactors.value,
+  )
+})
+const calculatedDelta = computed(() => calculatedTargetAmount.value - orientationValue.value)
 
 const handleAmountInput = (event: Event) => {
   const target = event.target as HTMLInputElement
@@ -52,41 +61,46 @@ const handleAmountInput = (event: Event) => {
   }
 
   inputAmount.value = formatAmountForInput(Number.parseInt(digits, 10))
-}
-
-const selectManualMode = () => {
-  setAmountSelectionMode('manual')
-}
-
-const selectGuidedMode = () => {
-  setAmountSelectionMode('guided')
-}
-
-const handleManualSubmit = () => {
-  if (parsedAmount.value === null || !isManualSelected.value) {
-    return
-  }
-
-  setTargetAmount(parsedAmount.value)
-  setStep(3, { previousStep: 2 })
-}
-
-const handleCalculateClick = () => {
-  if (!isGuidedSelected.value) {
-    return
-  }
-
-  setStep(3, { previousStep: 2 })
+  setTargetAmount(Number.parseInt(digits, 10))
 }
 
 const handleBack = () => {
   setStep(1)
 }
+
+const setAmountFromPreset = (value: number) => {
+  inputAmount.value = formatAmountForInput(value)
+  setTargetAmount(value)
+}
+
+const applyOrientationValue = () => {
+  setAmountFromPreset(orientationValue.value)
+}
+
+const toggleEstimator = () => {
+  isEstimatorOpen.value = !isEstimatorOpen.value
+}
+
+const isSelectedFactor = (label: string) => calculationFactors.value.includes(label)
+
+const applyCalculatedAmount = () => {
+  setAmountFromPreset(calculatedTargetAmount.value)
+  isEstimatorOpen.value = false
+}
+
+const handleContinue = () => {
+  if (parsedAmount.value === null) {
+    return
+  }
+
+  setTargetAmount(parsedAmount.value)
+  setStep(4, { previousStep: 2 })
+}
 </script>
 
 <template>
   <div class="mx-auto flex min-h-[60vh] max-w-5xl flex-col items-center px-4 pb-12 pt-12">
-    <div class="mb-10 max-w-3xl text-center">
+    <div class="mb-8 max-w-3xl text-center">
       <div class="mb-4 flex justify-center">
         <div class="inline-flex items-center gap-3 rounded-[4px] bg-[#F1F3F4] px-3 py-2 text-sm text-[#003745]">
           <span class="inline-flex h-8 w-8 items-center justify-center rounded-[4px] bg-[#1A6B80] text-white">
@@ -99,28 +113,29 @@ const handleBack = () => {
       <p class="ui-text-secondary text-base font-light">Geben Sie einen Ziel­betrag ein oder lassen Sie sich einen Betrag ermitteln.</p>
     </div>
 
-    <div class="grid w-full items-stretch gap-8 md:grid-cols-2">
-      <article
-        v-motion
-        :initial="cardInitial(0)"
-        :enter="cardEnter(0)"
-        class="ui-option-card flex flex-col rounded-[var(--radius-card)] p-8"
-        :class="isManualSelected ? 'is-selected' : ''"
-        role="button"
-        tabindex="0"
-        :aria-pressed="isManualSelected ? 'true' : 'false'"
-        @click="selectManualMode"
-        @keydown.enter.prevent="selectManualMode"
-        @keydown.space.prevent="selectManualMode"
-      >
-        <div class="mb-4 flex items-center justify-between gap-3">
+    <div class="w-full space-y-4">
+      <section class="rounded-[var(--radius-card)] border border-[#003745]/15 bg-white p-5 md:p-6">
+        <div class="mb-3 flex items-center gap-2">
+          <h3 class="text-xl font-bold text-[#003745]">Zielbetrag angeben</h3>
           <span class="ui-chip ui-chip-secondary-subtle">Direkter Weg</span>
-          <span class="text-xs font-semibold text-[#003745]">Schätzung vorhanden</span>
         </div>
-        <h3 class="mb-3 text-xl font-bold text-[#003745]">Betrag eingeben</h3>
-        <p class="ui-text-secondary mb-8">Sie kennen Ihre Zielsumme bereits und möchten direkt damit weiterarbeiten.</p>
-
-        <div class="mt-auto space-y-4">
+        <div class="space-y-4">
+          <p class="text-sm font-semibold text-[#003745]">Schnellauswahl</p>
+          <div class="grid gap-2 sm:grid-cols-4">
+            <button
+              v-for="amount in quickAmounts"
+              :key="amount"
+              type="button"
+              class="ui-button h-auto px-3 py-2 text-sm font-semibold"
+              :class="currentAmount === amount ? 'ui-button-solid' : 'ui-button-secondary'"
+              @click="setAmountFromPreset(amount)"
+            >
+              {{ formatEuro(amount) }}
+            </button>
+          </div>
+          <div class="pt-2">
+            <p class="mb-2 text-sm font-semibold text-[#003745]">Zielbetrag</p>
+          </div>
           <div class="relative">
             <input
               :value="inputAmount"
@@ -129,81 +144,101 @@ const handleBack = () => {
               autocomplete="off"
               placeholder="z. B. 12.500"
               class="ui-input h-14 w-full p-4 pr-14 text-lg"
-              @focus="selectManualMode"
               @input="handleAmountInput"
             >
             <span class="ui-text-muted absolute right-4 top-1/2 -translate-y-1/2 font-medium">EUR</span>
           </div>
-
-          <div
-            v-if="currentGoal.avgTargetAmountHint"
-            class="flex gap-3 rounded-[4px] border border-[#E6EEF0] bg-[#F4F9FA] p-4 text-sm leading-relaxed text-[#003745]"
-          >
-            <span class="mt-0.5 shrink-0 font-semibold">Info</span>
-            <span>{{ currentGoal.avgTargetAmountHint }}</span>
-          </div>
-
-          <div>
-            <span class="ui-text-secondary mb-4 block text-center text-sm">Im nächsten Schritt können Sie die Kriterien verfeinern.</span>
+          <div class="flex items-center gap-2 text-sm text-[#003745]">
+            <span class="material-symbols-outlined text-[16px] text-[var(--text-secondary)]" aria-hidden="true">info</span>
+            <span>Orientierungswert für Ihr Sparziel <span class="font-semibold">{{ goalLabel }}</span>: <span class="font-semibold">{{ formatEuro(orientationValue) }}</span></span>
             <button
               type="button"
-              :disabled="!canContinueManual"
-              class="ui-button motion-cta w-full px-4 py-3"
-              :class="isManualSelected ? 'ui-button-solid' : 'ui-button-secondary'"
-              @click.stop="handleManualSubmit"
+              class="font-semibold text-[#1A6B80] underline"
+              @click="applyOrientationValue"
             >
-              Mit diesem Betrag fortfahren
+              (übernehmen)
             </button>
           </div>
         </div>
-      </article>
+      </section>
 
-      <article
-        v-motion
-        :initial="cardInitial(1)"
-        :enter="cardEnter(1)"
-        class="ui-option-card relative flex flex-col overflow-hidden rounded-[var(--radius-card)] p-8"
-        :class="isGuidedSelected ? 'is-selected' : ''"
-        role="button"
-        tabindex="0"
-        :aria-pressed="isGuidedSelected ? 'true' : 'false'"
-        @click="selectGuidedMode"
-        @keydown.enter.prevent="selectGuidedMode"
-        @keydown.space.prevent="selectGuidedMode"
-      >
-        <div class="mb-4 flex items-center justify-between gap-3">
-          <span class="ui-chip ui-chip-secondary-subtle">Geführter Weg</span>
-          <span class="text-xs font-semibold text-[#003745]">Orientierung gewünscht</span>
-        </div>
-        <h3 class="mb-3 text-xl font-bold text-[#003745]">Betrag ermitteln</h3>
-        <p class="ui-text-secondary mb-6">Wir ermitteln den Betrag gemeinsam anhand Ihrer Prioritäten:</p>
-
-        <div class="mb-8 flex flex-wrap content-start gap-2">
-          <span
-            v-for="category in currentGoal.amountFinderCategories"
-            :key="category"
-            class="inline-flex items-center rounded-full border border-[#E6EEF0] bg-[#F4F9FA] px-3 py-1.5 text-xs font-medium text-[#003745]"
-          >
-            {{ category }}
+      <section class="overflow-hidden rounded-[4px] border border-[#003745]/15 bg-white">
+        <button
+          type="button"
+          class="flex w-full items-center justify-between gap-3 rounded-t-[4px] bg-[#F4F9FA] px-5 py-4 text-left"
+          :aria-expanded="isEstimatorOpen ? 'true' : 'false'"
+          @click="toggleEstimator"
+        >
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-[18px] text-[#003745]" aria-hidden="true">calculate</span>
+            <span class="text-xl font-bold text-[#003745]">Betrag ermitteln</span>
+            <span class="ui-chip ui-chip-secondary-subtle">Geführter Weg</span>
+          </div>
+          <span class="material-symbols-outlined text-[18px] text-[#003745]" aria-hidden="true">
+            {{ isEstimatorOpen ? 'expand_less' : 'expand_more' }}
           </span>
+        </button>
+        <div v-if="isEstimatorOpen" class="border-t border-[#E6EEF0] px-5 pb-5 pt-4">
+          <p class="ui-text-secondary mb-4 text-sm leading-relaxed">
+            Wählen Sie aus, was auf Ihr Sparziel zutrifft. Ihr Zielbetrag wird automatisch angepasst. Als Basis gilt der Orientierungswert: {{ formatEuro(orientationValue) }}.
+          </p>
+          <div class="flex flex-wrap gap-3 md:gap-4">
+            <button
+              v-for="chip in currentGoal.amountFinderChips"
+              :key="chip.label"
+              type="button"
+              :aria-pressed="isSelectedFactor(chip.label) ? 'true' : 'false'"
+              :class="[
+                'ui-option-card relative flex min-h-[44px] cursor-pointer items-center gap-2 rounded-full px-[14px] py-[12px] text-left',
+                isSelectedFactor(chip.label) ? 'is-selected shadow-sm' : 'hover:border-[#003745]',
+              ]"
+              @click="toggleCalculationFactor(chip.label)"
+            >
+              <span class="text-xl leading-none" aria-hidden="true">{{ chip.emoji }}</span>
+              <span class="whitespace-nowrap text-base font-medium text-[#003745]" :class="isSelectedFactor(chip.label) ? 'font-bold' : ''">
+                {{ chip.label }}
+              </span>
+              <span
+                class="ml-1 text-sm font-medium"
+                :class="chip.cost === 0 ? 'ui-text-muted' : chip.cost > 0 ? 'text-[#277A6B]' : 'text-[#AD1111]'"
+              >
+                {{ chip.cost === 0 ? '± 0 EUR' : `${chip.cost > 0 ? '+' : '−'}${Math.abs(chip.cost).toLocaleString('de-DE')} EUR` }}
+              </span>
+              <span
+                v-if="isSelectedFactor(chip.label)"
+                class="ml-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#003745] text-xs font-bold text-white"
+              >
+                ✓
+              </span>
+            </button>
+          </div>
+          <div class="mt-4 rounded-[4px] border border-[#D8E5E8] bg-[#F4F9FA] p-4">
+            <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div class="min-w-0">
+                <p class="text-sm font-semibold text-[#003745]">Errechneter Zielbetrag:</p>
+                <p class="mt-1 text-2xl font-bold text-[#003745]">{{ formatCurrency(calculatedTargetAmount) }}</p>
+                <p
+                  class="mt-1 text-sm"
+                  :class="calculatedDelta === 0 ? 'ui-text-secondary' : calculatedDelta > 0 ? 'text-[#277A6B]' : 'text-[#AD1111]'"
+                >
+                  {{ calculatedDelta === 0 ? 'Keine Differenz zur Basis' : `${calculatedDelta > 0 ? '+' : '−'}${Math.abs(calculatedDelta).toLocaleString('de-DE')} EUR durch Ihre Auswahl` }}
+                </p>
+              </div>
+              <button
+                type="button"
+                class="ui-button ui-button-solid inline-flex w-full items-center justify-center gap-1.5 px-4 py-2 text-sm md:ml-4 md:w-auto"
+                @click="applyCalculatedAmount"
+              >
+                Betrag übernehmen
+                <span class="material-symbols-outlined text-[16px]" aria-hidden="true">arrow_forward</span>
+              </button>
+            </div>
+          </div>
         </div>
-
-        <div class="mt-auto">
-          <span class="ui-text-secondary mb-4 block text-center text-sm">Als Nächstes legen wir die wichtigsten Einflussfaktoren fest.</span>
-          <button
-            type="button"
-            :disabled="!canContinueGuided"
-            class="ui-button motion-cta w-full px-6 py-3.5 text-base"
-            :class="isGuidedSelected ? 'ui-button-solid' : 'ui-button-secondary'"
-            @click.stop="handleCalculateClick"
-          >
-            Betrag ermitteln
-          </button>
-        </div>
-      </article>
+      </section>
     </div>
 
-    <div class="mt-8 flex w-full justify-start">
+    <div class="mt-8 flex w-full items-center justify-between gap-3">
       <button
         type="button"
         class="ui-button ui-button-secondary inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold"
@@ -211,6 +246,14 @@ const handleBack = () => {
       >
         <span class="material-symbols-outlined text-[18px]" aria-hidden="true">arrow_back</span>
         Zurück
+      </button>
+      <button
+        type="button"
+        :disabled="!canContinue"
+        class="ui-button ui-button-solid motion-cta px-6 py-3"
+        @click="handleContinue"
+      >
+        Weiter zur Spardauer
       </button>
     </div>
   </div>

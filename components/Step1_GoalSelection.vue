@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed } from 'vue'
 import { useWizard } from '../composables/useWizard'
 import { normalizeCustomGoalName } from '../domain/wizardValidation'
 import { GOALS, getGoal } from './goalsData'
@@ -44,6 +44,10 @@ const gridGoals = computed(() =>
 )
 
 const selectedGoalLabel = computed(() => {
+  if (!goalSelectionConfirmed.value) {
+    return 'ausgewähltem Sparziel'
+  }
+
   if (goal.value === 'custom') {
     return 'individuellem Sparziel'
   }
@@ -72,7 +76,7 @@ const getGoalCardIcon = (iconName?: string) => {
   return goalIconMap[iconName] ?? 'flag'
 }
 
-const isGoalSelected = (id: GoalId) => goal.value === id
+const isGoalSelected = (id: GoalId) => goalSelectionConfirmed.value && goal.value === id
 
 const handleGoalSelect = (id: GoalId) => {
   const selectedGoal = getGoal(id)
@@ -103,24 +107,15 @@ const handleContinue = () => {
 }
 
 const canContinue = computed(() => {
+  if (!goalSelectionConfirmed.value) {
+    return false
+  }
+
   if (goal.value !== 'custom') {
     return true
   }
 
   return normalizeCustomGoalName(customGoalName.value).length > 0
-})
-
-onMounted(() => {
-  if (goalSelectionConfirmed.value) {
-    return
-  }
-
-  const defaultGoal = gridGoals.value[0]
-  if (!defaultGoal) {
-    return
-  }
-
-  handleGoalSelect(defaultGoal.id)
 })
 </script>
 
