@@ -66,7 +66,7 @@ export const buildEchartsOptions = (
       },
       axisLabel: {
         color: theme.text,
-        formatter: (value: number) => `${Math.round(value).toLocaleString('de-DE')} €`,
+        formatter: (value: number) => `${Math.round(value).toLocaleString('de-DE')} EUR`,
       },
     },
     series: model.series.map((series) => ({

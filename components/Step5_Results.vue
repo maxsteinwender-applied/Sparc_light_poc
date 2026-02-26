@@ -15,6 +15,8 @@ import type { StrategyType } from '../stores/wizard'
 const {
   targetAmount,
   setTargetAmount,
+  targetAmountSource,
+  setTargetAmountSource,
   durationYears,
   setDurationYears,
   calculationFactors,
@@ -71,8 +73,7 @@ const targetAmountInput = ref(String(targetAmount.value))
 const durationInput = ref(String(durationYears.value))
 const formatRatePercentInput = (annualRate: number) => (annualRate * 100).toFixed(1).replace('.', ',')
 const customRatePercentInput = ref(formatRatePercentInput(customAnnualRate.value))
-const isEditingTarget = ref(false)
-const isEditingDuration = ref(false)
+const activeInlineEdit = ref<'target' | 'duration' | null>(null)
 
 const FALLBACK_PRESET_STRATEGY: BaseStrategyType = 'balanced'
 const lastPresetStrategy = ref<BaseStrategyType>(
@@ -84,25 +85,22 @@ const lastPresetStrategy = ref<BaseStrategyType>(
 const STRATEGY_ORDER: BaseStrategyType[] = ['security', 'balanced', 'growth']
 const STRATEGY_COPY: Record<
   BaseStrategyType,
-  { option: string; title: string; risk: string; icon: string }
+  { option: string; title: string; risk: string }
 > = {
   security: {
     option: 'Variante A',
     title: 'Sicherheitsorientiert',
-    risk: 'Geringeres Risiko, z. B. defensiver Mischfonds-/Rentenfondsanteil',
-    icon: 'shield',
+    risk: 'Geeignet für Stabilität & Kapitalerhalt, weniger Risiko & Volatilität.',
   },
   balanced: {
     option: 'Variante B',
     title: 'Ausgewogen',
-    risk: 'Mittleres Risiko, z. B. breit gestreuter Mischfonds',
-    icon: 'balance',
+    risk: 'Moderate Schwankungen für Balance aus Ertrag und Wachstum.',
   },
   growth: {
     option: 'Variante C',
     title: 'Wachstumsorientiert',
-    risk: 'Höheres Risiko, z. B. aktienlastige Fonds/ETFs',
-    icon: 'trending_up',
+    risk: 'Höhere Renditen und Wachstum mit mehr Schwankungen.',
   },
 }
 
@@ -175,13 +173,24 @@ const goalSymbol = computed(() => {
 
   return goalSymbolMap[currentGoal.value.icon] || 'flag'
 })
-const selectedFactorsLabel = computed(() => {
-  if (calculationFactors.value.length === 0) {
-    return 'Es wurden keine zusätzlichen Faktoren ausgewählt.'
+const orientationValue = computed(() => currentGoal.value.baseTargetAmount)
+const targetAmountDelta = computed(() => targetAmount.value - orientationValue.value)
+const targetAmountDeltaLabel = computed(() => {
+  if (targetAmountDelta.value === 0) {
+    return `Keine Abweichung zum Orientierungswert (${formatCurrency(orientationValue.value)})`
   }
 
-  return calculationFactors.value.join(', ')
+  const sign = targetAmountDelta.value > 0 ? '+' : '−'
+  return `${sign}${Math.abs(targetAmountDelta.value).toLocaleString('de-DE')} EUR zum Orientierungswert (${formatCurrency(orientationValue.value)})`
 })
+const targetAmountDeltaTextClass = computed(() => {
+  if (targetAmountDelta.value === 0) {
+    return 'text-[var(--text-secondary)]'
+  }
+
+  return targetAmountDelta.value > 0 ? 'text-[#277A6B]' : 'text-[#AD1111]'
+})
+const showEstimatedBreakdown = computed(() => targetAmountSource.value === 'estimated')
 
 const strategyCards = computed(() => {
   return STRATEGY_ORDER.map((key) => {
@@ -191,7 +200,6 @@ const strategyCards = computed(() => {
       option: STRATEGY_COPY[key].option,
       title: STRATEGY_COPY[key].title,
       risk: STRATEGY_COPY[key].risk,
-      icon: STRATEGY_COPY[key].icon,
       rate: strategy.rate,
     }
   })
@@ -382,7 +390,7 @@ const handleTabKeydown = (event: KeyboardEvent, index: number, key: ResultTab) =
   }
 }
 
-const formatPercent = (value: number) => `${(value * 100).toFixed(1).replace('.', ',')} % p. a.`
+const formatPercentNumber = (value: number) => (value * 100).toFixed(1).replace('.', ',')
 const formatPercentCompact = (value: number) => `${(value * 100).toFixed(1).replace('.', ',')} % p.a.`
 
 const clearActionFeedback = () => {
@@ -416,6 +424,7 @@ const applyTargetAmountInput = () => {
   }
 
   setTargetAmount(parsed)
+  setTargetAmountSource('direct')
   targetAmountInput.value = String(parsed)
 }
 
@@ -426,8 +435,9 @@ const applyDurationInput = () => {
     return
   }
 
-  setDurationYears(Math.round(parsed))
-  durationInput.value = String(durationYears.value)
+  const normalized = Math.min(40, Math.max(1, Math.round(parsed)))
+  setDurationYears(normalized)
+  durationInput.value = String(normalized)
 }
 
 const applyCustomRateInput = () => {
@@ -467,6 +477,21 @@ const selectPresetStrategy = (strategy: BaseStrategyType) => {
   setSelectedStrategy(strategy)
 }
 
+const getStrategyFillLevel = (strategy: BaseStrategyType): number => {
+  if (strategy === 'security') {
+    return 1
+  }
+
+  if (strategy === 'balanced') {
+    return 2
+  }
+
+  return 3
+}
+
+const isStrategyBarFilled = (strategy: BaseStrategyType, barIndex: number) =>
+  barIndex <= getStrategyFillLevel(strategy)
+
 const toggleCustomRate = () => {
   if (isCustomRateEnabled.value) {
     setSelectedStrategy(lastPresetStrategy.value)
@@ -478,12 +503,32 @@ const toggleCustomRate = () => {
 
 const saveTargetEdit = () => {
   applyTargetAmountInput()
-  isEditingTarget.value = false
+  activeInlineEdit.value = null
 }
 
 const saveDurationEdit = () => {
   applyDurationInput()
-  isEditingDuration.value = false
+  activeInlineEdit.value = null
+}
+
+const startTargetEdit = () => {
+  durationInput.value = String(durationYears.value)
+  activeInlineEdit.value = 'target'
+}
+
+const startDurationEdit = () => {
+  targetAmountInput.value = String(targetAmount.value)
+  activeInlineEdit.value = 'duration'
+}
+
+const cancelTargetEdit = () => {
+  targetAmountInput.value = String(targetAmount.value)
+  activeInlineEdit.value = null
+}
+
+const cancelDurationEdit = () => {
+  durationInput.value = String(durationYears.value)
+  activeInlineEdit.value = null
 }
 
 const goBack = () => {
@@ -623,16 +668,19 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="min-h-screen bg-white pb-16">
-    <div class="border-b border-[#003745]/10 bg-[#F4F9FA] px-4 pb-[72px] pt-12">
+    <div class="border-b border-[#003745]/10 bg-[#F4F9FA] px-4 pb-[72px] pt-16">
       <div class="mx-auto max-w-[1160px]">
         <div class="flex flex-col items-center text-center">
+          <span class="mb-3 inline-flex h-16 w-16 items-center justify-center rounded-[var(--radius-control)] bg-[#1A6B80] text-white">
+            <span class="material-symbols-outlined leading-none !text-[40px]" style="font-size: 40px;" aria-hidden="true">{{ goalSymbol }}</span>
+          </span>
           <h1 class="mb-4 text-[32px] font-bold tracking-tight text-[#003745]/70">
             Ihr Sparziel
             <span class="text-[#003745]">{{ goalLabel }}</span>
             wird greifbar.
           </h1>
           <p class="ui-text-secondary max-w-3xl text-base">
-            Mit Ihrem Plan sparen Sie
+            Mit Ihrem persönlichen Sparplan sparen Sie
             <span class="font-semibold text-[#003745]">{{ formatCurrency(targetAmount) }}</span>
             in
             <span class="font-semibold text-[#003745]">{{ durationYears }} Jahren</span>.
@@ -653,7 +701,7 @@ onBeforeUnmount(() => {
             type="button"
             :disabled="isCopyingLink"
             :aria-busy="isCopyingLink ? 'true' : 'false'"
-            class="ui-button ui-button-secondary motion-cta h-12 w-full px-5 text-sm sm:w-[220px]"
+            class="ui-button ui-button-secondary motion-cta h-12 w-full !bg-transparent px-5 text-sm hover:!bg-transparent disabled:!bg-transparent sm:w-[220px]"
             @click="handleCopyLink"
           >
             {{ isCopyingLink ? 'Kopiere Link...' : 'Link kopieren' }}
@@ -670,25 +718,34 @@ onBeforeUnmount(() => {
           {{ actionFeedback.text }}
         </p>
 
-        <div class="mt-10 grid items-start gap-7 lg:grid-cols-[1.2fr_1fr]">
-          <section class="space-y-5 rounded-[4px] border border-[#003745]/10 bg-white p-5 md:p-6">
+        <div class="mt-16 grid items-start gap-7 lg:grid-cols-[1.2fr_1fr]">
+          <section class="overflow-hidden rounded-[4px] border border-[#003745]/10 bg-white">
+            <div class="border-b border-[#E0EBEE] bg-white px-5 py-4 md:px-6">
+              <div class="flex items-center gap-3">
+                <span class="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-[4px] bg-[#1A6B80] text-white">
+                  <span class="material-symbols-outlined text-[26px] leading-none" aria-hidden="true">{{ goalSymbol }}</span>
+                </span>
+                <div class="min-w-0">
+                  <p class="text-base font-normal text-[var(--text-secondary)]">Ihr Sparziel</p>
+                  <p class="mt-0.5 truncate text-xl font-bold text-[#003745]">{{ goalLabel }}</p>
+                </div>
+              </div>
+            </div>
+            <div class="space-y-5 p-5 md:p-6">
             <article class="rounded-[4px] bg-[var(--deka-primary-red)] p-6 text-white">
               <div class="mb-2 flex items-center justify-between gap-3">
-                <div class="text-xs font-semibold uppercase tracking-widest text-white">Monatliche Sparrate</div>
+                <div class="text-sm font-semibold text-white">Ihre monatliche Sparrate</div>
                 <span class="inline-flex h-7 items-center rounded-full border border-white/35 bg-white/15 px-3 text-[11px] font-semibold uppercase tracking-wide text-white">
                   Errechnet
                 </span>
               </div>
               <div class="text-4xl font-bold tracking-tight">{{ formatCurrency(monthlySavings) }}</div>
               <div class="mt-2 text-sm text-white">
-                Errechnet für {{ durationYears }} Jahre | {{ formatPercentCompact(selectedAnnualRate) }} Rendite
+                bei ca. {{ formatPercentCompact(selectedAnnualRate) }} · {{ durationYears }} Jahre · Ziel: {{ formatCurrency(targetAmount) }}
               </div>
             </article>
 
-            <p class="ui-text-secondary text-sm">Passen Sie hier Ihre Renditeannahme für das Sparziel an:</p>
-            <div class="rounded-[4px] border border-[#D7E4E8] bg-[#F6FAFB] p-3 text-xs leading-relaxed text-[#1B4A5A]">
-              Renditen sind Annahmen, keine Garantien. Höhere Renditechancen gehen typischerweise mit stärkeren Kursschwankungen einher.
-            </div>
+            <p class="ui-text-secondary text-base">Passen Sie hier Ihre Renditeannahme für das Sparziel an:</p>
 
             <div class="space-y-4">
               <button
@@ -705,25 +762,39 @@ onBeforeUnmount(() => {
                 @click="selectPresetStrategy(strategyCard.key)"
               >
                 <div class="flex min-h-8 items-start justify-between gap-3">
-                  <p class="text-[11px] font-bold uppercase tracking-widest text-[var(--text-secondary)]">{{ strategyCard.option }}</p>
+                  <p class="text-base font-normal text-[var(--text-secondary)]">{{ strategyCard.option }}</p>
                   <span
                     v-if="selectedStrategy === strategyCard.key"
                     class="inline-flex h-8 items-center rounded-full bg-[#0E6073] px-3 text-[13px] font-semibold leading-none text-white md:text-[14px]"
                   >
-                    Aktiv
+                    Ihre Auswahl
                   </span>
                 </div>
                 <div class="mt-3 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end sm:gap-4">
                   <div class="flex min-w-0 items-start gap-3">
-                    <span class="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-[#003745]/10 bg-[#F1F3F4] text-[#003745]">
-                      <span class="material-symbols-outlined text-[28px]">{{ strategyCard.icon }}</span>
+                    <span class="mt-0.5 inline-flex h-6 w-6 shrink-0 items-end justify-center gap-[3px] text-[#0E4D5A]" aria-hidden="true">
+                      <span
+                        class="inline-flex h-2 w-[5px] rounded-full border border-[#0E4D5A]"
+                        :class="isStrategyBarFilled(strategyCard.key, 1) ? 'bg-[#0E4D5A]' : 'bg-transparent'"
+                      />
+                      <span
+                        class="inline-flex h-[13px] w-[5px] rounded-full border border-[#0E4D5A]"
+                        :class="isStrategyBarFilled(strategyCard.key, 2) ? 'bg-[#0E4D5A]' : 'bg-transparent'"
+                      />
+                      <span
+                        class="inline-flex h-[18px] w-[5px] rounded-full border border-[#0E4D5A]"
+                        :class="isStrategyBarFilled(strategyCard.key, 3) ? 'bg-[#0E4D5A]' : 'bg-transparent'"
+                      />
                     </span>
                     <div class="min-w-0">
                       <h3 class="text-base font-semibold leading-tight text-[#003745] md:text-[1.2rem]">{{ strategyCard.title }}</h3>
-                      <p class="mt-1 text-xs leading-relaxed text-[var(--text-secondary)] md:text-sm">{{ strategyCard.risk }}</p>
+                      <p class="mt-1 text-sm leading-normal text-[var(--text-secondary)]">{{ strategyCard.risk }}</p>
                     </div>
                   </div>
-                  <p class="text-2xl font-bold tracking-tight text-[#003745] sm:text-right md:text-[2rem]">{{ formatPercent(strategyCard.rate) }}</p>
+                  <p class="text-xl font-bold tracking-tight text-[#003745] sm:text-right md:text-[1.75rem]">
+                    <span>{{ formatPercentNumber(strategyCard.rate) }} % </span>
+                    <span class="text-[0.75em] font-normal">p.a.</span>
+                  </p>
                 </div>
               </button>
 
@@ -779,42 +850,34 @@ onBeforeUnmount(() => {
                     class="ui-button ui-button-solid h-10 px-3 text-sm"
                     @click="applyCustomRateInput"
                   >
-                    OK
+                    Berechnen
                   </button>
                 </div>
-                <p id="custom-rate-percent-hint" class="mt-2 text-xs text-[var(--text-secondary)]">Wert zwischen 0,0 % und 15,0 % p. a.</p>
-                <p class="mt-1 text-xs font-medium text-[#1B4A5A]" aria-live="polite">
-                  Aktuelle monatliche Sparrate bei dieser Rendite: {{ formatCurrency(monthlySavings) }}
-                </p>
+                <p id="custom-rate-percent-hint" class="mt-2 text-sm text-[var(--text-secondary)]">Wert zwischen 0,0 % und 15,0 % p. a.</p>
               </div>
+            </div>
             </div>
           </section>
 
           <aside class="rounded-[4px] border border-[#003745]/15 bg-gradient-to-b from-white to-[#F4F9FA] p-5 shadow-[0_12px_30px_rgba(0,55,69,0.08)] md:p-6 lg:sticky lg:top-[calc(var(--app-sticky-content-offset)+0.5rem)] lg:self-start">
-            <div class="mb-5 flex items-start justify-between">
-              <div>
-                <p class="text-xs font-semibold uppercase tracking-widest text-[var(--text-secondary)]">Sparziel</p>
-                <h2 class="mt-2 text-2xl font-bold text-[#003745]">{{ goalLabel }}</h2>
-                <p class="mt-3 text-sm text-[#1B4A5A]">
-                  Alle Details im Überblick
-                </p>
-              </div>
-              <div class="flex h-20 w-20 items-center justify-center rounded-full border border-[#0A4F5E] bg-[#1A6B80] text-white">
-                <span class="material-symbols-outlined !text-[36px] leading-none">{{ goalSymbol }}</span>
-              </div>
-            </div>
+            <h2 class="text-lg font-semibold text-[#003745]">Ihre Angaben</h2>
+            <p class="mt-1 text-sm text-[#1B4A5A]">Hier können Sie Zielbetrag und Spardauer direkt anpassen.</p>
 
-            <div class="space-y-3">
-              <div class="rounded-[4px] border border-[#E0EBEE] bg-white/90 p-4">
-                <div class="mb-1 text-xs uppercase tracking-wider text-[var(--text-secondary)]">Zielbetrag</div>
-                <div v-if="!isEditingTarget" class="flex items-center justify-between gap-3">
-                  <div class="text-xl font-semibold text-[#003745]">{{ formatCurrency(targetAmount) }}</div>
+            <div class="mt-4 rounded-[4px] border border-[#E0EBEE] bg-white/90 p-4">
+              <div class="border-b border-[#E0EBEE] pb-4">
+                <div class="mb-1 text-sm font-semibold text-[var(--text-secondary)]">Zielbetrag</div>
+                <div v-if="activeInlineEdit !== 'target'" class="flex items-center justify-between gap-3">
+                  <div>
+                    <div class="text-xl font-semibold text-[#003745]">{{ formatCurrency(targetAmount) }}</div>
+                    <p class="mt-1 text-sm" :class="targetAmountDeltaTextClass">{{ targetAmountDeltaLabel }}</p>
+                  </div>
                   <button
                     type="button"
                     class="ui-button ui-button-secondary h-auto px-3 py-1.5 text-xs"
-                    @click="isEditingTarget = true"
+                    :disabled="activeInlineEdit === 'duration'"
+                    @click="startTargetEdit"
                   >
-                    Bearbeiten
+                    Ändern
                   </button>
                 </div>
                 <div v-else class="space-y-2">
@@ -825,6 +888,8 @@ onBeforeUnmount(() => {
                     type="text"
                     inputmode="numeric"
                     class="ui-input h-10 w-full px-3 text-sm"
+                    @keydown.enter.prevent="saveTargetEdit"
+                    @keydown.esc.prevent="cancelTargetEdit"
                   />
                   <div class="flex gap-2">
                     <button
@@ -837,17 +902,18 @@ onBeforeUnmount(() => {
                     <button
                       type="button"
                       class="ui-button ui-button-ghost ui-text-secondary h-auto px-3 py-1.5 text-xs hover:bg-white"
-                      @click="isEditingTarget = false"
+                      @click="cancelTargetEdit"
                     >
                       Abbrechen
                     </button>
                   </div>
+                  <p class="text-sm" :class="targetAmountDeltaTextClass">{{ targetAmountDeltaLabel }}</p>
                 </div>
               </div>
 
-              <div class="rounded-[4px] border border-[#E0EBEE] bg-white/90 p-4">
-                <div class="mb-1 text-xs uppercase tracking-wider text-[var(--text-secondary)]">Laufzeit</div>
-                <div v-if="!isEditingDuration" class="flex items-center justify-between gap-3">
+              <div class="pt-4">
+                <div class="mb-1 text-sm font-semibold text-[var(--text-secondary)]">Spardauer</div>
+                <div v-if="activeInlineEdit !== 'duration'" class="flex items-center justify-between gap-3">
                   <div>
                     <div class="text-xl font-semibold text-[#003745]">{{ durationYears }} Jahre</div>
                     <div class="text-sm text-[var(--text-secondary)]">Zieljahr {{ targetYear }}</div>
@@ -855,13 +921,14 @@ onBeforeUnmount(() => {
                   <button
                     type="button"
                     class="ui-button ui-button-secondary h-auto px-3 py-1.5 text-xs"
-                    @click="isEditingDuration = true"
+                    :disabled="activeInlineEdit === 'target'"
+                    @click="startDurationEdit"
                   >
-                    Bearbeiten
+                    Ändern
                   </button>
                 </div>
                 <div v-else class="space-y-2">
-                  <label for="result-duration-input" class="sr-only">Laufzeit in Jahren bearbeiten</label>
+                  <label for="result-duration-input" class="sr-only">Spardauer in Jahren bearbeiten</label>
                   <input
                     id="result-duration-input"
                     v-model="durationInput"
@@ -870,6 +937,8 @@ onBeforeUnmount(() => {
                     max="40"
                     step="1"
                     class="ui-input h-10 w-full px-3 text-sm"
+                    @keydown.enter.prevent="saveDurationEdit"
+                    @keydown.esc.prevent="cancelDurationEdit"
                   />
                   <div class="flex gap-2">
                     <button
@@ -882,7 +951,7 @@ onBeforeUnmount(() => {
                     <button
                       type="button"
                       class="ui-button ui-button-ghost ui-text-secondary h-auto px-3 py-1.5 text-xs hover:bg-white"
-                      @click="isEditingDuration = false"
+                      @click="cancelDurationEdit"
                     >
                       Abbrechen
                     </button>
@@ -891,15 +960,19 @@ onBeforeUnmount(() => {
               </div>
             </div>
 
-            <div class="mt-5 rounded-[4px] border border-[#D4E0E5] bg-white/90 p-4">
+            <div v-if="showEstimatedBreakdown" class="mt-4 rounded-[4px] border border-[#D4E0E5] bg-white/90 p-4">
               <h3 class="text-sm font-semibold text-[#003745]">Wie setzt sich der Zielbetrag zusammen?</h3>
-              <p class="mt-2 text-sm leading-relaxed text-[#4F7280]">
-                Der Zielbetrag basiert auf Ihrem Sparziel, der Laufzeit und den von Ihnen gewählten Kriterien.
-                Sie können Zielbetrag und Laufzeit jederzeit anpassen.
-              </p>
-              <p class="mt-2 text-xs text-[#1B4A5A]">
-                Berücksichtigte Kriterien: {{ selectedFactorsLabel }}
-              </p>
+              <p class="mt-2 text-sm font-medium text-[#1B4A5A]">Berücksichtigte Kriterien:</p>
+              <div v-if="calculationFactors.length > 0" class="mt-2 flex flex-wrap gap-2">
+                <span
+                  v-for="factor in calculationFactors"
+                  :key="factor"
+                  class="ui-chip ui-chip-secondary-subtle"
+                >
+                  {{ factor }}
+                </span>
+              </div>
+              <p v-else class="mt-2 text-sm text-[var(--text-secondary)]">Keine Kriterien ausgewählt.</p>
             </div>
           </aside>
         </div>
@@ -1177,7 +1250,7 @@ onBeforeUnmount(() => {
             type="button"
             :disabled="isCopyingLink"
             :aria-busy="isCopyingLink ? 'true' : 'false'"
-            class="ui-button ui-button-secondary motion-cta h-12 w-full px-5 text-sm sm:w-[220px]"
+            class="ui-button ui-button-secondary motion-cta h-12 w-full !bg-transparent px-5 text-sm hover:!bg-transparent disabled:!bg-transparent sm:w-[220px]"
             @click="handleCopyLink"
           >
             {{ isCopyingLink ? 'Kopiere Link...' : 'Link kopieren' }}

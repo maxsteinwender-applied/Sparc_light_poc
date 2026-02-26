@@ -40,7 +40,7 @@ Quelle: `src/app/components/Step1_GoalSelection.vue`
 
 ### Statische Texte
 
-- `Schritt 1 von 5`
+- `Schritt 1 von 4`
 - `Wofür möchten Sie sparen?`
 - `Ihr Ziel bestimmt alle weiteren Schritte.`
 - `Als Nächstes bestimmen wir den Betrag.`
@@ -75,7 +75,7 @@ Quelle: `src/app/components/Step2_TargetAmountType.vue`
 ### Statische Texte
 
 - Button oben: `Zurück`
-- `Schritt 2 von 5`
+- `Schritt 2 von 4`
 - Titel: `Wie viel möchten Sie für {{ goalLabel }} ansparen?`
 - Karte 1:
   - Badge: `EUR`
@@ -99,7 +99,7 @@ Quelle: `src/app/components/Step2_TargetAmountType.vue`
 - Info-Hinweis aus Ziel-Daten: `{{ currentGoal.avgTargetAmountHint }}`
 - Kategorien-Chips aus Ziel-Daten: `{{ category }}`
 
-## Schritt 3: Faktoren fuer Zielbetrag
+## Schritt 2 (integriert): Faktoren fuer Zielbetrag
 
 Quelle: `src/app/components/Step3_CalculateAmount.vue`
 
@@ -113,7 +113,7 @@ Quelle: `src/app/components/Step3_CalculateAmount.vue`
   - Hinweis: `Im nächsten Schritt legen Sie die Laufzeit fest.`
   - CTA: `Weiter zur Laufzeit`
 - Bereich rechts:
-  - `Schritt 3 von 5`
+  - `Schritt 2 von 4`
   - Titel: `Was ist Ihnen bei {{ goalLabel }} wichtig?`
   - Fussnote: `Ausgangspunkt ist ein typischer Durchschnittswert. Ihre Auswahl kann den Betrag erhoehen oder senken.`
 
@@ -129,14 +129,14 @@ Quelle: `src/app/components/Step3_CalculateAmount.vue`
     - `+{{ Betrag }} EUR`
     - `−{{ Betrag }} EUR`
 
-## Schritt 4: Laufzeit
+## Schritt 3: Laufzeit
 
 Quelle: `src/app/components/Step4_Duration.vue`
 
 ### Statische Texte
 
 - Button oben: `Zurück`
-- `Schritt 4 von 5`
+- `Schritt 3 von 4`
 - Titel: `Wann möchten Sie {{ goalLabel }} erreichen?`
 - Quick-Optionen: `in {{ years }} Jahren`
 - `NumericInputStepper`:
@@ -153,14 +153,14 @@ Quelle: `src/app/components/Step4_Duration.vue`
 
 - Infobox-Liste aus Ziel-Daten: `{{ point }}`
 
-## Schritt 5: Ergebnis (V1 Redesign)
+## Schritt 4: Ergebnis (V1 Redesign)
 
 Quelle: `components/Step5_Results.vue`
 
 ### Kopfbereich
 
 - Button: `Zurück`
-- `Schritt 5 von 5`
+- `Schritt 4 von 4`
 - Titel: `Ihr Sparziel {{ goalLabel }} wird greifbar.`
 - Untertitel: `Mit Ihrem Plan sparen Sie {{ Betrag }} in {{ durationYears }} Jahren.`
 
@@ -241,17 +241,17 @@ Quelle: `components/Step5_Results.vue`
 - Karte 2:
   - `Starteinlage`
   - `Einmaliger Boost zum Start`
-  - `+1.000 € einmalig`
+  - `+1.000 EUR einmalig`
   - `Mehr erfahren`
 - Karte 3:
   - `DK-Abräumsparen`
   - `Überschüsse automatisch sparen`
-  - `+80 € monatlich`
+  - `+80 EUR monatlich`
   - `Mehr erfahren`
 - Karte 4:
   - `Höhere Sparrate`
   - `Schneller ans Ziel`
-  - `+20 € monatlich`
+  - `+20 EUR monatlich`
   - Zeitgewinn: `{{ years/months }} früher am Ziel` oder `Kein zusätzlicher Zeitgewinn im aktuellen Szenario.`
 - CTA: `Zum Sparrechner`
 

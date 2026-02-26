@@ -4,6 +4,7 @@ import type { GoalId } from '../components/goalsData'
 import type {
   DurationSelectionMode,
   StrategyType,
+  TargetAmountSource,
   WizardGoalDefaults,
 } from '../stores/wizard'
 
@@ -18,6 +19,7 @@ export const useWizard = () => {
     durationSelectionMode,
     customGoalName,
     targetAmount,
+    targetAmountSource,
     durationYears,
     selectedStrategy,
     customAnnualRate,
@@ -33,6 +35,7 @@ export const useWizard = () => {
     durationSelectionMode,
     customGoalName,
     targetAmount,
+    targetAmountSource,
     durationYears,
     selectedStrategy,
     customAnnualRate,
@@ -46,6 +49,7 @@ export const useWizard = () => {
       wizardStore.setDurationSelectionMode(mode),
     setCustomGoalName: (name: string) => wizardStore.setCustomGoalName(name),
     setTargetAmount: (amount: number) => wizardStore.setTargetAmount(amount),
+    setTargetAmountSource: (source: TargetAmountSource) => wizardStore.setTargetAmountSource(source),
     setDurationYears: (years: number) => wizardStore.setDurationYears(years),
     setSelectedStrategy: (strategy: StrategyType) => wizardStore.setSelectedStrategy(strategy),
     setCustomAnnualRate: (rate: number) => wizardStore.setCustomAnnualRate(rate),

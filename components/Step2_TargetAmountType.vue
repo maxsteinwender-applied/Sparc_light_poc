@@ -4,12 +4,14 @@ import { useWizard } from '../composables/useWizard'
 import { calculateTargetAmountFromFactors } from '../domain/targetAmount'
 import { parseEuroInput } from '../domain/wizardValidation'
 import { getGoal } from './goalsData'
+import InfoIconTooltip from './ui/InfoIconTooltip.vue'
 import { resolveGoalSymbol } from './ui/goalSymbol'
 import { formatCurrency } from './ui/utils'
 
 const {
   setStep,
   setTargetAmount,
+  setTargetAmountSource,
   targetAmount,
   goal,
   customGoalName,
@@ -18,7 +20,7 @@ const {
 } = useWizard()
 
 const formatAmountForInput = (value: number) => new Intl.NumberFormat('de-DE').format(value)
-const formatEuro = (value: number) => `${value.toLocaleString('de-DE')} €`
+const formatEuro = (value: number) => `${value.toLocaleString('de-DE')} EUR`
 const inputAmount = ref(targetAmount.value > 0 ? formatAmountForInput(targetAmount.value) : '')
 const isEstimatorOpen = ref(false)
 
@@ -55,6 +57,8 @@ const calculatedTargetAmount = computed(() => {
   )
 })
 const calculatedDelta = computed(() => calculatedTargetAmount.value - orientationValue.value)
+const orientationTooltipText =
+  'Der Orientierungswert basiert auf dem Durchschnittswert von Deka-Kund:innen mit einem ähnlichen Sparziel. Er dient als erste Orientierung und kann individuell angepasst werden.'
 
 const handleAmountInput = (event: Event) => {
   const target = event.target as HTMLInputElement
@@ -66,6 +70,7 @@ const handleAmountInput = (event: Event) => {
 
   inputAmount.value = formatAmountForInput(Number.parseInt(digits, 10))
   setTargetAmount(Number.parseInt(digits, 10))
+  setTargetAmountSource('direct')
 }
 
 const handleBack = () => {
@@ -75,6 +80,7 @@ const handleBack = () => {
 const setAmountFromPreset = (value: number) => {
   inputAmount.value = formatAmountForInput(value)
   setTargetAmount(value)
+  setTargetAmountSource('direct')
 }
 
 const applyOrientationValue = () => {
@@ -88,7 +94,9 @@ const toggleEstimator = () => {
 const isSelectedFactor = (label: string) => calculationFactors.value.includes(label)
 
 const applyCalculatedAmount = () => {
-  setAmountFromPreset(calculatedTargetAmount.value)
+  inputAmount.value = formatAmountForInput(calculatedTargetAmount.value)
+  setTargetAmount(calculatedTargetAmount.value)
+  setTargetAmountSource('estimated')
   isEstimatorOpen.value = false
 }
 
@@ -154,7 +162,11 @@ const handleContinue = () => {
             <span class="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-[#1A6B80]" aria-hidden="true">EUR</span>
           </div>
           <div class="flex items-center gap-2 text-sm text-[#003745]">
-            <span class="material-symbols-outlined text-[16px] text-[var(--text-secondary)]" aria-hidden="true">info</span>
+            <InfoIconTooltip
+              tooltip-id="target-orientation-tooltip"
+              button-label="Info zum Orientierungswert"
+              :text="orientationTooltipText"
+            />
             <span>Orientierungswert für Ihr Sparziel <span class="font-semibold">{{ goalLabel }}</span>: <span class="font-semibold">{{ formatEuro(orientationValue) }}</span></span>
             <button
               type="button"

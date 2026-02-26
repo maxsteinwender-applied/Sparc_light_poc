@@ -100,6 +100,30 @@ test('step 4 back button returns to step 2', async ({ page }) => {
   await expect(page.getByRole('heading', { level: 2, name: /Wie viel möchten Sie/i })).toBeVisible()
 })
 
+test('step 2 info icon shows tooltip on hover and focus', async ({ page }) => {
+  await goToStep2WithTravelGoal(page)
+
+  const infoButton = page.getByRole('button', { name: 'Info zum Orientierungswert' })
+  const tooltip = page.getByRole('tooltip', { name: /Der Orientierungswert basiert auf dem Durchschnittswert/i })
+
+  await infoButton.hover()
+  await expect(tooltip).toBeVisible()
+
+  await infoButton.focus()
+  await expect(tooltip).toBeVisible()
+})
+
+test('step 4 info icon shows tooltip on tap in mobile viewport', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 })
+  await goToStep4WithTravelGoal(page)
+
+  const infoButton = page.getByRole('button', { name: 'Info zur Spardauer' })
+  const tooltip = page.getByRole('tooltip', { name: /Die Spardauer ist der Zeitraum bis zu Ihrem Sparziel/i })
+
+  await infoButton.click()
+  await expect(tooltip).toBeVisible()
+})
+
 test('progress bar shows a check icon for completed steps', async ({ page }) => {
   await goToStep2WithTravelGoal(page)
 

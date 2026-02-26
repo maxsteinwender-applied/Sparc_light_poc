@@ -5,6 +5,7 @@ import { calculateSavingsPlan } from '../domain/savingsPlan'
 import { getStaggerItemVariants } from '../motion/presets'
 import { useMotionSafety } from '../motion/useMotionSafety'
 import { getGoal } from './goalsData'
+import InfoIconTooltip from './ui/InfoIconTooltip.vue'
 import { resolveGoalSymbol } from './ui/goalSymbol'
 import { formatCurrency } from './ui/utils'
 import NumericInputStepper from './ui/NumericInputStepper.vue'
@@ -49,6 +50,8 @@ const infoPoints = [
   'Je länger der Zeitraum, desto mehr wirkt der Zinseszinseffekt.',
   'Regelmäßiges Sparen kann Schwankungen ausgleichen.',
 ]
+const durationTooltipText =
+  'Die Spardauer ist der Zeitraum bis zu Ihrem Sparziel. Je länger der Zeitraum, desto niedriger kann in der Regel die monatliche Sparrate ausfallen.'
 const quickOptions = computed(() => currentGoal.value.typicalTimeHorizonOptions)
 const quickOptionPreviews = computed(() => {
   return quickOptions.value.map((years) => ({
@@ -67,7 +70,7 @@ const projectionPreview = computed(() => {
     annualRate: PREVIEW_ANNUAL_RATE,
   })
 })
-const formatMonthlyRate = (value: number) => `${monthlyCurrencyFormatter.format(value)} €`
+const formatMonthlyRate = (value: number) => `${monthlyCurrencyFormatter.format(value)} EUR`
 const formatMonthlyEstimate = (value: number) => `~${monthlyCurrencyFormatter.format(value)} EUR/Mo.`
 const canContinue = computed(() => durationSelectionMode.value !== null)
 
@@ -189,7 +192,11 @@ const handleShowResult = () => {
               />
             </div>
             <div class="mt-4 flex items-center gap-2 text-sm text-[#003745]">
-              <span class="material-symbols-outlined text-[16px] text-[var(--text-secondary)]" aria-hidden="true">info</span>
+              <InfoIconTooltip
+                tooltip-id="duration-info-tooltip"
+                button-label="Info zur Spardauer"
+                :text="durationTooltipText"
+              />
               <span>
                 Sie erreichen Ihr Ziel im <span class="font-semibold">Jahr {{ targetYear }}</span>. Bitte wählen Sie eine Spardauer zwischen 1 und 40 Jahren.
               </span>

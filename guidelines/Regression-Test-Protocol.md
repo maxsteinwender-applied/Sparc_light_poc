@@ -41,7 +41,7 @@ Erwartung:
 - Es ist klar, dass genau ein Weg aktiv sein muss.
 - Beide Wege fuehren nach Schritt 3.
 
-## Testfall 3: Schritt 3 Berechnung/Schieber
+## Testfall 3: Schritt 2 Berechnung (integriert)
 
 - [ ] Eingaben/Optionen veraendern
 - [ ] Pruefen, ob Zielbetrag dynamisch neu berechnet wird
@@ -51,7 +51,7 @@ Erwartung:
 - Rechenlogik reagiert ohne UI-Fehler.
 - Kriterienbezug aus Schritt 2 ist sichtbar/konsequent.
 
-## Testfall 4: Schritt 4 Laufzeit
+## Testfall 4: Schritt 3 Laufzeit
 
 - [ ] Ein empfohlenes Zeitfenster waehlen
 - [ ] Manuelle Anpassung via `+`/`-` pruefen
@@ -62,7 +62,7 @@ Erwartung:
 - Laufzeitweg ist eindeutig (Preset oder Stepper).
 - Sparratenwirkung ist fuer Nutzer erkennbar.
 
-## Testfall 5: Schritt 5 Ergebnisansicht
+## Testfall 5: Schritt 4 Ergebnisansicht
 
 - [ ] Renditekarten A/B/C umschalten
 - [ ] Individuelle Rendite aktivieren und Wert live anpassen

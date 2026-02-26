@@ -4,6 +4,7 @@ import { clampDurationYears, clampTargetAmount } from '../domain/wizardValidatio
 
 export type StrategyType = 'security' | 'balanced' | 'growth' | 'custom'
 export type DurationSelectionMode = 'preset' | 'stepper'
+export type TargetAmountSource = 'direct' | 'estimated'
 
 type GoalSelections = Partial<Record<GoalId, string[]>>
 
@@ -16,6 +17,7 @@ export interface WizardState {
   durationSelectionMode: DurationSelectionMode | null
   customGoalName: string
   targetAmount: number
+  targetAmountSource: TargetAmountSource
   durationYears: number
   selectedStrategy: StrategyType
   customAnnualRate: number
@@ -47,6 +49,7 @@ const DEFAULTS = {
   durationSelectionMode: null as DurationSelectionMode | null,
   customGoalName: '',
   targetAmount: 6000,
+  targetAmountSource: 'direct' as TargetAmountSource,
   durationYears: 2,
   selectedStrategy: 'balanced' as StrategyType,
   customAnnualRate: 0.06,
@@ -98,6 +101,9 @@ export const useWizardStore = defineStore('wizard', {
     setTargetAmount(amount: number) {
       this.targetAmount = clampTargetAmount(amount)
     },
+    setTargetAmountSource(source: TargetAmountSource) {
+      this.targetAmountSource = source
+    },
     setDurationYears(years: number) {
       this.durationYears = clampDurationYears(years)
     },
@@ -129,6 +135,7 @@ export const useWizardStore = defineStore('wizard', {
       this.goalSelectionConfirmed = true
       this.durationSelectionMode = null
       this.targetAmount = clampTargetAmount(defaults.targetAmount)
+      this.targetAmountSource = DEFAULTS.targetAmountSource
       this.durationYears = clampDurationYears(defaults.durationYears)
       this.selectedStrategy = defaults.selectedStrategy
       this.customAnnualRate = DEFAULTS.customAnnualRate
