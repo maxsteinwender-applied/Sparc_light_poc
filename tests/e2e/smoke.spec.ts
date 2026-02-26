@@ -45,14 +45,18 @@ test('sparc light smoke test', async ({ page }) => {
   expect(pageErrors).toEqual([])
 })
 
-test('step 1 requires explicit goal interaction before continue is enabled', async ({ page }) => {
+test('step 1 preselects first goal and keeps continue enabled', async ({ page }) => {
   await openHome(page)
 
   const continueButton = page.getByRole('button', { name: /Mit .* fortfahren/i })
-  await expect(continueButton).toBeDisabled()
-
-  await confirmTravelGoalSelection(page)
   await expect(continueButton).toBeEnabled()
+})
+
+test('step 1 shows custom goal input when custom item is selected', async ({ page }) => {
+  await openHome(page)
+
+  await page.getByRole('option', { name: 'Ziel auswählen: Individuelles Sparziel' }).click()
+  await expect(page.getByLabel('Wie heißt Ihr Sparziel?')).toBeVisible()
 })
 
 test('step 4 back button returns to step 3 when factors are selected', async ({ page }) => {

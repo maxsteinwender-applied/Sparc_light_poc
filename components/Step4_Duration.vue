@@ -5,6 +5,7 @@ import { calculateSavingsPlan } from '../domain/savingsPlan'
 import { getStaggerItemVariants } from '../motion/presets'
 import { useMotionSafety } from '../motion/useMotionSafety'
 import { getGoal } from './goalsData'
+import { resolveGoalSymbol } from './ui/goalSymbol'
 import { formatCurrency } from './ui/utils'
 import NumericInputStepper from './ui/NumericInputStepper.vue'
 
@@ -39,6 +40,7 @@ const goalLabel = computed(() => {
 
   return currentGoal.value.label
 })
+const goalSymbol = computed(() => resolveGoalSymbol(currentGoal.value.icon))
 
 const quickOptions = computed(() => currentGoal.value.typicalTimeHorizonOptions)
 const selectedAnnualRate = computed(() => {
@@ -108,19 +110,20 @@ const handleShowResult = () => {
 </script>
 
 <template>
-  <div class="relative mx-auto flex min-h-[60vh] max-w-3xl flex-col items-center px-4 pb-12 pt-20">
-    <button
-      type="button"
-      class="ui-button ui-button-secondary absolute left-4 top-8 inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold md:left-0 md:top-8"
-      @click="handleBack"
-    >
-      <span class="material-symbols-outlined text-[18px]" aria-hidden="true">arrow_back</span>
-      Zurück
-    </button>
-
+  <div class="mx-auto flex min-h-[60vh] max-w-3xl flex-col items-center px-4 pb-12 pt-12">
     <div class="w-full">
       <div class="mb-8 text-center">
-        <h2 class="mb-4 text-3xl font-bold text-[#003745] md:text-4xl">Wann möchten Sie {{ goalLabel }} erreichen?</h2>
+        <div class="mb-4 flex justify-center">
+          <div class="inline-flex flex-wrap items-center justify-center gap-2 rounded-[4px] bg-[#F1F3F4] px-3 py-2 text-sm text-[#003745]">
+            <span class="inline-flex h-8 w-8 items-center justify-center rounded-[4px] bg-[#1A6B80] text-white">
+              <span class="material-symbols-outlined text-[18px] leading-none" aria-hidden="true">{{ goalSymbol }}</span>
+            </span>
+            <span class="font-semibold">{{ goalLabel }}</span>
+            <span aria-hidden="true" class="text-[#7F949C]">·</span>
+            <span>Zielbetrag: <span class="font-semibold">{{ formatCurrency(targetAmount) }}</span></span>
+          </div>
+        </div>
+        <h2 class="mb-4 text-[32px] font-bold text-[#003745]">Wann möchten Sie {{ goalLabel }} erreichen?</h2>
         <p class="rounded-[4px] border border-[#003745]/15 bg-[#F4F9FA] px-4 py-3 text-sm text-[#003745]">
           {{ durationModeSummary }}
         </p>
@@ -211,6 +214,17 @@ const handleShowResult = () => {
           @click="handleShowResult"
         >
           Ergebnis anzeigen
+        </button>
+      </div>
+
+      <div class="mt-8 flex w-full justify-start">
+        <button
+          type="button"
+          class="ui-button ui-button-secondary inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold"
+          @click="handleBack"
+        >
+          <span class="material-symbols-outlined text-[18px]" aria-hidden="true">arrow_back</span>
+          Zurück
         </button>
       </div>
     </div>

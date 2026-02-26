@@ -625,24 +625,13 @@ onBeforeUnmount(() => {
   <div class="min-h-screen bg-white pb-16">
     <div class="border-b border-[#003745]/10 bg-[#F4F9FA] px-4 pb-[72px] pt-12">
       <div class="mx-auto max-w-[1160px]">
-        <div class="mb-6">
-          <button
-            type="button"
-            class="ui-text-secondary inline-flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-[#003745]"
-            @click="goBack"
-          >
-            <span class="material-symbols-outlined text-[18px]">arrow_back</span>
-            Zurück
-          </button>
-        </div>
-
         <div class="flex flex-col items-center text-center">
-          <h1 class="mb-4 text-4xl font-bold tracking-tight text-[#003745]/70 md:text-5xl">
+          <h1 class="mb-4 text-[32px] font-bold tracking-tight text-[#003745]/70">
             Ihr Sparziel
             <span class="text-[#003745]">{{ goalLabel }}</span>
             wird greifbar.
           </h1>
-          <p class="ui-text-secondary max-w-3xl text-lg md:text-xl">
+          <p class="ui-text-secondary max-w-3xl text-base">
             Mit Ihrem Plan sparen Sie
             <span class="font-semibold text-[#003745]">{{ formatCurrency(targetAmount) }}</span>
             in
@@ -807,7 +796,7 @@ onBeforeUnmount(() => {
                   Alle Details im Überblick
                 </p>
               </div>
-              <div class="flex h-20 w-20 items-center justify-center rounded-full border border-[#0A4F5E] bg-[#0E6073] text-white">
+              <div class="flex h-20 w-20 items-center justify-center rounded-full border border-[#0A4F5E] bg-[#1A6B80] text-white">
                 <span class="material-symbols-outlined !text-[36px] leading-none">{{ goalSymbol }}</span>
               </div>
             </div>
@@ -1088,7 +1077,7 @@ onBeforeUnmount(() => {
           <div class="mb-5 flex flex-wrap items-start justify-between gap-4">
             <div>
               <p class="text-sm font-bold uppercase tracking-widest text-[#EE0000]">Kundenfavoriten</p>
-              <h2 class="mt-2 text-4xl font-bold tracking-tight text-[#003745] md:text-5xl">Die Sparplan-Favoriten.</h2>
+              <h2 class="mt-2 text-[32px] font-bold tracking-tight text-[#003745]">Die Sparplan-Favoriten.</h2>
             </div>
           </div>
 
@@ -1188,6 +1177,17 @@ onBeforeUnmount(() => {
           </button>
         </div>
       </section>
+    </div>
+
+    <div class="mx-auto mt-6 max-w-6xl px-4">
+      <button
+        type="button"
+        class="ui-button ui-button-secondary inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold"
+        @click="goBack"
+      >
+        <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+        Zurück
+      </button>
     </div>
 
   </div>

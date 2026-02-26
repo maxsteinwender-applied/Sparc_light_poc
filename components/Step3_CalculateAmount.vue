@@ -72,18 +72,10 @@ const modeSummary = computed(() => {
 </script>
 
 <template>
-  <div class="relative mx-auto flex min-h-[60vh] max-w-6xl flex-col items-start gap-8 px-4 pb-12 pt-20 md:flex-row">
-    <button
-      type="button"
-      class="ui-button ui-button-secondary absolute left-4 top-8 inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold md:left-4 md:top-8"
-      @click="handleBack"
-    >
-      <span class="material-symbols-outlined text-[18px]" aria-hidden="true">arrow_back</span>
-      Zurück
-    </button>
-
-    <section class="mt-8 w-full md:mt-0 md:w-2/3">
-      <h2 class="mb-8 px-2 text-3xl font-bold text-[#003745]">Was ist Ihnen bei {{ goalLabel }} wichtig?</h2>
+  <div class="mx-auto flex min-h-[60vh] max-w-6xl flex-col gap-8 px-4 pb-12 pt-12">
+    <div class="flex w-full flex-col items-start gap-8 md:flex-row">
+      <section class="w-full md:w-2/3">
+      <h2 class="mb-8 px-2 text-[32px] font-bold text-[#003745]">Was ist Ihnen bei {{ goalLabel }} wichtig?</h2>
       <div class="mx-2 mb-6 rounded-[4px] border border-[#E6EEF0] bg-[#F4F9FA] p-4 text-sm text-[#003745]">
         <p class="font-semibold">Ihre Kriterien aus Schritt 2:</p>
         <p class="mt-1 leading-relaxed">{{ modeSummary }}</p>
@@ -135,39 +127,51 @@ const modeSummary = computed(() => {
       <p class="ui-text-secondary mt-6 px-2 text-sm italic leading-relaxed">
         Ausgangspunkt ist ein typischer Durchschnittswert. Ihre Auswahl kann den Betrag erhöhen oder senken.
       </p>
-    </section>
+      </section>
 
-    <aside class="mt-2 w-full md:mt-0 md:w-1/3">
-      <div class="relative overflow-hidden rounded-[var(--radius-card)] border border-[#003745]/20 bg-white p-8 shadow-[var(--shadow-card)] md:sticky md:top-[var(--app-sticky-content-offset)]">
-        <div class="absolute left-0 top-0 h-2 w-full bg-[#003745]" />
-        <h3 class="ui-text-secondary mb-2 text-xs font-bold uppercase tracking-wider">Zielbetrag</h3>
+      <aside class="mt-2 w-full md:mt-0 md:w-1/3">
+        <div class="relative overflow-hidden rounded-[var(--radius-card)] border border-[#003745]/20 bg-white p-8 shadow-[var(--shadow-card)] md:sticky md:top-[var(--app-sticky-content-offset)]">
+          <div class="absolute left-0 top-0 h-2 w-full bg-[#003745]" />
+          <h3 class="ui-text-secondary mb-2 text-xs font-bold uppercase tracking-wider">Zielbetrag</h3>
 
-        <div class="text-5xl font-bold tracking-tight text-[#003745]" :class="delta !== 0 ? 'mb-2' : 'mb-6'">
-          {{ formatCurrency(currentTotal) }}
+          <div class="text-5xl font-bold tracking-tight text-[#003745]" :class="delta !== 0 ? 'mb-2' : 'mb-6'">
+            {{ formatCurrency(currentTotal) }}
+          </div>
+
+          <div
+            v-if="delta !== 0"
+            class="mb-6 text-lg font-medium"
+            :class="delta > 0 ? 'text-[#277A6B]' : 'text-[#AD1111]'"
+          >
+            {{ delta > 0 ? '+' : '−' }}{{ Math.abs(delta).toLocaleString('de-DE') }} EUR durch Ihre Auswahl
+          </div>
+
+          <div class="mb-8 flex gap-3 rounded-[var(--radius-control)] border border-[#E6EEF0] bg-[#F4F9FA] p-4 text-sm text-[#003745]">
+            <span class="shrink-0 font-semibold">Info</span>
+            <p class="leading-relaxed">Dieser Wert dient als erste Orientierung für {{ goalLabel }}.</p>
+          </div>
+
+          <span class="ui-text-secondary mb-4 block text-center text-sm">Im nächsten Schritt legen Sie die Laufzeit fest.</span>
+          <button
+            type="button"
+            class="ui-button ui-button-solid motion-cta w-full px-4 py-3"
+            @click="handleContinue"
+          >
+            Weiter zur Laufzeit
+          </button>
         </div>
+      </aside>
+    </div>
 
-        <div
-          v-if="delta !== 0"
-          class="mb-6 text-lg font-medium"
-          :class="delta > 0 ? 'text-[#277A6B]' : 'text-[#AD1111]'"
-        >
-          {{ delta > 0 ? '+' : '−' }}{{ Math.abs(delta).toLocaleString('de-DE') }} EUR durch Ihre Auswahl
-        </div>
-
-        <div class="mb-8 flex gap-3 rounded-[var(--radius-control)] border border-[#E6EEF0] bg-[#F4F9FA] p-4 text-sm text-[#003745]">
-          <span class="shrink-0 font-semibold">Info</span>
-          <p class="leading-relaxed">Dieser Wert dient als erste Orientierung für {{ goalLabel }}.</p>
-        </div>
-
-        <span class="ui-text-secondary mb-4 block text-center text-sm">Im nächsten Schritt legen Sie die Laufzeit fest.</span>
-        <button
-          type="button"
-          class="ui-button ui-button-solid motion-cta w-full px-4 py-3"
-          @click="handleContinue"
-        >
-          Weiter zur Laufzeit
-        </button>
-      </div>
-    </aside>
+    <div class="flex w-full justify-start">
+      <button
+        type="button"
+        class="ui-button ui-button-secondary inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold"
+        @click="handleBack"
+      >
+        <span class="material-symbols-outlined text-[18px]" aria-hidden="true">arrow_back</span>
+        Zurück
+      </button>
+    </div>
   </div>
 </template>

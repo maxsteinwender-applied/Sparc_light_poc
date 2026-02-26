@@ -10,7 +10,7 @@ npm run doctor
 npm run dev
 ```
 
-Open: `http://sparc-light-poc.localhost`
+Open: `http://sparc-light-poc.localhost:1365`
 
 This starter kit is optimized for fast team onboarding:
 - clear agent routing in `AGENTS.md`
@@ -77,7 +77,7 @@ npm run doctor
 npm run dev
 ```
 
-In this project, it maps to `http://sparc-light-poc.localhost`.
+In this project, it maps to `http://sparc-light-poc.localhost:1365`.
 If you want the previous fixed-port mode, use:
 
 ```bash
@@ -128,7 +128,7 @@ portless docs.myapp next dev
 
 | Service | Hostname | Notes |
 |---|---|---|
-| Frontend | `http://sparc-light-poc.localhost` | Proxy default `:1355` |
+| Frontend | `http://sparc-light-poc.localhost:1365` | Project-local proxy state + fixed proxy port `:1365` |
 
 ## Environment Variables
 
@@ -285,12 +285,14 @@ Fix:
 ### Portless proxy not running
 
 Symptoms:
-- `http://sparc-light-poc.localhost` does not respond.
+- `http://sparc-light-poc.localhost:1365` does not respond.
 - `npm run dev` exits after a proxy error.
 
 Fix:
-1. Stop any stale proxy process: `npx portless proxy stop`
-2. Start the app again: `npm run dev`
+1. Stop any stale project proxy process: `npm run proxy:stop`
+2. Start proxy manually once: `npm run proxy:start`
+3. Optional check: `npm run proxy:list`
+4. Start the app again: `npm run dev`
 
 ### Missing EmailJS environment variables
 

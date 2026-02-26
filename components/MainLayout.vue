@@ -127,16 +127,12 @@ onMounted(() => {
     <main class="w-full overflow-x-clip">
       <div class="border-b border-[#E6EEF0] bg-white">
         <div class="flex justify-center px-4 pb-4 pt-5 sm:pb-5">
-          <ol class="grid w-full max-w-[820px] grid-cols-4 gap-3 sm:gap-6" aria-label="Fortschritt">
-            <li
-              v-for="(item, index) in progressItems"
-              :key="item.label"
-              class="flex flex-col"
-            >
-              <div class="flex items-center">
+          <ol class="flex w-full max-w-[820px] items-center gap-0" aria-label="Fortschritt">
+            <template v-for="(item, index) in progressItems" :key="item.label">
+              <li class="flex min-w-[60px] flex-col items-center text-center">
                 <span
                   :class="[
-                    'inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-semibold transition-colors duration-[180ms] ease-[var(--motion-ease-standard)]',
+                    'inline-flex h-7 w-7 items-center justify-center rounded-full text-sm font-semibold transition-colors duration-[180ms] ease-[var(--motion-ease-standard)]',
                     activeProgressStage > index + 1
                       ? 'bg-[#003745] text-white'
                       : activeProgressStage === index + 1
@@ -147,20 +143,21 @@ onMounted(() => {
                   {{ index + 1 }}
                 </span>
                 <span
-                  v-if="index < progressItems.length - 1"
-                  :class="[
-                    'mx-2 h-px flex-1 transition-colors duration-[180ms] ease-[var(--motion-ease-standard)]',
-                    activeProgressStage > index + 1 ? 'bg-[#003745]' : 'bg-[#D4DEE6]',
-                  ]"
-                />
-              </div>
+                  class="mt-2 hidden text-sm font-medium sm:block"
+                  :class="activeProgressStage === index + 1 ? 'text-[#003745]' : 'text-[#8C98A3]'"
+                >
+                  {{ item.label }}
+                </span>
+              </li>
+
               <span
-                class="mt-2 hidden text-sm font-medium sm:block"
-                :class="activeProgressStage === index + 1 ? 'text-[#003745]' : 'text-[#8C98A3]'"
-              >
-                {{ item.label }}
-              </span>
-            </li>
+                v-if="index < progressItems.length - 1"
+                :class="[
+                  'mb-3 h-[2px] flex-1 transition-colors duration-[180ms] ease-[var(--motion-ease-standard)]',
+                  activeProgressStage > index + 1 ? 'bg-[#003745]' : 'bg-[#D4DEE6]',
+                ]"
+              />
+            </template>
           </ol>
         </div>
       </div>

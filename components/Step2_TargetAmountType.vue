@@ -5,6 +5,7 @@ import { parseEuroInput } from '../domain/wizardValidation'
 import { getStaggerItemVariants } from '../motion/presets'
 import { useMotionSafety } from '../motion/useMotionSafety'
 import { getGoal } from './goalsData'
+import { resolveGoalSymbol } from './ui/goalSymbol'
 
 const {
   setStep,
@@ -28,6 +29,7 @@ const goalLabel = computed(() => {
 
   return currentGoal.value.label
 })
+const goalSymbol = computed(() => resolveGoalSymbol(currentGoal.value.icon))
 
 const parsedAmount = computed(() => parseEuroInput(inputAmount.value))
 const isManualSelected = computed(() => amountSelectionMode.value === 'manual')
@@ -83,22 +85,18 @@ const handleBack = () => {
 </script>
 
 <template>
-  <div class="relative mx-auto flex min-h-[60vh] max-w-5xl flex-col items-center px-4 pb-12 pt-20">
-    <button
-      type="button"
-      class="ui-button ui-button-secondary absolute left-4 top-8 inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold md:left-0 md:top-8"
-      @click="handleBack"
-    >
-      <span class="material-symbols-outlined text-[18px]" aria-hidden="true">arrow_back</span>
-      Zurück
-    </button>
-
+  <div class="mx-auto flex min-h-[60vh] max-w-5xl flex-col items-center px-4 pb-12 pt-12">
     <div class="mb-10 max-w-3xl text-center">
-      <h2 class="mb-4 text-3xl font-bold text-[#003745] md:text-4xl">Wie viel möchten Sie für {{ goalLabel }} ansparen?</h2>
-      <p class="ui-text-secondary text-lg font-light md:text-xl">{{ currentGoal.shortTeaser }}</p>
-      <p class="mt-4 rounded-[4px] border border-[#003745]/15 bg-[#F4F9FA] px-4 py-3 text-sm text-[#003745]">
-        Wählen Sie genau einen Weg: direkt Betrag eingeben oder Betrag gemeinsam ermitteln.
-      </p>
+      <div class="mb-4 flex justify-center">
+        <div class="inline-flex items-center gap-3 rounded-[4px] bg-[#F1F3F4] px-3 py-2 text-sm text-[#003745]">
+          <span class="inline-flex h-8 w-8 items-center justify-center rounded-[4px] bg-[#1A6B80] text-white">
+            <span class="material-symbols-outlined text-[18px] leading-none" aria-hidden="true">{{ goalSymbol }}</span>
+          </span>
+          <span class="font-semibold">{{ goalLabel }}</span>
+        </div>
+      </div>
+      <h2 class="mb-4 text-[32px] font-bold text-[#003745]">Wie viel möchten Sie für Ihr Sparziel ansparen?</h2>
+      <p class="ui-text-secondary text-base font-light">Geben Sie einen Ziel­betrag ein oder lassen Sie sich einen Betrag ermitteln.</p>
     </div>
 
     <div class="grid w-full items-stretch gap-8 md:grid-cols-2">
@@ -203,6 +201,17 @@ const handleBack = () => {
           </button>
         </div>
       </article>
+    </div>
+
+    <div class="mt-8 flex w-full justify-start">
+      <button
+        type="button"
+        class="ui-button ui-button-secondary inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold"
+        @click="handleBack"
+      >
+        <span class="material-symbols-outlined text-[18px]" aria-hidden="true">arrow_back</span>
+        Zurück
+      </button>
     </div>
   </div>
 </template>
