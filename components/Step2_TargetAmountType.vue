@@ -121,14 +121,14 @@ const handleContinue = () => {
           <span class="font-semibold">{{ goalLabel }}</span>
         </div>
       </div>
-      <h2 class="mb-4 text-[32px] font-bold text-[#003745]">Wie viel möchten Sie für Ihr Sparziel ansparen?</h2>
+      <h2 class="mb-4 text-[32px] font-normal text-[#003745]">Wie viel möchten Sie für Ihr Sparziel ansparen?</h2>
       <p class="ui-text-secondary text-base font-light">Geben Sie einen Ziel­betrag ein oder lassen Sie sich einen Betrag ermitteln.</p>
     </div>
 
     <div class="w-full space-y-4">
       <section class="rounded-[4px] border border-[#003745]/15 bg-white p-5 md:p-6">
         <div class="mb-5 flex items-center gap-2">
-          <h3 class="text-xl font-bold text-[#003745]">Zielbetrag angeben</h3>
+          <h3 class="text-xl font-normal text-[#003745]">Zielbetrag angeben</h3>
           <span class="ui-chip ui-chip-secondary-subtle">Direkter Weg</span>
         </div>
         <div class="space-y-4">

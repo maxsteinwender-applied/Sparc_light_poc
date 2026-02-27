@@ -11,6 +11,7 @@ export type MotionPresetName =
 type AppMotionVariants = MotionVariants<string>
 
 const EASE_STANDARD: [number, number, number, number] = [0.22, 1, 0.36, 1]
+const EASE_SMOOTH: [number, number, number, number] = [0.16, 1, 0.3, 1]
 
 const toSeconds = (durationMs: number): number => durationMs / 1000
 
@@ -52,11 +53,11 @@ const reducedFadeVariants: AppMotionVariants = {
   },
   enter: {
     opacity: 1,
-    transition: buildTween(120, 0, 'linear'),
+    transition: buildTween(170, 0, 'linear'),
   },
   leave: {
     opacity: 0,
-    transition: buildTween(100, 0, 'linear'),
+    transition: buildTween(130, 0, 'linear'),
   },
 }
 
@@ -64,33 +65,39 @@ export const MOTION_PRESETS: Record<MotionPresetName, AppMotionVariants> = {
   stepForward: {
     initial: {
       opacity: 0,
-      x: 24,
+      x: 14,
+      scale: 0.995,
     },
     enter: {
       opacity: 1,
       x: 0,
-      transition: buildTween(260),
+      scale: 1,
+      transition: buildTween(320, 0, EASE_SMOOTH),
     },
     leave: {
       opacity: 0,
-      x: -18,
-      transition: buildTween(220),
+      x: -10,
+      scale: 0.995,
+      transition: buildTween(200, 0, EASE_SMOOTH),
     },
   },
   stepBackward: {
     initial: {
       opacity: 0,
-      x: -24,
+      x: -14,
+      scale: 0.995,
     },
     enter: {
       opacity: 1,
       x: 0,
-      transition: buildTween(260),
+      scale: 1,
+      transition: buildTween(320, 0, EASE_SMOOTH),
     },
     leave: {
       opacity: 0,
-      x: 18,
-      transition: buildTween(220),
+      x: 10,
+      scale: 0.995,
+      transition: buildTween(200, 0, EASE_SMOOTH),
     },
   },
   fadeUp: {

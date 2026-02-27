@@ -8,12 +8,21 @@ export interface ResultDeepLinkInput {
   rate?: number
 }
 
+type InterestType = 'variant1' | 'variant2' | 'variant3' | 'custom'
+
 const DEEP_LINK_STRATEGIES = new Set<StrategyType>([
   'security',
   'balanced',
   'growth',
   'custom',
 ])
+const DEEP_LINK_INTERESTS = new Set<InterestType>([
+  'variant1',
+  'variant2',
+  'variant3',
+  'custom',
+])
+const MAX_DEEP_LINK_YEARS = 40
 
 const getFirstString = (value: unknown): string | null => {
   if (typeof value === 'string') {
@@ -37,18 +46,45 @@ const parseQueryNumber = (value: unknown): number | null => {
   return Number.isFinite(parsed) ? parsed : null
 }
 
+const strategyToInterest = (strategy: StrategyType): InterestType => {
+  if (strategy === 'security') {
+    return 'variant1'
+  }
+  if (strategy === 'balanced') {
+    return 'variant2'
+  }
+  if (strategy === 'growth') {
+    return 'variant3'
+  }
+  return 'custom'
+}
+
+const interestToStrategy = (interest: InterestType): StrategyType => {
+  if (interest === 'variant1') {
+    return 'security'
+  }
+  if (interest === 'variant2') {
+    return 'balanced'
+  }
+  if (interest === 'variant3') {
+    return 'growth'
+  }
+  return 'custom'
+}
+
 export const buildResultDeepLink = (
   baseUrl: string,
   input: ResultDeepLinkInput,
 ): string => {
   const url = new URL(baseUrl)
   const target = Math.max(1, Math.round(input.target))
-  const years = Math.max(1, Math.round(input.years))
+  const years = Math.min(MAX_DEEP_LINK_YEARS, Math.max(1, Math.round(input.years)))
 
   url.searchParams.set('goal', input.goal)
   url.searchParams.set('target', `${target}`)
   url.searchParams.set('years', `${years}`)
-  url.searchParams.set('strategy', input.strategy)
+  url.searchParams.set('interest', strategyToInterest(input.strategy))
+  url.searchParams.delete('strategy')
 
   if (input.strategy === 'custom') {
     const rate = Number.isFinite(input.rate)
@@ -66,23 +102,41 @@ export const parseResultDeepLink = (
   query: Record<string, unknown>,
 ): ResultDeepLinkInput | null => {
   const goal = getFirstString(query.goal)
-  const strategyRaw = getFirstString(query.strategy)
+  const interestRaw = getFirstString(query.interest)
+  const strategyLegacyRaw = getFirstString(query.strategy)
   const target = parseQueryNumber(query.target)
   const years = parseQueryNumber(query.years)
+  let strategy: StrategyType | null = null
 
-  if (!goal || !strategyRaw || target === null || years === null) {
+  if (!goal || target === null || years === null) {
     return null
   }
 
-  if (!DEEP_LINK_STRATEGIES.has(strategyRaw as StrategyType)) {
+  if (interestRaw !== null) {
+    if (!DEEP_LINK_INTERESTS.has(interestRaw as InterestType)) {
+      return null
+    }
+    strategy = interestToStrategy(interestRaw as InterestType)
+  } else if (strategyLegacyRaw !== null) {
+    if (!DEEP_LINK_STRATEGIES.has(strategyLegacyRaw as StrategyType)) {
+      return null
+    }
+    strategy = strategyLegacyRaw as StrategyType
+  }
+
+  if (strategy === null) {
     return null
   }
 
-  if (target <= 0 || years <= 0) {
+  if (
+    target <= 0
+    || years <= 0
+    || years > MAX_DEEP_LINK_YEARS
+    || !Number.isInteger(years)
+  ) {
     return null
   }
 
-  const strategy = strategyRaw as StrategyType
   if (strategy === 'custom') {
     const rate = parseQueryNumber(query.rate)
     if (rate === null || rate < 0 || rate > 0.15) {

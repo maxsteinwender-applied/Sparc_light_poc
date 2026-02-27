@@ -7,10 +7,10 @@ describe('wizard store step history', () => {
     setActivePinia(createPinia())
   })
 
-  it('initializes with step 1 and no previous step', () => {
+  it('initializes with intro step and no previous step', () => {
     const store = useWizardStore()
 
-    expect(store.step).toBe(1)
+    expect(store.step).toBe(0)
     expect(store.previousStep).toBeNull()
     expect(store.goalSelectionConfirmed).toBe(false)
     expect(store.durationSelectionMode).toBeNull()
@@ -21,7 +21,7 @@ describe('wizard store step history', () => {
 
     store.setStep(2)
     expect(store.step).toBe(2)
-    expect(store.previousStep).toBe(1)
+    expect(store.previousStep).toBe(0)
     expect(store.transitionDirection).toBe(1)
 
     store.setStep(4)
@@ -46,10 +46,10 @@ describe('wizard store step history', () => {
     store.setStep(5)
     store.setGoal('travel')
     store.setDurationSelectionMode('preset')
-    expect(store.previousStep).toBe(1)
+    expect(store.previousStep).toBe(0)
 
     store.resetFlow()
-    expect(store.step).toBe(1)
+    expect(store.step).toBe(0)
     expect(store.previousStep).toBeNull()
     expect(store.transitionDirection).toBe(1)
     expect(store.goalSelectionConfirmed).toBe(false)

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, markRaw, onMounted, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, markRaw, onMounted, provide, ref, watch } from 'vue'
 import { useWizard } from '../composables/useWizard'
 import { parseResultDeepLink } from '../domain/resultDeepLink'
 import { runMotionLeave } from '../motion/leaveHook'
@@ -7,6 +7,17 @@ import MotionStepShell from './motion/MotionStepShell.vue'
 import PrototypeTickerBar from './PrototypeTickerBar.vue'
 import { GOALS } from './goalsData'
 import type { GoalId } from './goalsData'
+
+const props = withDefaults(
+  defineProps<{
+    showPrototypeTicker?: boolean
+    fillViewport?: boolean
+  }>(),
+  {
+    showPrototypeTicker: true,
+    fillViewport: true,
+  },
+)
 
 const route = useRoute()
 const {
@@ -21,9 +32,12 @@ const {
 } = useWizard()
 
 const clampedStep = computed(() => {
-  const boundedStep = Math.min(5, Math.max(1, step.value))
+  const boundedStep = Math.min(5, Math.max(0, step.value))
   return boundedStep === 3 ? 4 : boundedStep
 })
+const progressBackgroundClass = computed(() => 'bg-white')
+
+provide('wizardDisableResultAutoScroll', !props.showPrototypeTicker)
 
 const progressItems = [
   { step: 1, label: 'Sparziel' },
@@ -100,6 +114,7 @@ const goToProgressStep = (index: number) => {
 }
 
 const stepLoaders = {
+  0: () => import('./Step0_Intro.vue'),
   1: () => import('./Step1_GoalSelection.vue'),
   2: () => import('./Step2_TargetAmountType.vue'),
   4: () => import('./Step4_Duration.vue'),
@@ -107,6 +122,7 @@ const stepLoaders = {
 } as const
 
 const stepComponents = {
+  0: markRaw(defineAsyncComponent(stepLoaders[0])),
   1: markRaw(defineAsyncComponent(stepLoaders[1])),
   2: markRaw(defineAsyncComponent(stepLoaders[2])),
   4: markRaw(defineAsyncComponent(stepLoaders[4])),
@@ -144,13 +160,11 @@ const applyResultDeepLink = () => {
 
   const parsed = parseResultDeepLink(route.query as Record<string, unknown>)
   if (!parsed || !GOAL_IDS.has(parsed.goal as GoalId)) {
-    hasResolvedDeepLink.value = true
     return
   }
 
   if (parsed.strategy === 'custom') {
     if (typeof parsed.rate !== 'number') {
-      hasResolvedDeepLink.value = true
       return
     }
     setCustomAnnualRate(parsed.rate)
@@ -167,16 +181,24 @@ const applyResultDeepLink = () => {
 onMounted(() => {
   applyResultDeepLink()
 })
+
+watch(
+  () => route.query,
+  () => {
+    applyResultDeepLink()
+  },
+  { deep: true },
+)
 </script>
 
 <template>
-  <div class="min-h-screen bg-white text-[#003745] font-sans selection:bg-[#EE0000] selection:text-white">
-    <div class="sticky top-0 z-[110]">
+  <div :class="[props.fillViewport ? 'min-h-screen' : 'min-h-0', 'bg-white text-[#003745] font-sans selection:bg-[#EE0000] selection:text-white']">
+    <div v-if="props.showPrototypeTicker" class="sticky top-0 z-[110]">
       <PrototypeTickerBar />
     </div>
 
     <main class="w-full overflow-x-clip">
-      <div class="border-b border-[#E6EEF0] bg-white">
+      <div v-if="clampedStep > 0" :class="progressBackgroundClass">
         <div class="flex justify-center px-4 pb-4 pt-5 sm:pb-5">
           <ol class="flex w-full max-w-[820px] items-center gap-0" aria-label="Fortschritt">
             <template v-for="(item, index) in progressItems" :key="item.label">
@@ -237,8 +259,5 @@ onMounted(() => {
       </Transition>
     </main>
 
-    <footer v-if="clampedStep < 5" class="py-8 text-center text-sm text-[var(--text-muted)]">
-      © 2026 DekaBank Deutsche Girozentrale
-    </footer>
   </div>
 </template>

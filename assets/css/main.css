@@ -2,9 +2,92 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'DKFrutigerBold80HL';
+  font-style: normal;
+  font-weight: 700;
+  font-stretch: normal;
+  font-display: swap;
+  src:
+    url('../fonts/FrutigerDekaBank/DKFrutigerBold80HL_normal_normal_700.woff2')
+      format('woff2'),
+    url('../fonts/FrutigerDekaBank/DKFrutigerBold80HL_normal_normal_700.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'DekaFrutiger';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: normal;
+  font-display: swap;
+  src:
+    url('../fonts/DekaFrutiger/DekaFrutiger_normal_normal_400.woff2') format('woff2'),
+    url('../fonts/DekaFrutiger/DekaFrutiger_normal_normal_400.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'DekaFrutiger';
+  font-style: normal;
+  font-weight: 700;
+  font-stretch: normal;
+  font-display: swap;
+  src:
+    url('../fonts/DekaFrutiger/DekaFrutiger_normal_normal_700.woff2') format('woff2'),
+    url('../fonts/DekaFrutiger/DekaFrutiger_normal_normal_700.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'DekaFrutiger';
+  font-style: italic;
+  font-weight: 700;
+  font-stretch: normal;
+  font-display: swap;
+  src:
+    url('../fonts/DekaFrutiger/DekaFrutiger_italic_normal_700.woff2') format('woff2'),
+    url('../fonts/DekaFrutiger/DekaFrutiger_italic_normal_700.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'DekaFrutigerOTPS';
+  font-style: normal;
+  font-weight: 300;
+  font-stretch: normal;
+  font-display: swap;
+  src:
+    url('../fonts/DekaFrutiger/DekaFrutigerOTPS_normal_normal_300.woff2') format('woff2'),
+    url('../fonts/DekaFrutiger/DekaFrutigerOTPS_normal_normal_300.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'DekaFrutiger';
+  font-style: italic;
+  font-weight: 300;
+  font-stretch: normal;
+  font-display: swap;
+  src:
+    url('../fonts/DekaFrutiger/DekaFrutiger_italic_normal_300.woff2') format('woff2'),
+    url('../fonts/DekaFrutiger/DekaFrutiger_italic_normal_300.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'DKFrutigerBlack80HL';
+  font-style: normal;
+  font-weight: 900;
+  font-stretch: normal;
+  font-display: swap;
+  src:
+    url('../fonts/FrutigerDekaBank/DKFrutigerBlack80HL_normal_normal_900.woff2')
+      format('woff2'),
+    url('../fonts/FrutigerDekaBank/DKFrutigerBlack80HL_normal_normal_900.woff')
+      format('woff');
+}
+
 :root {
   color-scheme: light;
   --font-size: 16px;
+  --font-family-base: 'DekaFrutiger', 'Segoe UI', Arial, sans-serif;
+  --font-family-heading: 'DekaFrutiger', 'Segoe UI', Arial, sans-serif;
+  --font-family-display: 'DekaFrutiger', 'Segoe UI', Arial, sans-serif;
   --background: #ffffff;
   --foreground: #003745;
   --text-secondary: #4e6b75;
@@ -51,6 +134,7 @@ body {
   margin: 0;
   background: var(--background);
   color: var(--foreground);
+  font-family: var(--font-family-base);
 }
 
 * {
@@ -64,6 +148,22 @@ h4,
 label,
 button {
   line-height: 1.5;
+}
+
+body,
+button,
+input,
+textarea,
+select {
+  font-family: var(--font-family-base);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-family-base);
+  font-weight: 400;
 }
 
 button,
@@ -135,7 +235,7 @@ select:disabled,
   min-height: 44px;
   border-radius: 0;
   border: 1px solid transparent;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.25;
   transition:
     background-color var(--motion-duration-normal) var(--motion-ease-standard),
@@ -283,7 +383,7 @@ select:disabled,
   border-radius: 9999px;
   padding: 0.25rem 0.75rem;
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.25;
 }
 
@@ -312,9 +412,9 @@ select:disabled,
   border-bottom: 2px solid transparent;
   background: transparent;
   color: var(--foreground);
-  font-family: DekaFrutiger, sans-serif;
+  font-family: var(--font-family-base);
   font-size: var(--font-size);
-  font-weight: 500;
+  font-weight: 400;
   line-height: var(--line-height-base);
   text-align: start;
   white-space: nowrap;
@@ -330,7 +430,7 @@ select:disabled,
 
 .ui-tab.is-active,
 .ui-tab[aria-selected='true'] {
-  font-weight: 600;
+  font-weight: 700;
   background-color: #e3ebef;
   border-bottom-color: var(--deka-primary-red);
 }
@@ -374,9 +474,37 @@ select:disabled,
   align-items: center;
   gap: 0.125rem;
   color: rgb(0, 67, 180);
-  font-weight: 500;
+  font-weight: 400;
   text-decoration: none;
   transition: color var(--motion-duration-normal) var(--motion-ease-standard);
+}
+
+.ui-link-button {
+  display: inline-flex;
+  align-items: center;
+  color: rgb(0, 67, 180);
+  transition: color var(--motion-duration-normal) var(--motion-ease-standard);
+}
+
+.ui-link-button:hover {
+  color: #003a99;
+}
+
+.ui-link-button:disabled,
+.ui-link-button[aria-disabled='true'] {
+  color: #7ea0d8;
+}
+
+@layer utilities {
+  .font-brand-heading {
+    font-family: var(--font-family-base);
+    font-weight: 400;
+  }
+
+  .font-brand-display {
+    font-family: var(--font-family-base);
+    font-weight: 400;
+  }
 }
 
 .result-link-label {

@@ -106,6 +106,10 @@ const handleContinue = () => {
   setStep(2)
 }
 
+const handleBack = () => {
+  setStep(0)
+}
+
 const canContinue = computed(() => {
   if (!goalSelectionConfirmed.value) {
     return false
@@ -122,7 +126,7 @@ const canContinue = computed(() => {
 <template>
   <div class="mx-auto flex w-full max-w-3xl flex-col items-center px-4 py-8 md:py-12">
     <div class="relative z-10 mb-8 md:mb-12">
-      <h1 class="mb-4 text-center text-[32px] font-bold tracking-tight text-[#003745]">Wofür möchten Sie sparen?</h1>
+      <h1 class="mb-4 text-center text-[32px] font-normal tracking-tight text-[#003745]">Wofür möchten Sie sparen?</h1>
       <p class="ui-text-secondary text-center text-base font-light">Wählen Sie ein Ziel – wir helfen Ihnen, die passende Sparrate zu finden.</p>
     </div>
 
@@ -169,11 +173,19 @@ const canContinue = computed(() => {
         </div>
       </div>
 
-      <div class="mx-auto flex w-full max-w-md flex-col items-center gap-4">
+      <div class="mt-2 flex w-full items-center justify-between gap-3">
+        <button
+          type="button"
+          class="group inline-flex h-auto items-center gap-1 py-4 text-base font-semibold text-[#1A6B80]"
+          @click="handleBack"
+        >
+          <span class="material-symbols-outlined text-[18px]" aria-hidden="true">chevron_left</span>
+          <span class="group-hover:underline">Zurück</span>
+        </button>
         <button
           type="button"
           :disabled="!canContinue"
-          class="ui-button ui-button-primary motion-cta h-auto w-full px-8 py-4 text-lg"
+          class="ui-button ui-button-primary motion-cta h-auto px-8 py-4 text-lg"
           @click="handleContinue"
         >
           Mit {{ selectedGoalLabel }} fortfahren

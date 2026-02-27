@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useWizard } from '../composables/useWizard'
 import { calculateSavingsPlan } from '../domain/savingsPlan'
 import { getStaggerItemVariants } from '../motion/presets'
@@ -42,6 +42,8 @@ const goalLabel = computed(() => {
 const goalSymbol = computed(() => resolveGoalSymbol(currentGoal.value.icon))
 
 const PREVIEW_ANNUAL_RATE = 0.04
+const MIN_DURATION_YEARS = 1
+const MAX_DURATION_YEARS = 40
 const monthlyCurrencyFormatter = new Intl.NumberFormat('de-DE', {
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
@@ -52,7 +54,13 @@ const infoPoints = [
 ]
 const durationTooltipText =
   'Die Spardauer ist der Zeitraum bis zu Ihrem Sparziel. Je länger der Zeitraum, desto niedriger kann in der Regel die monatliche Sparrate ausfallen.'
+const durationInput = ref(String(durationYears.value))
+const durationInputError = ref<string | null>(null)
 const quickOptions = computed(() => currentGoal.value.typicalTimeHorizonOptions)
+const selectedQuickDuration = computed(() => {
+  const parsed = parseDurationInput(durationInput.value)
+  return parsed.value
+})
 const quickOptionPreviews = computed(() => {
   return quickOptions.value.map((years) => ({
     years,
@@ -72,7 +80,50 @@ const projectionPreview = computed(() => {
 })
 const formatMonthlyRate = (value: number) => `${monthlyCurrencyFormatter.format(value)} EUR`
 const formatMonthlyEstimate = (value: number) => `~${monthlyCurrencyFormatter.format(value)} EUR/Mo.`
-const canContinue = computed(() => durationSelectionMode.value !== null)
+const canContinue = computed(() => parseDurationInput(durationInput.value).value !== null)
+
+const parseDurationInput = (
+  value: string,
+): {
+  value: number | null
+  error: string | null
+} => {
+  const normalized = value.trim()
+
+  if (!normalized) {
+    return {
+      value: null,
+      error: `Bitte wählen Sie eine Spardauer zwischen ${MIN_DURATION_YEARS} und ${MAX_DURATION_YEARS} Jahren.`,
+    }
+  }
+
+  if (!/^\d+$/.test(normalized)) {
+    return {
+      value: null,
+      error: 'Bitte geben Sie nur ganze Zahlen ohne Dezimalstellen oder Buchstaben ein.',
+    }
+  }
+
+  const parsed = Number.parseInt(normalized, 10)
+  if (parsed < MIN_DURATION_YEARS || parsed > MAX_DURATION_YEARS) {
+    return {
+      value: null,
+      error: `Bitte wählen Sie eine Spardauer zwischen ${MIN_DURATION_YEARS} und ${MAX_DURATION_YEARS} Jahren.`,
+    }
+  }
+
+  return {
+    value: parsed,
+    error: null,
+  }
+}
+
+const syncDuration = (years: number) => {
+  durationInputError.value = null
+  durationInput.value = String(years)
+  setDurationYears(years)
+  setDurationSelectionMode(quickOptions.value.includes(years) ? 'preset' : 'stepper')
+}
 
 watch(
   [durationSelectionMode, quickOptions],
@@ -87,6 +138,8 @@ watch(
       return
     }
 
+    durationInput.value = String(middleYears)
+    durationInputError.value = null
     setDurationYears(middleYears)
     setDurationSelectionMode('preset')
   },
@@ -103,24 +156,36 @@ const handleBack = () => {
 }
 
 const selectPresetDuration = (years: number) => {
-  setDurationSelectionMode('preset')
-  setDurationYears(years)
+  durationInput.value = String(years)
+  syncDuration(years)
 }
 
 const updateStepperDuration = (years: number) => {
-  setDurationSelectionMode('stepper')
-  setDurationYears(years)
+  syncDuration(years)
 }
 
-const activateStepperMode = () => {
-  setDurationSelectionMode('stepper')
-}
+const updateDurationInput = (value: string) => {
+  durationInput.value = value
+  const parsed = parseDurationInput(value)
+  durationInputError.value = parsed.error
 
-const handleShowResult = () => {
-  if (!canContinue.value) {
+  if (parsed.value === null) {
     return
   }
 
+  setDurationYears(parsed.value)
+  setDurationSelectionMode(quickOptions.value.includes(parsed.value) ? 'preset' : 'stepper')
+}
+
+const handleShowResult = () => {
+  const parsed = parseDurationInput(durationInput.value)
+  durationInputError.value = parsed.error
+
+  if (parsed.value === null) {
+    return
+  }
+
+  setDurationYears(parsed.value)
   setStep(5)
 }
 </script>
@@ -139,7 +204,7 @@ const handleShowResult = () => {
             <span>Zielbetrag: <span class="font-semibold">{{ formatCurrency(targetAmount) }}</span></span>
           </div>
         </div>
-        <h2 class="mb-4 text-[32px] font-bold text-[#003745]">Wann möchten Sie Ihr Sparziel erreichen?</h2>
+        <h2 class="mb-4 text-[32px] font-normal text-[#003745]">Wann möchten Sie Ihr Sparziel erreichen?</h2>
         <p class="ui-text-secondary text-base font-light">
           Wählen Sie eine empfohlene Spardauer oder geben Sie eine eigene Spardauer ein.
         </p>
@@ -147,7 +212,7 @@ const handleShowResult = () => {
 
       <section class="mb-8 rounded-[4px] border border-[#003745]/15 bg-white p-5 md:p-6">
         <div class="mb-5 flex items-center gap-2">
-          <h3 class="text-xl font-bold text-[#003745]">Spardauer angeben</h3>
+          <h3 class="text-xl font-normal text-[#003745]">Spardauer angeben</h3>
         </div>
         <div class="space-y-4">
           <p class="text-sm font-semibold text-[#003745]">Empfohlene Spardauern für dieses Ziel</p>
@@ -159,10 +224,10 @@ const handleShowResult = () => {
               :initial="optionInitial(optionIndex)"
               :enter="optionEnter(optionIndex)"
               type="button"
-              :aria-pressed="durationSelectionMode === 'preset' && durationYears === years ? 'true' : 'false'"
+              :aria-pressed="selectedQuickDuration === years ? 'true' : 'false'"
               class="ui-button h-auto px-3 py-2 text-sm font-semibold"
               :class="
-                durationSelectionMode === 'preset' && durationYears === years
+                selectedQuickDuration === years
                   ? 'ui-button-solid'
                   : 'ui-button-secondary'
               "
@@ -171,7 +236,7 @@ const handleShowResult = () => {
               <span class="block">in {{ years }} Jahren</span>
               <span
                 class="mt-1 block text-xs font-normal"
-                :class="durationSelectionMode === 'preset' && durationYears === years ? 'text-white/80' : 'ui-text-secondary'"
+                :class="selectedQuickDuration === years ? 'text-white/80' : 'ui-text-secondary'"
               >
                 {{ formatMonthlyEstimate(monthlySavings) }}
               </span>
@@ -179,18 +244,25 @@ const handleShowResult = () => {
           </div>
           <div class="pt-2">
             <p class="mb-2 text-sm font-semibold text-[#003745]">Spardauer</p>
-            <div class="w-full" @click="activateStepperMode" @focusin="activateStepperMode">
+            <div class="w-full">
               <NumericInputStepper
                 :value="durationYears"
+                :input-value="durationInput"
+                :invalid="Boolean(durationInputError)"
                 :min="1"
                 :max="40"
                 :step="1"
                 unit="Jahre"
+                input-aria-label="Spardauer in Jahren"
                 decrement-label="Laufzeit um ein Jahr verkürzen"
                 increment-label="Laufzeit um ein Jahr verlängern"
                 @update:value="updateStepperDuration"
+                @update:input-value="updateDurationInput"
               />
             </div>
+            <p v-if="durationInputError" class="mt-2 text-sm text-[#AD1111]">
+              {{ durationInputError }}
+            </p>
             <div class="mt-4 flex items-center gap-2 text-sm text-[#003745]">
               <InfoIconTooltip
                 tooltip-id="duration-info-tooltip"

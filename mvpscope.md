@@ -3,7 +3,7 @@
 ## Dokumentstatus
 - Quelle: [Notion – Sparc Light MVP Scoping](https://www.notion.so/30c36743f26b8085b84fd851ccf56a15)
 - Letzter Notion-Stand (Snapshot): 2026-02-20
-- Letzte Markdown-Aktualisierung: 2026-02-26
+- Letzte Markdown-Aktualisierung: 2026-02-27
 - Zweck: Zentrale, laufend gepflegte MVP-Scope-Dokumentation für Product, UX, FE und QA.
 
 ## 1) MVP Ziel
@@ -28,6 +28,7 @@ Priorisierter MVP-Einstieg:
 - Sparwelt-Kampagnenseite auf `deka.de`
 - Einbindung als eigene Sektion
 - Exakte Seitenposition ist noch offen
+- Visuelle Integrationsannahmen für den Prototyp: siehe `guidelines/deka-integration-visual-demo.md`
 
 ## 3) Core Flow (MVP Seiten)
 ### 3.1 Intro / Einstiegsseite
@@ -35,11 +36,12 @@ Priorisierter MVP-Einstieg:
 - Setzt Erwartungshaltung und Nutzenversprechen
 - Senkt Einstiegshürde (kurz, verständlich, ohne Fachsprache)
 - Vermittelt: persönliche Strecke in wenigen Schritten + konkrete nächste Schritte zur Umsetzung
+- Aktueller Prototyp-Status: Intro ist als nächster Build-Schritt vorgesehen und aktuell kein Blocker für die Prototyp-Abnahme
 
 ### 3.2 Sparziel-Auswahl
 - Pflicht im MVP
 - 7 vordefinierte Ziele + 1 individuelles Ziel
-- Bei individuellem Ziel: generalistischer Flow ohne Empfehlungen/Durchschnittswerte
+- Bei individuellem Ziel: Betrag ermitteln + Orientierungslogik sind im MVP vorgesehen; finale Freigabe mit dem Kunden ist noch `offen`
 - UI-Ansatz: aktuell Karussell (Liste/Karten ebenfalls denkbar)
 
 MVP-Sparziele:
@@ -97,9 +99,10 @@ Feature „Betrag ermitteln" (offen, empfohlen für MVP):
 URL-Parameter für teilbare Ergebnisansicht:
 - `goal` (Pflicht)
 - `target` (Pflicht, > 0)
-- `years` (Pflicht, > 0, fachlich max. 40)
-- `interest` (Pflicht: variant 1 | variant 2 | variant 3 | custom)
+- `years` (Pflicht, ganzzahlig, 1–40; Werte außerhalb werden verworfen)
+- `interest` (Pflicht: `variant1` | `variant2` | `variant3` | `custom`)
 - `rate` (bedingt, nur bei `interest=custom`, 0–0.15)
+- Übergangsregel (Backward Compatibility): Legacy-Links mit `strategy` werden weiterhin gelesen, neue Links werden nur mit `interest` erzeugt
 
 Datenschutzregel:
 - Keine personenbezogenen Daten in URL-Parametern
@@ -128,7 +131,8 @@ Tabs sind Teil des MVP (inhaltlich reduziert):
   3. Deka Bündel AbräumSparen
   4. Höhere Sparrate
 - Nicht interaktiv (ändert Ergebnis nicht)
-- Mit weiterführenden Links + Absprung zum Sparrechner
+- Prototyp-Baseline: Absprung zum Sparrechner ist verpflichtend
+- Kartenlinks sind im Prototyp optional (inhaltlich reduzierte MVP-Interpretation)
 
 ### 5.3 Tab „Umsetzung"
 - Ziel: konkrete Abschlusswege
@@ -144,6 +148,7 @@ Tabs sind Teil des MVP (inhaltlich reduziert):
 2. Custom-Rendite-Input (0–15 %): MVP oder nur 3 Presets?
 3. PDF-Download: technische Machbarkeit im Zeitrahmen / Scope (inkl. Backend-Bedarf)?
 4. Exakte Positionierung des MVP-Einstiegs auf der Sparwelt-Kampagnenseite.
+5. Freigabe der Betragsermittlung/Orientierungslogik für „Individuelles Sparziel“ durch den Kunden (`offen`)
 
 ## 7) Out of Scope (aktuell)
 - Dynamische/KI-basierte Betragsermittlung im MVP
@@ -165,6 +170,7 @@ Status-Konvention:
 ## 9) Änderungsprotokoll
 | Datum | Quelle | Änderung | Verantwortlich |
 |---|---|---|---|
+| 2026-02-27 | Product-Abgleich (Feedback-Runde) | Scope-Präzisierung umgesetzt: Intro als pending/non-blocking im Prototyp, individuelles Ziel mit Betragsermittlung als MVP-intended aber `offen` bis Kundenfreigabe, Deep-Link-Contract auf `interest` (`variant1/2/3/custom`) mit `years` 1–40 und Legacy-Read von `strategy`, Optimierung-Tab auf Prototyp-Baseline (Sparrechner Pflicht, Kartenlinks optional) angepasst. | Codex (/prod) |
 | 2026-02-26 | Codex UI-Experiment (Option-Selection Outline) | Pseudo-Ring-Variante zurückgebaut und auf Alternative mit `outline` als zweitem Pixel umgestellt: Basis `1px` Border bleibt, im Selected-State zusätzlich `outline: 1px solid` für stärkere Kontur ohne Layout-Sprung. | Codex (/fe) |
 | 2026-02-26 | Codex UI-Experiment (Option-Selection Pseudo-Ring) | Alternative Selection-Darstellung für `ui-option-card` umgesetzt: Basis bleibt `1px` Border, zusätzlicher `::after`-Ring erzeugt optische „2px“-Anmutung im Selected-State ohne Layout-Sprung. Änderung ist lokal auf den `ui-option-card`-Block begrenzt und damit einfach rückgängig zu machen. | Codex (/fe) |
 | 2026-02-26 | Codex UI-Feinschliff (Option-Border 1px/2px) | `ui-option-card` auf gewünschtes Border-Verhalten gesetzt: Default `1px` Border, Selected `2px` Border; weiterhin ohne Inset-Ring und ohne Scale-Effekt. | Codex (/fe) |

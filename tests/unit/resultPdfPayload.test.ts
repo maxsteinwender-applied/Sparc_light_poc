@@ -13,7 +13,7 @@ describe('resultPdf payload mapping', () => {
       totalInvested: 60_480,
       totalReturn: 24_520,
       generatedAt: new Date('2026-02-19T09:00:00.000Z'),
-      resultDeepLink: 'https://example.test/?goal=travel&target=85000&years=12&strategy=balanced',
+      resultDeepLink: 'https://example.test/?goal=travel&target=85000&years=12&interest=variant2',
     })
 
     expect(model.title).toBe('Ihr persönlicher Vorsparplan')
@@ -39,7 +39,7 @@ describe('resultPdf payload mapping', () => {
       totalInvested: 93_600,
       totalReturn: 56_400,
       generatedAt: new Date('2026-02-19T09:00:00.000Z'),
-      resultDeepLink: 'https://example.test/?goal=retirement&target=150000&years=20&strategy=growth',
+      resultDeepLink: 'https://example.test/?goal=retirement&target=150000&years=20&interest=variant3',
     })
 
     expect(model.nextSteps).toEqual([

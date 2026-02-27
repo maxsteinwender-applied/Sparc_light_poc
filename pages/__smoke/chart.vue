@@ -18,7 +18,7 @@ const chartData = {
 
 <template>
   <section class="mx-auto max-w-3xl p-6">
-    <h1 class="mb-4 text-2xl font-semibold text-[#003745]">Chart Smoke</h1>
+    <h1 class="mb-4 text-2xl font-normal text-[#003745]">Chart Smoke</h1>
     <Chart type="line" :data="chartData" class="rounded border border-[#E6EEF0] bg-white p-4" />
   </section>
 </template>

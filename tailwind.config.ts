@@ -12,7 +12,13 @@ const config: Config = {
     "./utils/**/*.{js,ts}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        sans: ['DekaFrutiger', 'Segoe UI', 'Arial', 'sans-serif'],
+        heading: ['DekaFrutiger', 'Segoe UI', 'Arial', 'sans-serif'],
+        display: ['DekaFrutiger', 'Segoe UI', 'Arial', 'sans-serif'],
+      },
+    },
   },
   plugins: [],
 };

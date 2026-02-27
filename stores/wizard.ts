@@ -41,7 +41,7 @@ interface SetGoalOptions {
 }
 
 const DEFAULTS = {
-  step: 1,
+  step: 0,
   previousStep: null as number | null,
   transitionDirection: 1 as 1 | -1,
   goal: 'travel' as GoalId,

@@ -93,11 +93,11 @@ Erwartung:
 - [ ] "Link kopieren" oben klicken
 - [ ] Erfolgsmeldung erscheint
 - [ ] CTA-Wiederholung unten pruefen (PDF + Link)
-- [ ] Kopierter Link enthaelt `goal`, `target`, `years`, `strategy` und ggf. `rate`
+- [ ] Kopierter Link enthaelt `goal`, `target`, `years`, `interest` und ggf. `rate` (nur bei `interest=custom`)
 - [ ] Kopierten Link in neuem Tab oeffnen
 
 Erwartung:
-- Ergebnisansicht wird mit derselben Konfiguration wiederhergestellt.
+- Ergebnisansicht wird mit derselben Konfiguration wiederhergestellt (inkl. Legacy-Fallback fuer alte Links mit `strategy`).
 
 ## Abschluss
 

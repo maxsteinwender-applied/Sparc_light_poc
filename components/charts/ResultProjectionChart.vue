@@ -80,7 +80,7 @@ watch(configuredProvider, (nextProvider) => {
 <template>
   <section class="rounded-[4px] border border-[#003745]/10 bg-white p-4 md:p-6" aria-label="Ergebnisdiagramm">
     <div class="mb-4 flex items-center justify-between gap-3">
-      <h3 class="text-lg font-bold text-[#003745]">{{ title }}</h3>
+      <h3 class="text-lg font-normal text-[#003745]">{{ title }}</h3>
       <span class="rounded-full border border-[#E6EEF0] bg-[#F4F9FA] px-2.5 py-1 text-xs font-medium text-[#568996]">
         {{ runtimeProvider === 'highcharts' ? 'Highcharts' : 'ECharts' }}
       </span>
