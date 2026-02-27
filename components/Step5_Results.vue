@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch, type ComponentPublicInstance } from 'vue'
+import { computed, inject, nextTick, onBeforeUnmount, onMounted, ref, watch, type ComponentPublicInstance } from 'vue'
 import { useWizard } from '../composables/useWizard'
 import {
   calculateSavingsPlan,
@@ -7,7 +7,6 @@ import {
 } from '../domain/savingsPlan'
 import { buildResultDeepLink } from '../domain/resultDeepLink'
 import { parseEuroInput } from '../domain/wizardValidation'
-import { exportResultPdf } from '../services/resultPdf'
 import { getGoal } from './goalsData'
 import { formatCurrency } from './ui/utils'
 import type { StrategyType } from '../stores/wizard'
@@ -65,10 +64,11 @@ const LINKS = {
 }
 
 const activeTab = ref<ResultTab>('overview')
-const isExporting = ref(false)
 const isCopyingLink = ref(false)
 const actionFeedback = ref<ActionFeedback | null>(null)
 const feedbackTimeout = ref<number | null>(null)
+const monthlySavingsCardRef = ref<HTMLElement | null>(null)
+const disableAutoScrollTop = inject<boolean>('wizardDisableResultAutoScroll', false)
 const targetAmountInput = ref(String(targetAmount.value))
 const durationInput = ref(String(durationYears.value))
 const formatRatePercentInput = (annualRate: number) => (annualRate * 100).toFixed(1).replace('.', ',')
@@ -440,21 +440,51 @@ const applyDurationInput = () => {
   durationInput.value = String(normalized)
 }
 
-const applyCustomRateInput = () => {
-  if (!isCustomRateEnabled.value) {
+const scrollToMonthlySavingsCard = () => {
+  if (!import.meta.client) {
     return
+  }
+
+  monthlySavingsCardRef.value?.scrollIntoView({
+    behavior: 'smooth',
+    block: 'center',
+    inline: 'nearest',
+  })
+}
+
+const applyCustomRateInput = (): boolean => {
+  if (!isCustomRateEnabled.value) {
+    return false
   }
 
   const parsed = Number(customRatePercentInput.value.replace(',', '.'))
   if (!Number.isFinite(parsed)) {
     customRatePercentInput.value = formatRatePercentInput(customAnnualRate.value)
-    return
+    return false
   }
 
   const normalized = Math.min(15, Math.max(0, parsed))
   setCustomAnnualRate(normalized / 100)
   customRatePercentInput.value = formatRatePercentInput(normalized / 100)
   setSelectedStrategy('custom')
+  return true
+}
+
+const handleCustomRateCalculate = () => {
+  const isApplied = applyCustomRateInput()
+  if (!isApplied) {
+    setActionFeedback({
+      type: 'error',
+      text: 'Bitte geben Sie eine gültige Rendite zwischen 0,0 % und 15,0 % ein.',
+    })
+    return
+  }
+
+  scrollToMonthlySavingsCard()
+  setActionFeedback({
+    type: 'success',
+    text: 'Sparrate wurde aktualisiert.',
+  })
 }
 
 const handleCustomRateTyping = () => {
@@ -582,50 +612,6 @@ const handleCopyLink = async () => {
   }
 }
 
-const handleExportPdf = async () => {
-  if (isExporting.value) {
-    return
-  }
-
-  isExporting.value = true
-
-  try {
-    if (!import.meta.client) {
-      return
-    }
-
-    const resultDeepLink = getResultDeepLink()
-    if (!resultDeepLink) {
-      throw new Error('Link generation unavailable')
-    }
-
-    await exportResultPdf({
-      goalLabel: goalLabel.value,
-      durationYears: durationYears.value,
-      targetYear: targetYear.value,
-      targetAmount: targetAmount.value,
-      monthlySavings: monthlySavings.value,
-      annualRate: selectedAnnualRate.value,
-      totalInvested: totalInvested.value,
-      totalReturn: totalReturn.value,
-      generatedAt: new Date(),
-      resultDeepLink,
-    })
-    setActionFeedback({
-      type: 'success',
-      text: 'PDF wurde erstellt und heruntergeladen.',
-    })
-  } catch (error) {
-    console.error('PDF export failed:', error)
-    setActionFeedback({
-      type: 'error',
-      text: 'PDF konnte nicht erstellt werden. Bitte versuchen Sie es erneut.',
-    })
-  } finally {
-    isExporting.value = false
-  }
-}
-
 watch(targetAmount, (nextValue) => {
   targetAmountInput.value = String(nextValue)
 })
@@ -652,7 +638,7 @@ watch(activeTab, (nextValue) => {
 })
 
 onMounted(() => {
-  if (!import.meta.client) {
+  if (!import.meta.client || disableAutoScrollTop) {
     return
   }
 
@@ -668,13 +654,23 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="min-h-screen bg-white pb-16">
-    <div class="border-b border-[#003745]/10 bg-[#F4F9FA] px-4 pb-[72px] pt-16">
+    <div class="bg-white px-4 pb-[72px] pt-16">
       <div class="mx-auto max-w-[1160px]">
+        <div class="mb-4 flex justify-start">
+          <button
+            type="button"
+            class="group inline-flex h-auto items-center gap-1 py-4 text-base font-semibold text-[#1A6B80]"
+            @click="goBack"
+          >
+            <span class="material-symbols-outlined text-[18px]" aria-hidden="true">chevron_left</span>
+            <span class="group-hover:underline">Zurück zur Spardauer</span>
+          </button>
+        </div>
         <div class="flex flex-col items-center text-center">
           <span class="mb-3 inline-flex h-16 w-16 items-center justify-center rounded-[var(--radius-control)] bg-[#1A6B80] text-white">
             <span class="material-symbols-outlined leading-none !text-[40px]" style="font-size: 40px;" aria-hidden="true">{{ goalSymbol }}</span>
           </span>
-          <h1 class="mb-4 text-[32px] font-bold tracking-tight text-[#003745]/70">
+          <h1 class="mb-4 text-[32px] font-normal tracking-tight text-[#003745]/70">
             Ihr Sparziel
             <span class="text-[#003745]">{{ goalLabel }}</span>
             wird greifbar.
@@ -690,33 +686,32 @@ onBeforeUnmount(() => {
         <div class="mt-5 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
           <button
             type="button"
-            :disabled="isExporting"
-            :aria-busy="isExporting ? 'true' : 'false'"
-            class="ui-button ui-button-primary motion-cta h-12 w-full px-5 text-sm sm:w-[220px]"
-            @click="handleExportPdf"
-          >
-            {{ isExporting ? 'Erzeuge PDF...' : 'Als PDF herunterladen' }}
-          </button>
-          <button
-            type="button"
             :disabled="isCopyingLink"
             :aria-busy="isCopyingLink ? 'true' : 'false'"
-            class="ui-button ui-button-secondary motion-cta h-12 w-full !bg-transparent px-5 text-sm hover:!bg-transparent disabled:!bg-transparent sm:w-[220px]"
+            class="ui-button ui-button-primary motion-cta h-12 w-full px-5 text-sm sm:w-[220px]"
             @click="handleCopyLink"
           >
             {{ isCopyingLink ? 'Kopiere Link...' : 'Link kopieren' }}
           </button>
         </div>
 
-        <p
+        <div
           v-if="actionFeedback"
-          class="mt-4 text-center text-sm"
-          role="status"
-          aria-live="polite"
-          :class="actionFeedback.type === 'success' ? 'text-[#277A6B]' : 'text-[#AD1111]'"
+          class="pointer-events-none fixed inset-x-0 bottom-6 z-50 flex justify-center px-4"
         >
-          {{ actionFeedback.text }}
-        </p>
+          <p
+            role="status"
+            aria-live="polite"
+            class="inline-flex max-w-[560px] items-center rounded-[4px] border px-4 py-2 text-sm font-semibold shadow-[0_10px_30px_rgba(0,55,69,0.2)]"
+            :class="
+              actionFeedback.type === 'success'
+                ? 'border-[#277A6B]/30 bg-[#EAF7F4] text-[#0F5B4D]'
+                : 'border-[#AD1111]/30 bg-[#FCEEEE] text-[#8B1515]'
+            "
+          >
+            {{ actionFeedback.text }}
+          </p>
+        </div>
 
         <div class="mt-16 grid items-start gap-7 lg:grid-cols-[1.2fr_1fr]">
           <section class="overflow-hidden rounded-[4px] border border-[#003745]/10 bg-white">
@@ -732,10 +727,10 @@ onBeforeUnmount(() => {
               </div>
             </div>
             <div class="space-y-5 p-5 md:p-6">
-            <article class="rounded-[4px] bg-[var(--deka-primary-red)] p-6 text-white">
+            <article ref="monthlySavingsCardRef" class="rounded-[4px] bg-[var(--deka-primary-red)] p-6 text-white">
               <div class="mb-2 flex items-center justify-between gap-3">
                 <div class="text-sm font-semibold text-white">Ihre monatliche Sparrate</div>
-                <span class="inline-flex h-7 items-center rounded-full border border-white/35 bg-white/15 px-3 text-[11px] font-semibold uppercase tracking-wide text-white">
+                <span class="inline-flex h-7 items-center rounded-full border border-white/35 bg-white/15 px-3 text-[11px] font-semibold text-white">
                   Errechnet
                 </span>
               </div>
@@ -747,13 +742,13 @@ onBeforeUnmount(() => {
 
             <p class="ui-text-secondary text-base">Passen Sie hier Ihre Renditeannahme für das Sparziel an:</p>
 
-            <div class="space-y-4">
+            <div class="space-y-3">
               <button
                 v-for="strategyCard in strategyCards"
                 :key="strategyCard.key"
                 type="button"
                 :aria-pressed="selectedStrategy === strategyCard.key ? 'true' : 'false'"
-                class="ui-option-card block w-full p-3.5 text-left sm:p-4"
+                class="ui-option-card block w-full p-3 text-left sm:p-3.5"
                 :class="
                   selectedStrategy === strategyCard.key
                     ? 'is-selected shadow-[var(--shadow-card)]'
@@ -770,7 +765,7 @@ onBeforeUnmount(() => {
                     Ihre Auswahl
                   </span>
                 </div>
-                <div class="mt-3 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end sm:gap-4">
+                <div class="mt-2.5 grid gap-2.5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end sm:gap-3">
                   <div class="flex min-w-0 items-start gap-3">
                     <span class="mt-0.5 inline-flex h-6 w-6 shrink-0 items-end justify-center gap-[3px] text-[#0E4D5A]" aria-hidden="true">
                       <span
@@ -787,7 +782,7 @@ onBeforeUnmount(() => {
                       />
                     </span>
                     <div class="min-w-0">
-                      <h3 class="text-base font-semibold leading-tight text-[#003745] md:text-[1.2rem]">{{ strategyCard.title }}</h3>
+                      <h3 class="text-base font-normal leading-tight text-[#003745] md:text-[1.2rem]">{{ strategyCard.title }}</h3>
                       <p class="mt-1 text-sm leading-normal text-[var(--text-secondary)]">{{ strategyCard.risk }}</p>
                     </div>
                   </div>
@@ -814,7 +809,7 @@ onBeforeUnmount(() => {
               >
                 <div class="mb-3 flex items-center justify-between gap-3">
                   <div>
-                    <h3 class="text-base font-semibold text-[#003745]">Individuelle Rendite</h3>
+                    <h3 class="text-base font-normal text-[#003745]">Individuelle Rendite</h3>
                   </div>
                   <label class="inline-flex items-center gap-2 text-sm font-medium text-[#003745]">
                     <input
@@ -848,7 +843,7 @@ onBeforeUnmount(() => {
                     type="button"
                     :disabled="!isCustomRateEnabled"
                     class="ui-button ui-button-solid h-10 px-3 text-sm"
-                    @click="applyCustomRateInput"
+                    @click="handleCustomRateCalculate"
                   >
                     Berechnen
                   </button>
@@ -860,7 +855,7 @@ onBeforeUnmount(() => {
           </section>
 
           <aside class="rounded-[4px] border border-[#003745]/15 bg-gradient-to-b from-white to-[#F4F9FA] p-5 shadow-[0_12px_30px_rgba(0,55,69,0.08)] md:p-6 lg:sticky lg:top-[calc(var(--app-sticky-content-offset)+0.5rem)] lg:self-start">
-            <h2 class="text-lg font-semibold text-[#003745]">Ihre Angaben</h2>
+            <h2 class="text-lg font-normal text-[#003745]">Ihre Angaben</h2>
             <p class="mt-1 text-sm text-[#1B4A5A]">Hier können Sie Zielbetrag und Spardauer direkt anpassen.</p>
 
             <div class="mt-4 rounded-[4px] border border-[#E0EBEE] bg-white/90 p-4">
@@ -961,7 +956,7 @@ onBeforeUnmount(() => {
             </div>
 
             <div v-if="showEstimatedBreakdown" class="mt-4 rounded-[4px] border border-[#D4E0E5] bg-white/90 p-4">
-              <h3 class="text-sm font-semibold text-[#003745]">Wie setzt sich der Zielbetrag zusammen?</h3>
+              <h3 class="text-sm font-normal text-[#003745]">Wie setzt sich der Zielbetrag zusammen?</h3>
               <p class="mt-2 text-sm font-medium text-[#1B4A5A]">Berücksichtigte Kriterien:</p>
               <div v-if="calculationFactors.length > 0" class="mt-2 flex flex-wrap gap-2">
                 <span
@@ -980,14 +975,6 @@ onBeforeUnmount(() => {
     </div>
 
     <div class="mx-auto mt-8 max-w-6xl px-4">
-      <section class="mb-8 rounded-[4px] border border-[#D3DEE3] bg-[#F8FCFD] p-5 md:p-6">
-        <h2 class="text-2xl font-bold text-[#003745]">Sparziel zur Realität werden lassen</h2>
-        <p class="mt-2 text-sm leading-relaxed text-[#1B4A5A]">
-          Sie können den Sparplan in der Filiale, in der Internetfiliale oder in der S-Invest App umsetzen.
-          Diese Wege sind jederzeit verfügbar und unten im Tab „Umsetzung“ detailliert beschrieben.
-        </p>
-      </section>
-
       <nav
         class="ui-tabs mb-6"
         role="tablist"
@@ -1035,7 +1022,7 @@ onBeforeUnmount(() => {
         class="space-y-8"
       >
         <div>
-          <h2 class="text-2xl font-bold text-[#003745]">Warum Wertpapiersparen sinnvoll ist</h2>
+          <h2 class="text-2xl font-normal text-[#003745]">Warum Wertpapiersparen sinnvoll ist</h2>
           <p class="mt-2 text-base text-[var(--text-secondary)]">
             Mit Renditeannahmen kann Ihr Ziel bei gleicher Laufzeit mit einer geringeren monatlichen Sparrate erreicht werden.
           </p>
@@ -1044,7 +1031,7 @@ onBeforeUnmount(() => {
         <div class="grid gap-5 lg:grid-cols-2">
           <article class="rounded-[4px] border border-[#003745]/20 bg-[#003745]/5 p-5">
             <div class="mb-4 flex items-center justify-between">
-              <h3 class="text-lg font-semibold text-[#003745]">Mit Deka-FondsSparplan</h3>
+              <h3 class="text-lg font-normal text-[#003745]">Mit Deka-FondsSparplan</h3>
               <span class="ui-chip ui-chip-secondary-subtle">Aktive Annahme</span>
             </div>
             <div class="mb-4 flex items-end justify-between">
@@ -1076,7 +1063,7 @@ onBeforeUnmount(() => {
           </article>
 
           <article class="rounded-[4px] border border-[#003745]/15 bg-white p-5">
-            <h3 class="mb-4 text-lg font-semibold text-[#003745]">Ohne Rendite</h3>
+            <h3 class="mb-4 text-lg font-normal text-[#003745]">Ohne Rendite</h3>
             <div class="mb-4">
               <div class="text-xs uppercase tracking-wide text-[var(--text-secondary)]">Monatliche Sparrate</div>
               <div class="text-3xl font-bold text-[#003745]">{{ formatCurrency(zeroReturnMonthly) }}</div>
@@ -1100,7 +1087,7 @@ onBeforeUnmount(() => {
       >
         <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div>
-            <h2 class="text-2xl font-bold text-[#003745]">Finde Wege um deinen Sparplan zu optimieren</h2>
+            <h2 class="text-2xl font-normal text-[#003745]">Finde Wege um deinen Sparplan zu optimieren</h2>
             <p class="mt-2 text-base text-[var(--text-secondary)]">
               Schon kleine Anpassungen können helfen, Ihr Sparziel schneller und stabiler zu erreichen.
             </p>
@@ -1157,7 +1144,7 @@ onBeforeUnmount(() => {
           <div class="mb-5 flex flex-wrap items-start justify-between gap-4">
             <div>
               <p class="text-sm font-bold uppercase tracking-widest text-[#EE0000]">Kundenfavoriten</p>
-              <h2 class="mt-2 text-[32px] font-bold tracking-tight text-[#003745]">Die Sparplan-Favoriten.</h2>
+              <h2 class="mt-2 text-[32px] font-normal tracking-tight text-[#003745]">Die Sparplan-Favoriten.</h2>
             </div>
           </div>
 
@@ -1187,87 +1174,68 @@ onBeforeUnmount(() => {
           </div>
         </article>
 
-        <article>
-          <h3 class="text-2xl font-bold text-[#003745]">Sparziel zur Realität werden lassen</h3>
-          <p class="mt-2 text-base text-[var(--text-secondary)]">
-            Sie haben mehrere Möglichkeiten, Ihren FondsSparplan passend zu Ihrem Alltag einzurichten.
-          </p>
-          <div class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-            <section
-              v-for="card in implementationCards"
-              :key="card.key"
-              class="flex h-full flex-col rounded-[4px] border border-[#003745]/15 p-5"
-            >
-              <div class="mb-4 aspect-[16/9] overflow-hidden rounded-[4px] bg-[#F4F9FA]">
-                <img
-                  :src="card.imageSrc"
-                  :alt="card.imageAlt"
-                  class="h-full w-full object-cover"
-                  loading="lazy"
+      </section>
+
+      <section data-testid="implementation-cards-section" class="mt-14">
+        <h3 class="text-2xl font-normal text-[#003745]">Sparziel zur Realität werden lassen</h3>
+        <p class="mt-2 text-base text-[var(--text-secondary)]">
+          Sie haben mehrere Möglichkeiten, Ihren FondsSparplan passend zu Ihrem Alltag einzurichten.
+        </p>
+        <div class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <section
+            v-for="card in implementationCards"
+            :key="card.key"
+            class="flex h-full flex-col rounded-[4px] border border-[#003745]/15 p-5"
+          >
+            <div class="mb-4 aspect-[16/9] overflow-hidden rounded-[4px] bg-[#F4F9FA]">
+              <img
+                :src="card.imageSrc"
+                :alt="card.imageAlt"
+                class="h-full w-full object-cover"
+                loading="lazy"
+              >
+            </div>
+            <span class="ui-chip ui-chip-secondary-subtle">
+              Abschluss
+            </span>
+            <h4 class="mt-4 text-[20px] font-normal text-[#003745]">{{ card.title }}</h4>
+            <p class="mt-2 text-base text-[var(--text-secondary)]">
+              {{ card.bodyBeforeLink }}
+              <template v-if="card.href && card.linkLabel">
+                <a
+                  :href="card.href"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-[#0043B4] underline underline-offset-2 hover:text-[#003A99]"
                 >
-              </div>
-              <span class="ui-chip ui-chip-secondary-subtle">
-                Abschluss
-              </span>
-              <h4 class="mt-4 text-[20px] font-normal text-[#003745]">{{ card.title }}</h4>
-              <p class="mt-2 text-base text-[var(--text-secondary)]">
-                {{ card.bodyBeforeLink }}
-                <template v-if="card.href && card.linkLabel">
-                  <a
-                    :href="card.href"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="text-[#0043B4] underline underline-offset-2 hover:text-[#003A99]"
-                  >
-                    {{ card.linkLabel }}
-                    <span class="material-symbols-outlined ml-1 text-[14px]" aria-hidden="true">open_in_new</span>
-                  </a>
-                </template>
-                {{ card.bodyAfterLink }}
-              </p>
-              <p v-if="card.note" class="mt-3 text-xs font-medium text-[var(--text-secondary)]">{{ card.note }}</p>
-            </section>
-          </div>
-        </article>
+                  {{ card.linkLabel }}
+                  <span class="material-symbols-outlined ml-1 text-[14px]" aria-hidden="true">open_in_new</span>
+                </a>
+              </template>
+              {{ card.bodyAfterLink }}
+            </p>
+            <p v-if="card.note" class="mt-3 text-xs font-medium text-[var(--text-secondary)]">{{ card.note }}</p>
+          </section>
+        </div>
       </section>
     </div>
 
     <div class="mx-auto mt-10 max-w-6xl px-4">
       <section class="rounded-[4px] border border-[#D3DEE3] bg-white p-5 md:p-6">
-        <h3 class="text-xl font-bold text-[#003745]">Plan speichern oder teilen</h3>
-        <p class="mt-2 text-sm text-[#4F7280]">Sie können Ihren aktuellen Stand jederzeit herunterladen oder per Link teilen.</p>
+        <h3 class="text-xl font-normal text-[#003745]">Plan speichern oder teilen</h3>
+        <p class="mt-2 text-sm text-[#4F7280]">Sie können Ihren aktuellen Stand jederzeit per Link teilen.</p>
         <div class="mt-4 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
-          <button
-            type="button"
-            :disabled="isExporting"
-            :aria-busy="isExporting ? 'true' : 'false'"
-            class="ui-button ui-button-primary motion-cta h-12 w-full px-5 text-sm sm:w-[220px]"
-            @click="handleExportPdf"
-          >
-            {{ isExporting ? 'Erzeuge PDF...' : 'Als PDF herunterladen' }}
-          </button>
           <button
             type="button"
             :disabled="isCopyingLink"
             :aria-busy="isCopyingLink ? 'true' : 'false'"
-            class="ui-button ui-button-secondary motion-cta h-12 w-full !bg-transparent px-5 text-sm hover:!bg-transparent disabled:!bg-transparent sm:w-[220px]"
+            class="ui-button ui-button-primary motion-cta h-12 w-full px-5 text-sm sm:w-[220px]"
             @click="handleCopyLink"
           >
             {{ isCopyingLink ? 'Kopiere Link...' : 'Link kopieren' }}
           </button>
         </div>
       </section>
-    </div>
-
-    <div class="mx-auto mt-6 max-w-6xl px-4">
-      <button
-        type="button"
-        class="ui-button ui-button-secondary inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold"
-        @click="goBack"
-      >
-        <span class="material-symbols-outlined text-[18px]" aria-hidden="true">arrow_back</span>
-        Zurück
-      </button>
     </div>
 
   </div>

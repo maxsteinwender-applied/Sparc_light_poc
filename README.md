@@ -147,11 +147,14 @@ Current keys:
 - `NUXT_PUBLIC_SEO_DESCRIPTION` (optional meta description for SEO/preview cards)
 - `NUXT_PUBLIC_SEO_IMAGE` (optional OpenGraph/Twitter preview image path, default: `og-image.png`)
 - `NUXT_PUBLIC_SITE_URL` (optional absolute base URL, used to build absolute `og:image` URL)
+- `PROTOTYPE_AUTH_USER` (optional, server-only; enable Basic Auth together with password)
+- `PROTOTYPE_AUTH_PASSWORD` (optional, server-only; enable Basic Auth together with user)
 
 Recommended flow:
 1. Copy `.env.example` to `.env.local`.
 2. Fill only keys required by your current feature.
 3. Keep secrets in `.env.local` (never commit).
+4. If `PROTOTYPE_AUTH_USER` and `PROTOTYPE_AUTH_PASSWORD` are both set, the app is protected with HTTP Basic Auth for all routes/assets/API requests.
 
 ## End-to-End Workflow (Golden Path)
 
